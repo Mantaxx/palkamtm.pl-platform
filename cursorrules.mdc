@@ -1,0 +1,16 @@
+<!-- cspell:disable -->
+# Deklaracja Stosu Technologicznego
+
+Ten projekt używa Next.js 14 z App Router. Wszystkie komponenty są pisane w TypeScript z rozszerzeniem.tsx. Stylizacja jest realizowana wyłącznie za pomocą Tailwind CSS.
+
+## Preferencje Bibliotek
+
+Do manipulacji datami zawsze używaj biblioteki `date-fns`. Do zapytań sieciowych używaj wbudowanego `fetch` API. Do globalnego zarządzania stanem używaj `Zustand`.
+
+## Wzorce Architektoniczne
+
+Stosuj architekturę modularną. Grupuj komponenty, hooki i utility według funkcjonalności (np. w folderach /features/auctions, /features/auth). Przestrzegaj Zasady Pojedynczej Odpowiedzialności (Single Responsibility Principle) dla wszystkich komponentów.
+
+## Styl Kodu
+
+Omituj średniki na końcu linii. Używaj pojedynczych cudzysłowów dla ciągów znaków. Formatuj kod zgodnie z domyślnymi ustawieniami Prettier.
