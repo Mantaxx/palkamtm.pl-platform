@@ -22,7 +22,7 @@ export async function GET() {
     })
 
     // Przekształć dane
-    const meetingsWithImages = meetings.map(meeting => ({
+    const meetingsWithImages = meetings.map((meeting: any) => ({
       ...meeting,
       images: JSON.parse(meeting.images),
       uploaderName: `${meeting.uploader.firstName || ''} ${meeting.uploader.lastName || ''}`.trim() || meeting.uploader.email

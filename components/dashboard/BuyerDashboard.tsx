@@ -1,11 +1,12 @@
 'use client'
 
+import { PhoneVerification } from '@/components/auth/PhoneVerification'
 import PaymentManagement from '@/components/payments/PaymentManagement'
+import { usePhoneVerification } from '@/hooks/usePhoneVerification'
 import { format } from 'date-fns'
 import { pl } from 'date-fns/locale'
 import { motion } from 'framer-motion'
 import {
-    Bell,
     CreditCard,
     Eye,
     Filter,
@@ -21,6 +22,7 @@ import {
     Trophy,
     User
 } from 'lucide-react'
+import Link from 'next/link'
 import { useState } from 'react'
 
 // Mock data - w rzeczywistej aplikacji dane będą pobierane z API
@@ -89,6 +91,7 @@ const mockData = {
 
 export function BuyerDashboard() {
     const [activeTab, setActiveTab] = useState<'overview' | 'watchlist' | 'bids' | 'history' | 'payments' | 'settings'>('overview')
+    const { isPhoneVerified, phoneNumber, isLoading: phoneVerificationLoading } = usePhoneVerification()
 
     const tabs = [
         { id: 'overview', label: 'Przegląd', icon: TrendingUp },
@@ -100,57 +103,53 @@ export function BuyerDashboard() {
     ]
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <div className="bg-white shadow-sm border-b border-gray-200">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="font-display font-bold text-2xl text-gray-900">
-                                Panel Kupującego
-                            </h1>
-                            <p className="text-gray-600 mt-1">
-                                Zarządzaj swoimi aukcjami i zakupami
-                            </p>
-                        </div>
-                        <div className="flex items-center space-x-4">
-                            <button className="relative p-2 text-gray-600 hover:text-primary-600 transition-colors">
-                                <Bell className="w-6 h-6" />
-                                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                                    3
-                                </span>
-                            </button>
-                            <button className="btn-primary">
-                                Nowa Aukcja
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Tabs */}
-            <div className="bg-white border-b border-gray-200">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex space-x-8">
-                        {tabs.map((tab) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id as any)}
-                                className={`flex items-center space-x-2 py-4 border-b-2 font-medium transition-colors ${activeTab === tab.id
-                                    ? 'border-primary-500 text-primary-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                                    }`}
-                            >
-                                <tab.icon className="w-5 h-5" />
-                                <span>{tab.label}</span>
-                            </button>
-                        ))}
-                    </div>
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700">
+            {/* Przyciski do podstron w jednym rzędzie na górze */}
+            <div className="absolute top-8 left-80 z-20">
+                <div className="flex items-center gap-3">
+                    {[
+                        { href: "/", icon: "fas fa-home", title: "Strona Główna", label: "Strona Główna" },
+                        { href: "/auctions", icon: "fas fa-gavel", title: "Aukcje", label: "Aukcje" },
+                        { href: "/heritage", icon: "fas fa-crown", title: "Nasze Dziedzictwo", label: "Dziedzictwo" },
+                        { href: "/champions", icon: "fas fa-trophy", title: "Championy", label: "Championy" },
+                        { href: "/breeder-meetings", icon: "fas fa-users", title: "Spotkania", label: "Spotkania" },
+                        { href: "/references", icon: "fas fa-star", title: "Referencje", label: "Referencje" },
+                        { href: "/press", icon: "fas fa-newspaper", title: "Prasa", label: "Prasa" },
+                        { href: "/about", icon: "fas fa-info-circle", title: "O nas", label: "O Nas" },
+                        { href: "/contact", icon: "fas fa-envelope", title: "Kontakt", label: "Kontakt" },
+                        { href: "/dashboard", icon: "fas fa-tachometer-alt", title: "Panel Klienta", label: "Panel Klienta" }
+                    ].map((item, index) => (
+                        <motion.div
+                            key={item.href}
+                            initial={{ opacity: 0, x: -300, rotate: -360 }}
+                            animate={{ opacity: 1, x: 0, rotate: 0 }}
+                            transition={{
+                                duration: 1.0,
+                                delay: 0.4 + (index * 0.1),
+                                ease: "easeOut"
+                            }}
+                        >
+                            <Link href={item.href} className="glass-nav-button" title={item.title}>
+                                <i className={`${item.icon} relative z-10 text-3xl`}></i>
+                                <span className="relative z-10 text-sm">{item.label}</span>
+                            </Link>
+                        </motion.div>
+                    ))}
                 </div>
             </div>
 
             {/* Content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 mt-16">
+                {/* Phone Verification Alert */}
+                {!phoneVerificationLoading && !isPhoneVerified && (
+                    <div className="mb-8">
+                        <PhoneVerification
+                            user={{ phoneNumber, isPhoneVerified }}
+                            onVerificationComplete={() => window.location.reload()}
+                        />
+                    </div>
+                )}
+
                 {activeTab === 'overview' && (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -165,7 +164,7 @@ export function BuyerDashboard() {
                                     title: 'Wydane Łącznie',
                                     value: `${mockData.statistics.totalSpent.toLocaleString()} zł`,
                                     icon: ShoppingCart,
-                                    color: 'from-blue-500 to-blue-600'
+                                    color: 'from-white/80 to-white/60'
                                 },
                                 {
                                     title: 'Wygrane Aukcje',
@@ -214,24 +213,27 @@ export function BuyerDashboard() {
                                     <h3 className="font-display font-bold text-xl text-gray-900">
                                         Obserwowane Aukcje
                                     </h3>
-                                    <button className="text-primary-600 hover:text-primary-700 font-medium text-sm">
+                                    <button className="text-slate-600 hover:text-slate-700 font-medium text-sm">
                                         Zobacz wszystkie
                                     </button>
                                 </div>
                                 <div className="space-y-4">
                                     {mockData.watchlist.map((item) => (
                                         <div key={item.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-                                            <div className="w-16 h-16 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg flex items-center justify-center">
-                                                <span className="text-primary-600 font-bold text-sm">TS</span>
+                                            <div className="w-16 h-16 bg-gradient-to-br from-slate-200 to-slate-300 rounded-lg flex items-center justify-center">
+                                                <span className="text-slate-600 font-bold text-sm">TS</span>
                                             </div>
                                             <div className="flex-1">
                                                 <h4 className="font-medium text-gray-900 text-sm">{item.title}</h4>
-                                                <p className="text-primary-600 font-semibold">{item.currentPrice.toLocaleString()} zł</p>
+                                                <p className="text-slate-600 font-semibold">{item.currentPrice.toLocaleString()} zł</p>
                                                 <p className="text-gray-500 text-xs">
                                                     {item.bids} ofert • Kończy się {format(item.endTime, 'dd MMM', { locale: pl })}
                                                 </p>
                                             </div>
-                                            <button className="p-2 text-gray-400 hover:text-red-500 transition-colors">
+                                            <button
+                                                className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                                                title="Usuń z obserwowanych"
+                                            >
                                                 <Heart className="w-5 h-5 fill-current" />
                                             </button>
                                         </div>
@@ -245,19 +247,19 @@ export function BuyerDashboard() {
                                     <h3 className="font-display font-bold text-xl text-gray-900">
                                         Ostatnie Oferty
                                     </h3>
-                                    <button className="text-primary-600 hover:text-primary-700 font-medium text-sm">
+                                    <button className="text-slate-600 hover:text-slate-700 font-medium text-sm">
                                         Zobacz wszystkie
                                     </button>
                                 </div>
                                 <div className="space-y-4">
                                     {mockData.recentBids.map((bid) => (
                                         <div key={bid.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-                                            <div className="w-16 h-16 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg flex items-center justify-center">
-                                                <span className="text-primary-600 font-bold text-sm">SA</span>
+                                            <div className="w-16 h-16 bg-gradient-to-br from-slate-200 to-slate-300 rounded-lg flex items-center justify-center">
+                                                <span className="text-slate-600 font-bold text-sm">SA</span>
                                             </div>
                                             <div className="flex-1">
                                                 <h4 className="font-medium text-gray-900 text-sm">{bid.auctionTitle}</h4>
-                                                <p className="text-primary-600 font-semibold">{bid.bidAmount.toLocaleString()} zł</p>
+                                                <p className="text-slate-600 font-semibold">{bid.bidAmount.toLocaleString()} zł</p>
                                                 <div className="flex items-center space-x-2">
                                                     <span className={`text-xs px-2 py-1 rounded-full ${bid.isWinning
                                                         ? 'bg-green-100 text-green-800'
@@ -293,7 +295,8 @@ export function BuyerDashboard() {
                                         <input
                                             type="text"
                                             placeholder="Szukaj aukcji..."
-                                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                            aria-label="Szukaj aukcji"
+                                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
                                         />
                                     </div>
                                     <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
@@ -306,12 +309,12 @@ export function BuyerDashboard() {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {mockData.watchlist.map((item) => (
                                     <div key={item.id} className="border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-shadow">
-                                        <div className="aspect-video bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center">
-                                            <span className="text-primary-600 font-bold text-lg">Zdjęcie</span>
+                                        <div className="aspect-video bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center">
+                                            <span className="text-slate-600 font-bold text-lg">Zdjęcie</span>
                                         </div>
                                         <div className="p-4">
                                             <h4 className="font-medium text-gray-900 mb-2">{item.title}</h4>
-                                            <p className="text-primary-600 font-semibold text-lg mb-2">
+                                            <p className="text-slate-600 font-semibold text-lg mb-2">
                                                 {item.currentPrice.toLocaleString()} zł
                                             </p>
                                             <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
@@ -322,10 +325,16 @@ export function BuyerDashboard() {
                                                 <button className="flex-1 btn-primary text-sm py-2">
                                                     Licytuj
                                                 </button>
-                                                <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                                <button
+                                                    className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                                    title="Zobacz szczegóły"
+                                                >
                                                     <Eye className="w-4 h-4" />
                                                 </button>
-                                                <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                                <button
+                                                    className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                                    title="Dodaj do obserwowanych"
+                                                >
                                                     <Heart className="w-4 h-4 fill-current text-red-500" />
                                                 </button>
                                             </div>
@@ -351,12 +360,12 @@ export function BuyerDashboard() {
                             <div className="space-y-4">
                                 {mockData.recentBids.map((bid) => (
                                     <div key={bid.id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
-                                        <div className="w-20 h-20 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg flex items-center justify-center">
-                                            <span className="text-primary-600 font-bold">SA</span>
+                                        <div className="w-20 h-20 bg-gradient-to-br from-slate-200 to-slate-300 rounded-lg flex items-center justify-center">
+                                            <span className="text-slate-600 font-bold">SA</span>
                                         </div>
                                         <div className="flex-1">
                                             <h4 className="font-medium text-gray-900">{bid.auctionTitle}</h4>
-                                            <p className="text-primary-600 font-semibold text-lg">
+                                            <p className="text-slate-600 font-semibold text-lg">
                                                 {bid.bidAmount.toLocaleString()} zł
                                             </p>
                                             <div className="flex items-center space-x-4 text-sm text-gray-500">
@@ -372,7 +381,7 @@ export function BuyerDashboard() {
                                                 {bid.isWinning ? 'Wygrywasz' : 'Przegrywasz'}
                                             </div>
                                             <div className="mt-2">
-                                                <button className="text-primary-600 hover:text-primary-700 font-medium text-sm">
+                                                <button className="text-slate-600 hover:text-slate-700 font-medium text-sm">
                                                     Zwiększ ofertę
                                                 </button>
                                             </div>
@@ -398,12 +407,12 @@ export function BuyerDashboard() {
                             <div className="space-y-4">
                                 {mockData.purchaseHistory.map((purchase) => (
                                     <div key={purchase.id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
-                                        <div className="w-20 h-20 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg flex items-center justify-center">
-                                            <span className="text-primary-600 font-bold">LB</span>
+                                        <div className="w-20 h-20 bg-gradient-to-br from-slate-200 to-slate-300 rounded-lg flex items-center justify-center">
+                                            <span className="text-slate-600 font-bold">LB</span>
                                         </div>
                                         <div className="flex-1">
                                             <h4 className="font-medium text-gray-900">{purchase.title}</h4>
-                                            <p className="text-primary-600 font-semibold text-lg">
+                                            <p className="text-slate-600 font-semibold text-lg">
                                                 {purchase.purchasePrice.toLocaleString()} zł
                                             </p>
                                             <p className="text-gray-500 text-sm">
@@ -413,12 +422,12 @@ export function BuyerDashboard() {
                                         <div className="text-right">
                                             <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${purchase.status === 'delivered'
                                                 ? 'bg-green-100 text-green-800'
-                                                : 'bg-blue-100 text-blue-800'
+                                                : 'bg-slate-100 text-slate-800'
                                                 }`}>
                                                 {purchase.status === 'delivered' ? 'Dostarczone' : 'Wysłane'}
                                             </div>
                                             <div className="mt-2">
-                                                <button className="text-primary-600 hover:text-primary-700 font-medium text-sm">
+                                                <button className="text-slate-600 hover:text-slate-700 font-medium text-sm">
                                                     Szczegóły
                                                 </button>
                                             </div>
@@ -587,8 +596,8 @@ function UserSettings() {
                                 key={tab.id}
                                 onClick={() => setActiveSettingsTab(tab.id as any)}
                                 className={`flex items-center space-x-2 py-4 border-b-2 font-medium transition-colors ${activeSettingsTab === tab.id
-                                        ? 'border-primary-500 text-primary-600'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                                    ? 'border-slate-500 text-slate-600'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700'
                                     }`}
                             >
                                 <tab.icon className="w-5 h-5" />
@@ -602,8 +611,8 @@ function UserSettings() {
                     {/* Message */}
                     {message && (
                         <div className={`mb-6 p-4 rounded-lg ${message.type === 'success'
-                                ? 'bg-green-50 text-green-800 border border-green-200'
-                                : 'bg-red-50 text-red-800 border border-red-200'
+                            ? 'bg-green-50 text-green-800 border border-green-200'
+                            : 'bg-red-50 text-red-800 border border-red-200'
                             }`}>
                             {message.text}
                         </div>
@@ -621,7 +630,8 @@ function UserSettings() {
                                         type="text"
                                         value={profileData.firstName}
                                         onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
+                                        aria-label="Imię"
                                         required
                                     />
                                 </div>
@@ -633,7 +643,8 @@ function UserSettings() {
                                         type="text"
                                         value={profileData.lastName}
                                         onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
+                                        aria-label="Nazwisko"
                                         required
                                     />
                                 </div>
@@ -646,7 +657,8 @@ function UserSettings() {
                                     type="email"
                                     value={profileData.email}
                                     onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
+                                    aria-label="Email"
                                     required
                                 />
                             </div>
@@ -673,7 +685,8 @@ function UserSettings() {
                                     type="password"
                                     value={passwordData.currentPassword}
                                     onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
+                                    aria-label="Aktualne hasło"
                                     required
                                 />
                             </div>
@@ -685,7 +698,8 @@ function UserSettings() {
                                     type="password"
                                     value={passwordData.newPassword}
                                     onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
+                                    aria-label="Nowe hasło"
                                     required
                                     minLength={8}
                                 />
@@ -701,7 +715,8 @@ function UserSettings() {
                                     type="password"
                                     value={passwordData.confirmPassword}
                                     onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
+                                    aria-label="Potwierdź nowe hasło"
                                     required
                                 />
                             </div>
@@ -728,7 +743,8 @@ function UserSettings() {
                                     type="text"
                                     value={contactData.address}
                                     onChange={(e) => setContactData({ ...contactData, address: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
+                                    aria-label="Adres"
                                     required
                                 />
                             </div>
@@ -741,7 +757,8 @@ function UserSettings() {
                                         type="text"
                                         value={contactData.city}
                                         onChange={(e) => setContactData({ ...contactData, city: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
+                                        aria-label="Miasto"
                                         required
                                     />
                                 </div>
@@ -754,7 +771,7 @@ function UserSettings() {
                                         value={contactData.postalCode}
                                         onChange={(e) => setContactData({ ...contactData, postalCode: e.target.value })}
                                         placeholder="XX-XXX"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
                                         required
                                         pattern="[0-9]{2}-[0-9]{3}"
                                     />
@@ -769,7 +786,7 @@ function UserSettings() {
                                     value={contactData.phoneNumber}
                                     onChange={(e) => setContactData({ ...contactData, phoneNumber: e.target.value })}
                                     placeholder="+48 123 456 789"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
                                     required
                                 />
                                 <p className="text-sm text-gray-500 mt-1">

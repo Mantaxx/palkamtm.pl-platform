@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Plus, X, Star, Trophy, MapPin, User, Calendar, MessageSquare } from 'lucide-react'
+import { Calendar, MapPin, MessageSquare, Plus, Star, Trophy, User, X } from 'lucide-react'
+import { useState } from 'react'
 
 interface Achievement {
   pigeon: string
@@ -47,20 +47,20 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
   }
 
   const handleAchievementChange = (index: number, field: string, value: string) => {
-    setAchievements(prev => prev.map((achievement, i) => 
+    setAchievements(prev => prev.map((achievement, i) =>
       i === index ? { ...achievement, [field]: value } : achievement
     ))
   }
 
   const handleResultChange = (achievementIndex: number, resultIndex: number, field: string, value: string | number) => {
-    setAchievements(prev => prev.map((achievement, i) => 
-      i === achievementIndex 
+    setAchievements(prev => prev.map((achievement, i) =>
+      i === achievementIndex
         ? {
-            ...achievement,
-            results: achievement.results.map((result, j) => 
-              j === resultIndex ? { ...result, [field]: value } : result
-            )
-          }
+          ...achievement,
+          results: achievement.results.map((result, j) =>
+            j === resultIndex ? { ...result, [field]: value } : result
+          )
+        }
         : achievement
     ))
   }
@@ -78,23 +78,23 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
   }
 
   const addResult = (achievementIndex: number) => {
-    setAchievements(prev => prev.map((achievement, i) => 
-      i === achievementIndex 
+    setAchievements(prev => prev.map((achievement, i) =>
+      i === achievementIndex
         ? {
-            ...achievement,
-            results: [...achievement.results, { competition: '', place: 1, date: '' }]
-          }
+          ...achievement,
+          results: [...achievement.results, { competition: '', place: 1, date: '' }]
+        }
         : achievement
     ))
   }
 
   const removeResult = (achievementIndex: number, resultIndex: number) => {
-    setAchievements(prev => prev.map((achievement, i) => 
-      i === achievementIndex 
+    setAchievements(prev => prev.map((achievement, i) =>
+      i === achievementIndex
         ? {
-            ...achievement,
-            results: achievement.results.filter((_, j) => j !== resultIndex)
-          }
+          ...achievement,
+          results: achievement.results.filter((_, j) => j !== resultIndex)
+        }
         : achievement
     ))
   }
@@ -112,8 +112,8 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
         },
         body: JSON.stringify({
           ...formData,
-          achievements: achievements.filter(achievement => 
-            achievement.pigeon && achievement.ringNumber && 
+          achievements: achievements.filter(achievement =>
+            achievement.pigeon && achievement.ringNumber &&
             achievement.results.some(result => result.competition && result.date)
           )
         })
@@ -126,7 +126,7 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
 
       const result = await response.json()
       console.log('Reference added:', result)
-      
+
       if (onSuccess) {
         onSuccess()
       }
@@ -176,7 +176,7 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
               type="text"
               value={formData.breederName}
               onChange={(e) => handleInputChange('breederName', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
               placeholder="np. Jan Kowalski"
               required
             />
@@ -191,7 +191,7 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
               type="text"
               value={formData.location}
               onChange={(e) => handleInputChange('location', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
               placeholder="np. Kraków, Polska"
               required
             />
@@ -206,7 +206,7 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
               type="text"
               value={formData.experience}
               onChange={(e) => handleInputChange('experience', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
               placeholder="np. 10 lat hodowli"
               required
             />
@@ -220,7 +220,7 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
             <select
               value={formData.rating}
               onChange={(e) => handleInputChange('rating', parseInt(e.target.value))}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
             >
               {[1, 2, 3, 4, 5].map(rating => (
                 <option key={rating} value={rating}>
@@ -241,7 +241,7 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
             value={formData.testimonial}
             onChange={(e) => handleInputChange('testimonial', e.target.value)}
             rows={4}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
             placeholder="Opisz swoje doświadczenia z gołębiami z naszej hodowli..."
             required
           />
@@ -257,7 +257,7 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
             <button
               type="button"
               onClick={addAchievement}
-              className="flex items-center space-x-2 text-primary-600 hover:text-primary-700 font-medium"
+              className="flex items-center space-x-2 text-slate-600 hover:text-slate-700 font-medium"
             >
               <Plus className="w-4 h-4" />
               <span>Dodaj gołębia</span>
@@ -291,7 +291,7 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
                       type="text"
                       value={achievement.pigeon}
                       onChange={(e) => handleAchievementChange(achievementIndex, 'pigeon', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
                       placeholder="np. Thunder Storm"
                     />
                   </div>
@@ -304,7 +304,7 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
                       type="text"
                       value={achievement.ringNumber}
                       onChange={(e) => handleAchievementChange(achievementIndex, 'ringNumber', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
                       placeholder="np. PL-2023-001"
                     />
                   </div>
@@ -316,7 +316,7 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
                     <button
                       type="button"
                       onClick={() => addResult(achievementIndex)}
-                      className="flex items-center space-x-1 text-primary-600 hover:text-primary-700 text-sm"
+                      className="flex items-center space-x-1 text-slate-600 hover:text-slate-700 text-sm"
                     >
                       <Plus className="w-3 h-3" />
                       <span>Dodaj wynik</span>
@@ -331,7 +331,7 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
                             type="text"
                             value={result.competition}
                             onChange={(e) => handleResultChange(achievementIndex, resultIndex, 'competition', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
                             placeholder="Nazwa zawodów"
                           />
                         </div>
@@ -340,7 +340,7 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
                           <select
                             value={result.place}
                             onChange={(e) => handleResultChange(achievementIndex, resultIndex, 'place', parseInt(e.target.value))}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
                           >
                             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(place => (
                               <option key={place} value={place}>
@@ -355,7 +355,7 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
                             type="date"
                             value={result.date}
                             onChange={(e) => handleResultChange(achievementIndex, resultIndex, 'date', e.target.value)}
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
                           />
                           {achievement.results.length > 1 && (
                             <button
@@ -390,7 +390,7 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-8 py-3 bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium rounded-lg transition-colors flex items-center space-x-2"
+            className="px-8 py-3 bg-slate-600 text-white hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium rounded-lg transition-colors flex items-center space-x-2"
           >
             {isSubmitting ? (
               <>

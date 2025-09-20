@@ -124,7 +124,7 @@ export default function SellerDashboard() {
       case 'ended':
         return 'bg-gray-100 text-gray-800'
       case 'sold':
-        return 'bg-blue-100 text-blue-800'
+        return 'bg-slate-100 text-slate-800'
       default:
         return 'bg-gray-100 text-gray-800'
     }
@@ -154,7 +154,7 @@ export default function SellerDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Panel Sprzedawcy</h1>
@@ -168,7 +168,7 @@ export default function SellerDashboard() {
           <div className="flex flex-wrap gap-4">
             <Link
               href="/seller/create-auction"
-              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-2 bg-slate-600 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors"
             >
               <Plus className="w-4 h-4" />
               Nowa aukcja
@@ -195,7 +195,7 @@ export default function SellerDashboard() {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex items-center gap-2 py-2 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600'
+                      ? 'border-slate-500 text-slate-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                       }`}
                   >
@@ -233,8 +233,8 @@ export default function SellerDashboard() {
 
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <div className="flex items-center">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Package className="w-6 h-6 text-blue-600" />
+                  <div className="p-2 bg-slate-100 rounded-lg">
+                    <Package className="w-6 h-6 text-slate-600" />
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Sprzedane przedmioty</p>

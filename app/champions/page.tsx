@@ -1,4 +1,5 @@
 import { ChampionsList } from '@/components/champions/ChampionsList'
+import { UnifiedLayout } from '@/components/layout/UnifiedLayout'
 
 export const metadata = {
   title: 'Championy Gołębi - Lista Wszystkich Championów',
@@ -6,5 +7,9 @@ export const metadata = {
 }
 
 export default function ChampionsPage() {
-  return <ChampionsList />
+  return (
+    <UnifiedLayout>
+      <ChampionsList />
+    </UnifiedLayout>
+  )
 }

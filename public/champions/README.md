@@ -1,50 +1,42 @@
-# 📸 Folder ze zdjęciami championów
+# 🏆 Thunder Storm - Folder ze zdjęciami
 
-## 📁 Struktura folderów
+## 📸 Co włożyć gdzie
 
-```
-public/champions/
-├── thunder-storm/           # ID championa (thunder-storm)
-│   ├── main.jpg             # Zdjęcie główne championa
-│   ├── gallery/             # Galeria zdjęć
-│   ├── pedigree/            # Zdjęcia rodowodu
-│   ├── offspring/           # Zdjęcia potomstwa
-│   └── videos/              # Miniaturki filmów
-```
+### 🖼️ main.jpg (800x800px)
 
-## 🖼️ Co włożyć gdzie
+- **Główne zdjęcie championa Thunder Storm**
+- Włóż bezpośrednio tutaj (nie do żadnego podfolderu)
 
-### 📸 main.jpg
+### 🖼️ gallery/ (4 zdjęcia + 4 miniatury)
 
-- **Główne zdjęcie championa** (800x800px)
-- Włóż bezpośrednio do folderu `thunder-storm/`
+- **1.jpg** - Thunder Storm - widok z przodu (1200x800px)
+- **1-thumb.jpg** - Miniaturka 1 (300x200px)
+- **2.jpg** - Thunder Storm - widok z boku (1200x800px)
+- **2-thumb.jpg** - Miniaturka 2 (300x200px)
+- **3.jpg** - Thunder Storm - podczas lotu (1200x800px)
+- **3-thumb.jpg** - Miniaturka 3 (300x200px)
+- **4.jpg** - Thunder Storm - z trofeum (1200x800px)
+- **4-thumb.jpg** - Miniaturka 4 (300x200px)
 
-### 🖼️ gallery/
+### 🌳 pedigree/ (4 zdjęcia rodowodu)
 
-- **4 zdjęcia championa** (1200x800px)
-- **4 miniatury** (300x200px)
-- Nazwij: `1.jpg`, `1-thumb.jpg`, `2.jpg`, `2-thumb.jpg` itd.
+- **father.jpg** - Lightning Bolt (ojciec) (400x400px)
+- **mother.jpg** - Storm Queen (matka) (400x400px)
+- **grandfather.jpg** - Thunder King (dziadek) (400x400px)
+- **grandmother.jpg** - Lightning Lady (babcia) (400x400px)
 
-### 🌳 pedigree/
+### 👶 offspring/ (2 zdjęcia potomstwa)
 
-- **Zdjęcie ojca** - `father.jpg` (400x400px)
-- **Zdjęcie matki** - `mother.jpg` (400x400px)
-- **Zdjęcie dziadka** - `grandfather.jpg` (400x400px)
-- **Zdjęcie babci** - `grandmother.jpg` (400x400px)
+- **storm-junior-1.jpg** - Storm Junior I (300x300px)
+- **storm-junior-2.jpg** - Storm Junior II (300x300px)
 
-### 👶 offspring/
+### 🎥 videos/ (2 miniatury filmów)
 
-- **Zdjęcia potomstwa** (300x300px)
-- Nazwij: `storm-junior-1.jpg`, `storm-junior-2.jpg`
+- **training-flight-thumb.jpg** - Lot treningowy (400x225px)
+- **competition-return-thumb.jpg** - Powrót z zawodów (400x225px)
 
-### 🎥 videos/
+## ✅ Po dodaniu zdjęć
 
-- **Miniaturki filmów** (400x225px)
-- Nazwij: `training-flight-thumb.jpg`, `competition-return-thumb.jpg`
-
-## 💡 Wskazówki
-
-- Używaj formatu JPG
-- Optymalizuj rozmiar plików
-- Zachowaj proporcje zdjęć
-- Nie używaj polskich znaków w nazwach
+1. Otwórz `http://localhost:3000/champions/thunder-storm`
+2. Zobaczysz galerię ze swoimi zdjęciami!
+3. Kliknij na zdjęcia aby powiększyć

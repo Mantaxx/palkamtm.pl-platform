@@ -1,19 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Search, 
-  Filter, 
-  X, 
-  MapPin, 
-  Calendar, 
-  DollarSign, 
-  Users, 
-  Star,
+import { AnimatePresence, motion } from 'framer-motion'
+import {
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  DollarSign,
+  Filter,
+  MapPin,
+  Search,
+  Star,
+  Users
 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 interface SearchFilters {
   query: string
@@ -176,6 +174,7 @@ export default function AdvancedSearch() {
   const [results, setResults] = useState<SearchResult[]>(mockResults)
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isClient, setIsClient] = useState(false)
 
   const handleFilterChange = (key: keyof SearchFilters, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }))
@@ -183,15 +182,15 @@ export default function AdvancedSearch() {
 
   const handleSearch = async () => {
     setIsLoading(true)
-    
+
     // Symulacja wyszukiwania
     await new Promise(resolve => setTimeout(resolve, 1000))
-    
+
     // Filtrowanie wyników
     let filteredResults = mockResults.filter(result => {
       // Wyszukiwanie tekstowe
       if (filters.query && !result.title.toLowerCase().includes(filters.query.toLowerCase()) &&
-          !result.description.toLowerCase().includes(filters.query.toLowerCase())) {
+        !result.description.toLowerCase().includes(filters.query.toLowerCase())) {
         return false
       }
 
@@ -314,6 +313,10 @@ export default function AdvancedSearch() {
   }
 
   useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  useEffect(() => {
     handleSearch()
   }, [filters])
 
@@ -341,7 +344,7 @@ export default function AdvancedSearch() {
               </div>
 
               <AnimatePresence>
-                {(isFiltersOpen || window.innerWidth >= 1024) && (
+                {(isFiltersOpen || (isClient && window.innerWidth >= 1024)) && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
@@ -359,7 +362,7 @@ export default function AdvancedSearch() {
                           type="text"
                           value={filters.query}
                           onChange={(e) => handleFilterChange('query', e.target.value)}
-                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                           placeholder="Nazwa, opis..."
                         />
                       </div>
@@ -373,7 +376,9 @@ export default function AdvancedSearch() {
                       <select
                         value={filters.category}
                         onChange={(e) => handleFilterChange('category', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                        aria-label="Wybierz kategorię"
+                        title="Wybierz kategorię"
                       >
                         {categories.map(category => (
                           <option key={category.value} value={category.value}>
@@ -392,7 +397,9 @@ export default function AdvancedSearch() {
                         <select
                           value={filters.bloodline}
                           onChange={(e) => handleFilterChange('bloodline', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                          aria-label="Wybierz linię krwi"
+                          title="Wybierz linię krwi"
                         >
                           {bloodlines.map(bloodline => (
                             <option key={bloodline.value} value={bloodline.value}>
@@ -413,14 +420,14 @@ export default function AdvancedSearch() {
                           type="number"
                           value={filters.priceMin}
                           onChange={(e) => handleFilterChange('priceMin', parseInt(e.target.value) || 0)}
-                          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                           placeholder="Min"
                         />
                         <input
                           type="number"
                           value={filters.priceMax}
                           onChange={(e) => handleFilterChange('priceMax', parseInt(e.target.value) || 100000)}
-                          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                           placeholder="Max"
                         />
                       </div>
@@ -437,14 +444,14 @@ export default function AdvancedSearch() {
                             type="number"
                             value={filters.ageMin}
                             onChange={(e) => handleFilterChange('ageMin', parseInt(e.target.value) || 0)}
-                            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                             placeholder="Min"
                           />
                           <input
                             type="number"
                             value={filters.ageMax}
                             onChange={(e) => handleFilterChange('ageMax', parseInt(e.target.value) || 10)}
-                            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                             placeholder="Max"
                           />
                         </div>
@@ -460,7 +467,9 @@ export default function AdvancedSearch() {
                         <select
                           value={filters.sex}
                           onChange={(e) => handleFilterChange('sex', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                          aria-label="Wybierz płeć"
+                          title="Wybierz płeć"
                         >
                           <option value="">Wszystkie</option>
                           <option value="male">Samiec</option>
@@ -480,7 +489,7 @@ export default function AdvancedSearch() {
                           type="text"
                           value={filters.location}
                           onChange={(e) => handleFilterChange('location', e.target.value)}
-                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                           placeholder="Miasto, region..."
                         />
                       </div>
@@ -500,6 +509,8 @@ export default function AdvancedSearch() {
                           value={filters.sellerRating}
                           onChange={(e) => handleFilterChange('sellerRating', parseFloat(e.target.value))}
                           className="flex-1"
+                          aria-label="Minimalna ocena sprzedawcy"
+                          title="Minimalna ocena sprzedawcy"
                         />
                         <span className="text-sm font-medium text-gray-600">
                           {filters.sellerRating.toFixed(1)}★
@@ -516,7 +527,9 @@ export default function AdvancedSearch() {
                         <select
                           value={filters.sortBy}
                           onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                          aria-label="Wybierz kryterium sortowania"
+                          title="Wybierz kryterium sortowania"
                         >
                           {sortOptions.map(option => (
                             <option key={option.value} value={option.value}>
@@ -527,7 +540,9 @@ export default function AdvancedSearch() {
                         <select
                           value={filters.sortOrder}
                           onChange={(e) => handleFilterChange('sortOrder', e.target.value as 'asc' | 'desc')}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                          aria-label="Wybierz kolejność sortowania"
+                          title="Wybierz kolejność sortowania"
                         >
                           <option value="asc">Rosnąco</option>
                           <option value="desc">Malejąco</option>
@@ -546,7 +561,7 @@ export default function AdvancedSearch() {
                       <button
                         onClick={handleSearch}
                         disabled={isLoading}
-                        className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                        className="flex-1 px-4 py-2 bg-slate-600 text-white rounded-md hover:bg-slate-700 disabled:opacity-50 transition-colors"
                       >
                         {isLoading ? 'Szukam...' : 'Szukaj'}
                       </button>
@@ -579,7 +594,7 @@ export default function AdvancedSearch() {
 
             {isLoading ? (
               <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4"></div>
                 <p className="text-gray-600">Wyszukuję...</p>
               </div>
             ) : (
@@ -593,7 +608,7 @@ export default function AdvancedSearch() {
                   >
                     <div className="flex gap-6">
                       <div className="w-32 h-32 bg-gray-200 rounded-lg flex-shrink-0" />
-                      
+
                       <div className="flex-1">
                         <div className="flex items-start justify-between mb-2">
                           <h3 className="text-xl font-semibold text-gray-900">
@@ -631,7 +646,7 @@ export default function AdvancedSearch() {
                           <div className="text-sm text-gray-500">
                             Sprzedawca: {result.seller.name}
                           </div>
-                          <button className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                          <button className="px-6 py-2 bg-slate-600 text-white rounded-md hover:bg-slate-700 transition-colors">
                             Zobacz szczegóły
                           </button>
                         </div>

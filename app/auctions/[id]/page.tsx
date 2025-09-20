@@ -1,4 +1,5 @@
 import AuctionDetails from '@/components/auctions/AuctionDetails'
+import { UnifiedLayout } from '@/components/layout/UnifiedLayout'
 import { Metadata } from 'next'
 
 interface AuctionPageProps {
@@ -17,5 +18,9 @@ export async function generateMetadata({ params }: AuctionPageProps): Promise<Me
 
 export default async function AuctionPage({ params }: AuctionPageProps) {
   const { id } = await params
-  return <AuctionDetails auctionId={id} />
+  return (
+    <UnifiedLayout>
+      <AuctionDetails auctionId={id} />
+    </UnifiedLayout>
+  )
 }

@@ -1,12 +1,16 @@
 'use client'
 
+import { UnifiedLayout } from '@/components/layout/UnifiedLayout'
+import { Text3D } from '@/components/ui/Text3D'
+import { UnifiedButton } from '@/components/ui/UnifiedButton'
+import { UnifiedCard } from '@/components/ui/UnifiedCard'
 import { motion } from 'framer-motion'
 import { ArrowRight, CheckCircle, Mail, XCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 
-export default function ActivatePage() {
+function ActivatePageContent() {
     const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'expired'>('loading')
     const [message, setMessage] = useState('')
     const router = useRouter()
@@ -55,133 +59,199 @@ export default function ActivatePage() {
 
     const getStatusIcon = () => {
         switch (status) {
+            case 'loading':
+                return <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white"></div>
             case 'success':
-                return <CheckCircle className="w-16 h-16 text-green-500" />
+                return <CheckCircle className="w-16 h-16 text-green-400" />
             case 'error':
             case 'expired':
-                return <XCircle className="w-16 h-16 text-red-500" />
+                return <XCircle className="w-16 h-16 text-red-400" />
             default:
-                return <Mail className="w-16 h-16 text-blue-500 animate-pulse" />
+                return <Mail className="w-16 h-16 text-white/60" />
         }
     }
 
     const getStatusColor = () => {
         switch (status) {
             case 'success':
-                return 'from-green-50 to-green-100'
+                return 'text-green-200'
             case 'error':
             case 'expired':
-                return 'from-red-50 to-red-100'
+                return 'text-red-200'
             default:
-                return 'from-blue-50 to-blue-100'
+                return 'text-white/80'
+        }
+    }
+
+    const getStatusTitle = () => {
+        switch (status) {
+            case 'loading':
+                return 'Aktywacja konta...'
+            case 'success':
+                return 'Konto aktywowane!'
+            case 'error':
+                return 'Błąd aktywacji'
+            case 'expired':
+                return 'Link wygasł'
+            default:
+                return 'Aktywacja konta'
         }
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="max-w-md w-full space-y-8"
-            >
-                <div className="text-center">
-                    <div className="flex justify-center mb-6">
-                        <div className="w-16 h-16 bg-primary-600 rounded-full flex items-center justify-center">
-                            <span className="text-white font-bold text-xl">GP</span>
-                        </div>
-                    </div>
+        <UnifiedLayout>
+            <div className="min-h-screen flex items-center justify-center overflow-hidden">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8 }}
+                    className="w-full max-w-md mx-auto px-4"
+                >
+                    <UnifiedCard variant="3d" glow={true} className="p-8 text-center">
+                        {/* Icon */}
+                        <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                            className="mb-6"
+                        >
+                            <div className="w-20 h-20 mx-auto bg-gradient-to-r from-white/80 to-white/60 rounded-full flex items-center justify-center">
+                                {getStatusIcon()}
+                            </div>
+                        </motion.div>
 
-                    <h2 className="font-display font-bold text-3xl text-gray-900 mb-2">
-                        Aktywacja konta
-                    </h2>
-                </div>
+                        {/* Header */}
+                        <Text3D
+                            variant="neon"
+                            intensity="high"
+                            className="text-3xl font-bold mb-4"
+                        >
+                            {getStatusTitle()}
+                        </Text3D>
 
-                <div className={`bg-gradient-to-br ${getStatusColor()} rounded-xl p-8 text-center`}>
-                    <div className="flex justify-center mb-6">
-                        {getStatusIcon()}
-                    </div>
+                        <p className={`${getStatusColor()} mb-6`}>
+                            {message}
+                        </p>
 
-                    {status === 'loading' && (
-                        <div>
-                            <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                                Aktywowanie konta...
-                            </h3>
-                            <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                        </div>
-                    )}
-
-                    {status === 'success' && (
-                        <div>
-                            <h3 className="text-xl font-semibold text-green-800 mb-4">
-                                Konto aktywowane!
-                            </h3>
-                            <p className="text-green-700 mb-6">
-                                Twoje konto zostało pomyślnie aktywowane. Możesz się teraz zalogować.
-                            </p>
-                            <Link
-                                href="/auth/signin"
-                                className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
-                            >
-                                <span>Przejdź do logowania</span>
-                                <ArrowRight className="w-4 h-4" />
-                            </Link>
-                        </div>
-                    )}
-
-                    {status === 'error' && (
-                        <div>
-                            <h3 className="text-xl font-semibold text-red-800 mb-4">
-                                Błąd aktywacji
-                            </h3>
-                            <p className="text-red-700 mb-6">
-                                {message}
-                            </p>
-                            <div className="space-y-3">
-                                <Link
-                                    href="/auth/signup"
-                                    className="block w-full bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
+                        {/* Action Buttons */}
+                        {status === 'success' && (
+                            <div className="space-y-4">
+                                <UnifiedButton
+                                    onClick={() => router.push('/auth/signin')}
+                                    variant="primary"
+                                    size="lg"
+                                    intensity="high"
+                                    glow={true}
+                                    className="w-full"
                                 >
-                                    Zarejestruj się ponownie
-                                </Link>
+                                    <div className="flex items-center justify-center">
+                                        Zaloguj się
+                                        <ArrowRight className="w-5 h-5 ml-2" />
+                                    </div>
+                                </UnifiedButton>
+
                                 <Link
-                                    href="/auth/signin"
-                                    className="block w-full text-red-600 hover:text-red-700 font-medium py-2 px-6 transition-colors duration-200"
+                                    href="/"
+                                    className="text-white/70 hover:text-white transition-colors duration-200 text-sm"
                                 >
-                                    Przejdź do logowania
+                                    Wróć do strony głównej
                                 </Link>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {status === 'expired' && (
-                        <div>
-                            <h3 className="text-xl font-semibold text-red-800 mb-4">
-                                Link wygasł
-                            </h3>
-                            <p className="text-red-700 mb-6">
-                                Link aktywacyjny wygasł. Zarejestruj się ponownie, aby otrzymać nowy link.
-                            </p>
-                            <Link
-                                href="/auth/signup"
-                                className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
-                            >
-                                <span>Zarejestruj się ponownie</span>
-                                <ArrowRight className="w-4 h-4" />
-                            </Link>
-                        </div>
-                    )}
-                </div>
+                        {status === 'error' && (
+                            <div className="space-y-4">
+                                <UnifiedButton
+                                    onClick={() => router.push('/auth/signup')}
+                                    variant="primary"
+                                    size="lg"
+                                    intensity="high"
+                                    glow={true}
+                                    className="w-full"
+                                >
+                                    <div className="flex items-center justify-center">
+                                        Zarejestruj się ponownie
+                                        <ArrowRight className="w-5 h-5 ml-2" />
+                                    </div>
+                                </UnifiedButton>
 
-                <div className="text-center">
-                    <p className="text-sm text-gray-600">
-                        Masz problemy z aktywacją?{' '}
-                        <Link href="/contact" className="text-primary-600 hover:text-primary-500 font-medium">
-                            Skontaktuj się z nami
-                        </Link>
-                    </p>
+                                <Link
+                                    href="/auth/signin"
+                                    className="text-white/70 hover:text-white transition-colors duration-200 text-sm"
+                                >
+                                    Spróbuj się zalogować
+                                </Link>
+                            </div>
+                        )}
+
+                        {status === 'expired' && (
+                            <div className="space-y-4">
+                                <UnifiedButton
+                                    onClick={() => router.push('/auth/signup')}
+                                    variant="primary"
+                                    size="lg"
+                                    intensity="high"
+                                    glow={true}
+                                    className="w-full"
+                                >
+                                    <div className="flex items-center justify-center">
+                                        Zarejestruj się ponownie
+                                        <ArrowRight className="w-5 h-5 ml-2" />
+                                    </div>
+                                </UnifiedButton>
+
+                                <Link
+                                    href="/"
+                                    className="text-white/70 hover:text-white transition-colors duration-200 text-sm"
+                                >
+                                    Wróć do strony głównej
+                                </Link>
+                            </div>
+                        )}
+
+                        {status === 'loading' && (
+                            <div className="space-y-4">
+                                <p className="text-white/80 text-sm">
+                                    Proszę czekać, aktywujemy Twoje konto...
+                                </p>
+                            </div>
+                        )}
+                    </UnifiedCard>
+                </motion.div>
+            </div>
+        </UnifiedLayout>
+    )
+}
+
+export default function ActivatePage() {
+    return (
+        <Suspense fallback={
+            <UnifiedLayout>
+                <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 flex items-center justify-center relative overflow-hidden">
+                    <div className="absolute inset-0">
+                        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-pulse" />
+                        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
+                    </div>
+                    <UnifiedCard
+                        variant="3d"
+                        glow={true}
+                        className="p-12 text-center border-2 border-white/20 backdrop-blur-xl relative z-10 shadow-2xl"
+                    >
+                        <div className="relative mb-8">
+                            <div className="w-20 h-20 border-4 border-white/30 border-t-white rounded-full mx-auto animate-spin" />
+                            <div className="absolute inset-0 w-20 h-20 border-4 border-transparent border-r-amber-400 rounded-full mx-auto animate-spin [animation-direction:reverse] [animation-duration:2s]" />
+                        </div>
+                        <Text3D variant="glow" intensity="high" className="text-2xl font-bold mb-2">
+                            Ładowanie...
+                        </Text3D>
+                        <Text3D variant="shimmer" intensity="medium" className="text-lg">
+                            Aktywujemy Twoje konto
+                        </Text3D>
+                    </UnifiedCard>
                 </div>
-            </motion.div>
-        </div>
+            </UnifiedLayout>
+        }>
+            <ActivatePageContent />
+        </Suspense>
     )
 }

@@ -14,7 +14,7 @@ const modernMethods = [
       'Linie Jansen, Gaby Vanebele, Kees Bosua',
       'Testowanie czy potomstwo jest "równorzędne" lub "szybsze"',
     ],
-    color: 'from-blue-500 to-cyan-500',
+    color: 'from-slate-500 to-slate-600',
   },
   {
     icon: Utensils,
@@ -62,7 +62,7 @@ const modernMethods = [
       'Motywacja i forma "na dany dzień"',
       'Techniki dla krótkich i średnich dystansów',
     ],
-    color: 'from-indigo-500 to-blue-500',
+    color: 'from-slate-500 to-slate-600',
   },
   {
     icon: Database,
@@ -80,61 +80,54 @@ const modernMethods = [
 
 export function ModernMethodsSection() {
   return (
-    <section className="py-20 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 2.0 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <h2 className="font-display font-bold text-3xl sm:text-4xl lg:text-5xl text-gray-900 mb-6">
+    <section className="py-20 bg-gradient-to-br from-slate-100 via-slate-200/30 to-slate-300/50 relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 right-20 w-72 h-72 bg-slate-200/20 rounded-full blur-2xl"></div>
+        <div className="absolute bottom-20 left-20 w-96 h-96 bg-slate-200/20 rounded-full blur-2xl"></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="text-center mb-20">
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gradient mb-6">
             Nowoczesne Metody
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl sm:text-2xl text-slate-600 max-w-4xl mx-auto leading-relaxed">
             Łączymy wieloletnie tradycje hodowli z najnowszymi osiągnięciami nauki i technologii,
             aby zapewnić naszym gołębiom najlepsze warunki rozwoju
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {modernMethods.map((method, index) => (
-            <motion.div
-              key={method.title}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.5, delay: index * 0.3 }}
-              viewport={{ once: true }}
-              className="group"
-            >
-              <div className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 p-8 border border-gray-100 h-full">
+            <div key={method.title} className="group">
+              <div className="card-gradient h-full border-2 border-white shadow-xl">
                 <div className="flex items-start space-x-6">
-                  <div className={`flex-shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-r ${method.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                    <method.icon className="w-8 h-8 text-white" />
+                  <div className={`flex-shrink-0 w-20 h-20 rounded-2xl bg-gradient-to-r from-slate-500 to-slate-600 flex items-center justify-center shadow-lg`}>
+                    <method.icon className="w-10 h-10 text-white" />
                   </div>
 
                   <div className="flex-1">
-                    <h3 className="font-display font-bold text-xl text-gray-900 mb-3">
+                    <h3 className="font-display font-bold text-2xl text-slate-800 mb-4 group-hover:text-slate-600 transition-colors duration-300">
                       {method.title}
                     </h3>
 
-                    <p className="text-gray-600 leading-relaxed mb-4">
+                    <p className="text-slate-600 leading-relaxed mb-6 text-lg">
                       {method.description}
                     </p>
 
-                    <ul className="space-y-2">
+                    <ul className="space-y-3">
                       {method.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-start">
-                          <div className="w-2 h-2 bg-primary-500 rounded-full mt-2 mr-3 flex-shrink-0" />
-                          <span className="text-sm text-gray-600">{feature}</span>
-                        </li>
+                        <motion.li key={idx} className="flex items-start">
+                          <span className="text-slate-500 mr-3 mt-1 text-lg" aria-hidden="true">•</span>
+                          <span className="text-base text-slate-600">{feature}</span>
+                        </motion.li>
                       ))}
                     </ul>
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 
@@ -146,38 +139,38 @@ export function ModernMethodsSection() {
           viewport={{ once: true }}
           className="mt-20"
         >
-          <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-3xl p-12 text-white">
+          <div className="glass-morphism-strong rounded-3xl p-12 text-white border-2 border-white shadow-xl">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
                 <h3 className="font-display font-bold text-3xl mb-6">
                   Technologia w Służbie Hodowli
                 </h3>
-                <p className="text-xl leading-relaxed mb-8 text-gray-300">
+                <p className="text-xl leading-relaxed mb-8 text-slate-200">
                   Nasze podejście opiera się na holistycznym traktowaniu każdego gołębia jako profesjonalnego sportowca.
                   Każdy aspekt hodowli jest precyzyjnie kontrolowany i dostosowany do indywidualnych potrzeb ptaka.
                 </p>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center">
                     <div className="text-3xl font-bold text-primary-400">365</div>
-                    <div className="text-sm text-gray-400">Dni opieki</div>
+                    <div className="text-sm text-slate-300">Dni opieki</div>
                   </div>
                   <div className="text-center">
                     <div className="text-3xl font-bold text-primary-400">80/20</div>
-                    <div className="text-sm text-gray-400">Strategia genetyczna</div>
+                    <div className="text-sm text-slate-300">Strategia genetyczna</div>
                   </div>
                   <div className="text-center">
                     <div className="text-3xl font-bold text-primary-400">120</div>
-                    <div className="text-sm text-gray-400">Gołębi w stadzie</div>
+                    <div className="text-sm text-slate-300">Gołębi w stadzie</div>
                   </div>
                   <div className="text-center">
                     <div className="text-3xl font-bold text-primary-400">MTM</div>
-                    <div className="text-sm text-gray-400">Mistrzowie Sprintu</div>
+                    <div className="text-sm text-slate-300">Mistrzowie Sprintu</div>
                   </div>
                 </div>
               </div>
 
               <div className="relative">
-                <div className="bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl p-8">
+                <div className="bg-gradient-to-br from-slate-500 to-slate-700 rounded-2xl p-8">
                   <div className="text-center">
                     <div className="w-24 h-24 bg-white/20 rounded-full mx-auto mb-4 flex items-center justify-center">
                       <Database className="w-12 h-12 text-white" />

@@ -1,0 +1,172 @@
+import { z } from 'zod'
+
+// User validation schemas
+export const userRegistrationSchema = z.object({
+  email: z.string().email('Nieprawidłowy adres email'),
+  password: z.string()
+    .min(8, 'Hasło musi mieć co najmniej 8 znaków')
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Hasło musi zawierać małą literę, wielką literę i cyfrę'),
+  firstName: z.string().min(2, 'Imię musi mieć co najmniej 2 znaki').optional(),
+  lastName: z.string().min(2, 'Nazwisko musi mieć co najmniej 2 znaki').optional(),
+  phoneNumber: z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Nieprawidłowy numer telefonu').optional(),
+})
+
+export const userUpdateSchema = z.object({
+  firstName: z.string().min(2, 'Imię musi mieć co najmniej 2 znaki').optional(),
+  lastName: z.string().min(2, 'Nazwisko musi mieć co najmniej 2 znaki').optional(),
+  phoneNumber: z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Nieprawidłowy numer telefonu').optional(),
+  address: z.string().min(5, 'Adres musi mieć co najmniej 5 znaków').optional(),
+  city: z.string().min(2, 'Miasto musi mieć co najmniej 2 znaki').optional(),
+  postalCode: z.string().regex(/^\d{2}-\d{3}$/, 'Nieprawidłowy kod pocztowy').optional(),
+})
+
+// Auction validation schemas
+export const auctionCreateSchema = z.object({
+  title: z.string().min(5, 'Tytuł musi mieć co najmniej 5 znaków').max(200, 'Tytuł może mieć maksymalnie 200 znaków'),
+  description: z.string().min(20, 'Opis musi mieć co najmniej 20 znaków').max(2000, 'Opis może mieć maksymalnie 2000 znaków'),
+  category: z.string().min(1, 'Kategoria jest wymagana'),
+  startingPrice: z.number().min(0, 'Cena startowa nie może być ujemna'),
+  buyNowPrice: z.number().min(0, 'Cena kup teraz nie może być ujemna').optional(),
+  reservePrice: z.number().min(0, 'Cena rezerwowa nie może być ujemna').optional(),
+  startTime: z.string().datetime('Nieprawidłowa data rozpoczęcia'),
+  endTime: z.string().datetime('Nieprawidłowa data zakończenia'),
+  images: z.array(z.string().url('Nieprawidłowy URL obrazu')).min(1, 'Przynajmniej jeden obraz jest wymagany'),
+  videos: z.array(z.string().url('Nieprawidłowy URL wideo')).optional(),
+  documents: z.array(z.string().url('Nieprawidłowy URL dokumentu')).optional(),
+}).refine((data) => {
+  const startTime = new Date(data.startTime)
+  const endTime = new Date(data.endTime)
+  return endTime > startTime
+}, {
+  message: 'Data zakończenia musi być późniejsza niż data rozpoczęcia',
+  path: ['endTime']
+}).refine((data) => {
+  if (data.buyNowPrice && data.startingPrice) {
+    return data.buyNowPrice > data.startingPrice
+  }
+  return true
+}, {
+  message: 'Cena kup teraz musi być wyższa niż cena startowa',
+  path: ['buyNowPrice']
+})
+
+// Base auction schema without refinements for partial updates
+const baseAuctionSchema = z.object({
+  title: z.string().min(5, 'Tytuł musi mieć co najmniej 5 znaków').max(200, 'Tytuł może mieć maksymalnie 200 znaków'),
+  description: z.string().min(20, 'Opis musi mieć co najmniej 20 znaków').max(2000, 'Opis może mieć maksymalnie 2000 znaków'),
+  category: z.string().min(1, 'Kategoria jest wymagana'),
+  startingPrice: z.number().min(0, 'Cena startowa nie może być ujemna'),
+  buyNowPrice: z.number().min(0, 'Cena kup teraz nie może być ujemna').optional(),
+  reservePrice: z.number().min(0, 'Cena rezerwowa nie może być ujemna').optional(),
+  startTime: z.string().datetime('Nieprawidłowa data rozpoczęcia'),
+  endTime: z.string().datetime('Nieprawidłowa data zakończenia'),
+  images: z.array(z.string().url('Nieprawidłowy URL obrazu')).min(1, 'Przynajmniej jeden obraz jest wymagany'),
+  videos: z.array(z.string().url('Nieprawidłowy URL wideo')).optional(),
+  documents: z.array(z.string().url('Nieprawidłowy URL dokumentu')).optional(),
+})
+
+export const auctionUpdateSchema = baseAuctionSchema.partial()
+
+// Bid validation schemas
+export const bidCreateSchema = z.object({
+  auctionId: z.string().min(1, 'ID aukcji jest wymagane'),
+  amount: z.number().min(0, 'Kwota licytacji nie może być ujemna'),
+})
+
+// Reference validation schemas
+export const referenceCreateSchema = z.object({
+  breederName: z.string().min(2, 'Nazwa hodowcy musi mieć co najmniej 2 znaki').max(100, 'Nazwa hodowcy może mieć maksymalnie 100 znaków'),
+  location: z.string().min(2, 'Lokalizacja musi mieć co najmniej 2 znaki').max(100, 'Lokalizacja może mieć maksymalnie 100 znaków'),
+  experience: z.string().min(10, 'Doświadczenie musi mieć co najmniej 10 znaków').max(500, 'Doświadczenie może mieć maksymalnie 500 znaków'),
+  testimonial: z.string().min(20, 'Opinia musi mieć co najmniej 20 znaków').max(1000, 'Opinia może mieć maksymalnie 1000 znaków'),
+  rating: z.number().min(1, 'Ocena musi być co najmniej 1').max(5, 'Ocena może być maksymalnie 5'),
+  achievements: z.array(z.object({
+    pigeon: z.string().min(1, 'Nazwa gołębia jest wymagana'),
+    ringNumber: z.string().min(1, 'Numer obrączki jest wymagany'),
+    results: z.array(z.object({
+      competition: z.string().min(1, 'Nazwa konkursu jest wymagana'),
+      place: z.number().min(1, 'Miejsce musi być co najmniej 1'),
+      date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Nieprawidłowy format daty (YYYY-MM-DD)')
+    })).min(1, 'Przynajmniej jeden wynik jest wymagany')
+  })).min(1, 'Przynajmniej jedno osiągnięcie jest wymagane')
+})
+
+// Breeder meeting validation schemas
+export const breederMeetingCreateSchema = z.object({
+  title: z.string().min(5, 'Tytuł musi mieć co najmniej 5 znaków').max(200, 'Tytuł może mieć maksymalnie 200 znaków'),
+  description: z.string().min(10, 'Opis musi mieć co najmniej 10 znaków').max(1000, 'Opis może mieć maksymalnie 1000 znaków').optional(),
+  location: z.string().min(2, 'Lokalizacja musi mieć co najmniej 2 znaki').max(100, 'Lokalizacja może mieć maksymalnie 100 znaków').optional(),
+  meetingDate: z.string().datetime('Nieprawidłowa data spotkania').optional(),
+  breederName: z.string().min(2, 'Nazwa hodowcy musi mieć co najmniej 2 znaki').max(100, 'Nazwa hodowcy może mieć maksymalnie 100 znaków'),
+  images: z.array(z.string()).min(1, 'Przynajmniej jedno zdjęcie jest wymagane'),
+})
+
+// Search validation schemas
+export const searchSchema = z.object({
+  query: z.string().min(1, 'Zapytanie wyszukiwania nie może być puste').max(100, 'Zapytanie może mieć maksymalnie 100 znaków'),
+  category: z.string().optional(),
+  minPrice: z.number().min(0, 'Minimalna cena nie może być ujemna').optional(),
+  maxPrice: z.number().min(0, 'Maksymalna cena nie może być ujemna').optional(),
+  sortBy: z.enum(['newest', 'oldest', 'price-low', 'price-high', 'ending-soon']).optional(),
+  status: z.enum(['ACTIVE', 'ENDED', 'CANCELLED', 'PENDING']).optional(),
+}).refine((data) => {
+  if (data.minPrice && data.maxPrice) {
+    return data.maxPrice >= data.minPrice
+  }
+  return true
+}, {
+  message: 'Maksymalna cena musi być większa lub równa minimalnej cenie',
+  path: ['maxPrice']
+})
+
+// File upload validation schemas
+export const fileUploadSchema = z.object({
+  files: z.array(z.instanceof(File)).min(1, 'Przynajmniej jeden plik jest wymagany').max(10, 'Maksymalnie 10 plików'),
+  allowedTypes: z.array(z.string()).optional(),
+  maxSize: z.number().optional(),
+})
+
+// Contact form validation schema
+export const contactFormSchema = z.object({
+  name: z.string().min(2, 'Imię musi mieć co najmniej 2 znaki').max(100, 'Imię może mieć maksymalnie 100 znaków'),
+  email: z.string().email('Nieprawidłowy adres email'),
+  subject: z.string().min(5, 'Temat musi mieć co najmniej 5 znaków').max(200, 'Temat może mieć maksymalnie 200 znaków'),
+  message: z.string().min(20, 'Wiadomość musi mieć co najmniej 20 znaków').max(1000, 'Wiadomość może mieć maksymalnie 1000 znaków'),
+})
+
+// Password validation schema
+export const passwordSchema = z.object({
+  currentPassword: z.string().min(1, 'Aktualne hasło jest wymagane'),
+  newPassword: z.string()
+    .min(8, 'Nowe hasło musi mieć co najmniej 8 znaków')
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Nowe hasło musi zawierać małą literę, wielką literę i cyfrę'),
+  confirmPassword: z.string().min(1, 'Potwierdzenie hasła jest wymagane'),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: 'Hasła nie są identyczne',
+  path: ['confirmPassword']
+})
+
+// Export all schemas as a single object for easy importing
+export const schemas = {
+  user: {
+    registration: userRegistrationSchema,
+    update: userUpdateSchema,
+  },
+  auction: {
+    create: auctionCreateSchema,
+    update: auctionUpdateSchema,
+  },
+  bid: {
+    create: bidCreateSchema,
+  },
+  reference: {
+    create: referenceCreateSchema,
+  },
+  breederMeeting: {
+    create: breederMeetingCreateSchema,
+  },
+  search: searchSchema,
+  fileUpload: fileUploadSchema,
+  contactForm: contactFormSchema,
+  password: passwordSchema,
+}

@@ -1,4 +1,5 @@
 import { ChampionProfile } from '@/components/champions/ChampionProfile'
+import { UnifiedLayout } from '@/components/layout/UnifiedLayout'
 import { notFound } from 'next/navigation'
 
 // Mock data - w rzeczywistej aplikacji dane będą pobierane z API
@@ -139,5 +140,9 @@ export default async function ChampionPage({ params }: { params: Promise<{ id: s
     notFound()
   }
 
-  return <ChampionProfile champion={championData} />
+  return (
+    <UnifiedLayout>
+      <ChampionProfile champion={championData} />
+    </UnifiedLayout>
+  )
 }

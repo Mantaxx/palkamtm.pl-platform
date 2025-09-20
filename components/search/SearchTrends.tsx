@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { TrendingUp, Search, Clock, Star } from 'lucide-react'
+import { Clock, Search, Star, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
+import { useState } from 'react'
 
 interface Trend {
   id: string
@@ -151,21 +151,19 @@ export default function SearchTrends() {
         <div className="flex bg-gray-100 rounded-lg p-1">
           <button
             onClick={() => setActiveTab('trending')}
-            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-              activeTab === 'trending'
+            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${activeTab === 'trending'
                 ? 'bg-white text-gray-900 shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
-            }`}
+              }`}
           >
             Trendy
           </button>
           <button
             onClick={() => setActiveTab('popular')}
-            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
-              activeTab === 'popular'
+            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${activeTab === 'popular'
                 ? 'bg-white text-gray-900 shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
-            }`}
+              }`}
           >
             Popularne
           </button>
@@ -189,7 +187,7 @@ export default function SearchTrends() {
                 <div>
                   <Link
                     href={`/search?q=${encodeURIComponent(trend.term)}`}
-                    className="font-medium text-gray-900 hover:text-blue-600 transition-colors"
+                    className="font-medium text-gray-900 hover:text-slate-600 transition-colors"
                   >
                     {trend.term}
                   </Link>
@@ -207,7 +205,7 @@ export default function SearchTrends() {
                 </div>
                 <div className="w-16 h-1 bg-gray-200 rounded-full mt-1">
                   <div
-                    className="h-1 bg-blue-500 rounded-full"
+                    className="h-1 bg-slate-500 rounded-full"
                     style={{ width: `${trend.popularity}%` }}
                   />
                 </div>
@@ -234,7 +232,7 @@ export default function SearchTrends() {
                 <div>
                   <Link
                     href={`/search?q=${encodeURIComponent(search.term)}`}
-                    className="font-medium text-gray-900 hover:text-blue-600 transition-colors"
+                    className="font-medium text-gray-900 hover:text-slate-600 transition-colors"
                   >
                     {search.term}
                   </Link>
@@ -255,7 +253,7 @@ export default function SearchTrends() {
       <div className="mt-6 pt-4 border-t border-gray-200">
         <Link
           href="/search"
-          className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+          className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-slate-50 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
         >
           <Search className="w-4 h-4" />
           <span className="font-medium">Zobacz wszystkie trendy</span>
