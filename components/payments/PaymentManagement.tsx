@@ -1,18 +1,18 @@
 'use client'
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { 
-  CreditCard, 
-  CheckCircle, 
-  AlertTriangle, 
-  Clock, 
-  Package, 
-  MessageSquare,
-  RefreshCw
-} from 'lucide-react'
 import { format } from 'date-fns'
 import { pl } from 'date-fns/locale'
+import { motion } from 'framer-motion'
+import {
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  CreditCard,
+  MessageSquare,
+  Package,
+  RefreshCw
+} from 'lucide-react'
+import { useState } from 'react'
 
 interface Payment {
   id: string
@@ -73,7 +73,7 @@ export default function PaymentManagement() {
       case 'pending':
         return 'bg-yellow-100 text-yellow-800'
       case 'shipped':
-        return 'bg-blue-100 text-blue-800'
+        return 'bg-slate-100 text-slate-800'
       case 'delivered':
         return 'bg-green-100 text-green-800'
       case 'disputed':
@@ -121,7 +121,7 @@ export default function PaymentManagement() {
 
   const handleConfirmDelivery = async (paymentId: string) => {
     setIsConfirming(paymentId)
-    
+
     try {
       const response = await fetch('/api/payments/confirm-delivery', {
         method: 'POST',
@@ -150,14 +150,14 @@ export default function PaymentManagement() {
     if (!disputeReason.trim()) return
 
     setIsDisputing(paymentId)
-    
+
     try {
       const response = await fetch('/api/payments/dispute', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           paymentIntentId: paymentId,
           reason: 'item_not_as_described',
           description: disputeReason

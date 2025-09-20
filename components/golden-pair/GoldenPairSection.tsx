@@ -3,7 +3,7 @@
 import { getImagesFromFolder } from '@/utils/getImagesFromFolder'
 import { motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight, Download, Eye, X } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface Photo {
     id: string
@@ -18,33 +18,6 @@ interface Pedigree {
     title: string
     type: 'jpeg' | 'pdf'
 }
-
-// Automatyczne wykrywanie zdjęć Złotej Pary
-const goldenPairImages = getImagesFromFolder('/golden-pair/photos')
-
-const photos: Photo[] = goldenPairImages.map((src, index) => {
-    const filename = src.split('/').pop() || ''
-    let title = 'Złota Para'
-    let alt = 'Złota Para'
-
-    if (filename.includes('1360')) {
-        title = 'Samiec - 1360'
-        alt = 'Samiec Złotej Pary - 1360'
-    } else if (filename.includes('1184')) {
-        title = 'Samica - 1184'
-        alt = 'Samica Złotej Pary - 1184'
-    } else if (filename.includes('golden-pair')) {
-        title = 'Złota Para - razem'
-        alt = 'Złota Para razem'
-    }
-
-    return {
-        id: (index + 1).toString(),
-        src,
-        alt,
-        title
-    }
-})
 
 const pedigrees: Pedigree[] = [
     {
@@ -62,9 +35,50 @@ const pedigrees: Pedigree[] = [
 ]
 
 export default function GoldenPairSection() {
+    const [photos, setPhotos] = useState<Photo[]>([])
+    const [isLoading, setIsLoading] = useState(true)
     const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
     const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null)
     const [selectedPedigree, setSelectedPedigree] = useState<Pedigree | null>(null)
+
+    // Load photos on component mount
+    useEffect(() => {
+        async function loadPhotos() {
+            try {
+                const goldenPairImages = await getImagesFromFolder('/golden-pair/photos')
+                const photoData: Photo[] = goldenPairImages.map((src, index) => {
+                    const filename = src.split('/').pop() || ''
+                    let title = 'Złota Para'
+                    let alt = 'Złota Para'
+
+                    if (filename.includes('1360')) {
+                        title = 'Samiec - 1360'
+                        alt = 'Samiec Złotej Pary - 1360'
+                    } else if (filename.includes('1184')) {
+                        title = 'Samica - 1184'
+                        alt = 'Samica Złotej Pary - 1184'
+                    } else if (filename.includes('golden-pair')) {
+                        title = 'Złota Para - razem'
+                        alt = 'Złota Para razem'
+                    }
+
+                    return {
+                        id: (index + 1).toString(),
+                        src,
+                        alt,
+                        title
+                    }
+                })
+                setPhotos(photoData)
+            } catch (error) {
+                console.error('Error loading photos:', error)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        loadPhotos()
+    }, [])
 
     const openPhotoModal = (photo: Photo, index: number) => {
         setSelectedPhoto(photo)
@@ -110,7 +124,7 @@ export default function GoldenPairSection() {
     }
 
     return (
-        <div id="golden-pair" className="py-20 bg-gradient-to-br from-amber-50 to-yellow-50">
+        <div id="golden-pair" className="pt-2 pb-20 bg-gradient-to-br from-slate-100 to-slate-200">
             <div className="w-full pl-4 sm:pl-6 lg:pl-8">
                 {/* Header */}
                 <motion.div
@@ -118,7 +132,7 @@ export default function GoldenPairSection() {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8 }}
                     viewport={{ once: true }}
-                    className="text-center mb-16"
+                    className="text-center mb-4"
                 >
                     <h2 className="font-display font-bold text-4xl md:text-5xl text-gray-900 mb-6">
                         Złota Para
@@ -140,24 +154,63 @@ export default function GoldenPairSection() {
                     <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">
                         Galeria Zdjęć
                     </h3>
-                    <div className="flex gap-4 justify-center">
-                        {/* 2 kontenery ze zdjęciami wyrównane z logo */}
-                        {[0, 1].map((index) => (
-                            <motion.div
-                                key={index}
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.6, delay: index * 0.1 }}
-                                viewport={{ once: true }}
-                                className="group cursor-pointer w-96"
-                                onClick={() => photos[index] && openPhotoModal(photos[index], index)}
-                            >
-                                <div className="relative overflow-hidden rounded-lg shadow-lg bg-white hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
-                                    <div className="relative h-[36rem]">
-                                        {photos[index] ? (
+                    {isLoading ? (
+                        <div className="flex justify-center items-center py-12">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500"></div>
+                        </div>
+                    ) : (
+                        <div className="flex gap-4 justify-center">
+                            {/* 2 kontenery ze zdjęciami wyrównane z logo */}
+                            {[0, 1].map((index) => (
+                                <motion.div
+                                    key={index}
+                                    initial={{ opacity: 0, y: 30 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                                    viewport={{ once: true }}
+                                    className="group cursor-pointer w-96"
+                                    onClick={() => photos[index] && openPhotoModal(photos[index], index)}
+                                >
+                                    <div className="relative overflow-hidden rounded-lg shadow-lg bg-white hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+                                        <div className="relative h-[36rem]">
+                                            {photos[index] ? (
+                                                <img
+                                                    src={photos[index].src}
+                                                    alt={photos[index].alt}
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => {
+                                                        e.currentTarget.style.display = 'none'
+                                                        const nextElement = e.currentTarget.nextElementSibling as HTMLElement
+                                                        if (nextElement) {
+                                                            nextElement.style.display = 'flex'
+                                                        }
+                                                    }}
+                                                />
+                                            ) : null}
+                                            <div className="hidden w-full h-full bg-gray-200 items-center justify-center">
+                                                <span className="text-gray-500">Brak zdjęcia</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+
+                            {/* Trzeci kontener - Złota Para (rozszerzony) */}
+                            {photos[2] && (
+                                <motion.div
+                                    key="golden-pair"
+                                    initial={{ opacity: 0, y: 30 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.6, delay: 0.2 }}
+                                    viewport={{ once: true }}
+                                    className="group cursor-pointer w-[52rem]"
+                                    onClick={() => openPhotoModal(photos[2], 2)}
+                                >
+                                    <div className="relative overflow-hidden rounded-lg shadow-lg bg-white hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+                                        <div className="relative h-[36rem]">
                                             <img
-                                                src={photos[index].src}
-                                                alt={photos[index].alt}
+                                                src={photos[2].src}
+                                                alt={photos[2].alt}
                                                 className="w-full h-full object-cover"
                                                 onError={(e) => {
                                                     e.currentTarget.style.display = 'none'
@@ -167,48 +220,15 @@ export default function GoldenPairSection() {
                                                     }
                                                 }}
                                             />
-                                        ) : null}
-                                        <div className="hidden w-full h-full bg-gray-200 items-center justify-center">
-                                            <span className="text-gray-500">Brak zdjęcia</span>
+                                            <div className="hidden w-full h-full bg-gray-200 items-center justify-center">
+                                                <span className="text-gray-500">Brak zdjęcia</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </motion.div>
-                        ))}
-
-                        {/* Trzeci kontener - Złota Para (rozszerzony) */}
-                        {photos[2] && (
-                            <motion.div
-                                key="golden-pair"
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.6, delay: 0.2 }}
-                                viewport={{ once: true }}
-                                className="group cursor-pointer w-[52rem]"
-                                onClick={() => openPhotoModal(photos[2], 2)}
-                            >
-                                <div className="relative overflow-hidden rounded-lg shadow-lg bg-white hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
-                                    <div className="relative h-[36rem]">
-                                        <img
-                                            src={photos[2].src}
-                                            alt={photos[2].alt}
-                                            className="w-full h-full object-cover"
-                                            onError={(e) => {
-                                                e.currentTarget.style.display = 'none'
-                                                const nextElement = e.currentTarget.nextElementSibling as HTMLElement
-                                                if (nextElement) {
-                                                    nextElement.style.display = 'flex'
-                                                }
-                                            }}
-                                        />
-                                        <div className="hidden w-full h-full bg-gray-200 items-center justify-center">
-                                            <span className="text-gray-500">Brak zdjęcia</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        )}
-                    </div>
+                                </motion.div>
+                            )}
+                        </div>
+                    )}
                 </motion.div>
 
                 {/* Pedigrees Section */}

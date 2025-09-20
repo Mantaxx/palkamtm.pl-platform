@@ -1,12 +1,16 @@
 'use client'
 
+import { UnifiedLayout } from '@/components/layout/UnifiedLayout'
+import { Text3D } from '@/components/ui/Text3D'
+import { UnifiedButton } from '@/components/ui/UnifiedButton'
+import { UnifiedCard } from '@/components/ui/UnifiedCard'
 import { motion } from 'framer-motion'
 import { ArrowRight, Mail, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 
-export default function CheckEmailPage() {
+function CheckEmailPageContent() {
     const searchParams = useSearchParams()
     const email = searchParams.get('email')
     const [isResending, setIsResending] = useState(false)
@@ -42,93 +46,135 @@ export default function CheckEmailPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="max-w-md w-full space-y-8"
-            >
-                <div className="text-center">
-                    <div className="flex justify-center mb-6">
-                        <div className="w-16 h-16 bg-primary-600 rounded-full flex items-center justify-center">
-                            <span className="text-white font-bold text-xl">GP</span>
-                        </div>
-                    </div>
-
-                    <h2 className="font-display font-bold text-3xl text-gray-900 mb-2">
-                        Sprawdź email
-                    </h2>
-                </div>
-
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
-                    <div className="flex justify-center mb-6">
-                        <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center">
-                            <Mail className="w-10 h-10 text-blue-600" />
-                        </div>
-                    </div>
-
-                    <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                        Email aktywacyjny został wysłany
-                    </h3>
-
-                    <p className="text-gray-600 mb-6">
-                        Wysłaliśmy link aktywacyjny na adres:
-                    </p>
-
-                    <p className="font-medium text-primary-600 mb-6 break-all">
-                        {email}
-                    </p>
-
-                    <p className="text-gray-600 mb-6">
-                        Kliknij w link w emailu, aby aktywować swoje konto.
-                        Link jest ważny przez 24 godziny.
-                    </p>
-
-                    <div className="space-y-4">
-                        <button
-                            onClick={handleResendEmail}
-                            disabled={isResending}
-                            className="w-full flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-3 px-6 rounded-lg transition-colors duration-200 disabled:opacity-50"
+        <UnifiedLayout>
+            <div className="min-h-screen flex items-center justify-center overflow-hidden">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8 }}
+                    className="w-full max-w-md mx-auto px-4"
+                >
+                    <UnifiedCard variant="3d" glow={true} className="p-8 text-center">
+                        {/* Icon */}
+                        <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                            className="mb-6"
                         >
-                            {isResending ? (
-                                <>
-                                    <RefreshCw className="w-4 h-4 animate-spin" />
-                                    <span>Wysyłanie...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <RefreshCw className="w-4 h-4" />
-                                    <span>Wyślij ponownie</span>
-                                </>
-                            )}
-                        </button>
+                            <div className="w-20 h-20 mx-auto bg-gradient-to-r from-white/80 to-white/60 rounded-full flex items-center justify-center">
+                                <Mail className="w-10 h-10 text-white" />
+                            </div>
+                        </motion.div>
 
-                        {resendMessage && (
-                            <p className={`text-sm ${resendMessage.includes('Błąd') ? 'text-red-600' : 'text-green-600'}`}>
-                                {resendMessage}
-                            </p>
+                        {/* Header */}
+                        <Text3D
+                            variant="neon"
+                            intensity="high"
+                            className="text-3xl font-bold mb-4"
+                        >
+                            Sprawdź email
+                        </Text3D>
+
+                        <p className="text-white/90 mb-6">
+                            Wysłaliśmy link aktywacyjny na adres:
+                        </p>
+
+                        {email && (
+                            <div className="glass-morphism-strong p-4 rounded-lg mb-6">
+                                <p className="text-white font-medium">{email}</p>
+                            </div>
                         )}
 
-                        <Link
-                            href="/auth/signin"
-                            className="w-full inline-flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
-                        >
-                            <span>Przejdź do logowania</span>
-                            <ArrowRight className="w-4 h-4" />
-                        </Link>
-                    </div>
-                </div>
+                        <p className="text-white/80 text-sm mb-8">
+                            Kliknij link w emailu, aby aktywować konto. Sprawdź także folder spam.
+                        </p>
 
-                <div className="text-center">
-                    <p className="text-sm text-gray-600">
-                        Nie otrzymałeś emaila? Sprawdź folder spam lub{' '}
-                        <Link href="/contact" className="text-primary-600 hover:text-primary-500 font-medium">
-                            skontaktuj się z nami
-                        </Link>
-                    </p>
+                        {/* Resend Button */}
+                        {email && (
+                            <div className="space-y-4">
+                                <UnifiedButton
+                                    onClick={handleResendEmail}
+                                    variant="outline"
+                                    size="lg"
+                                    intensity="medium"
+                                    disabled={isResending}
+                                    className="w-full"
+                                >
+                                    {isResending ? (
+                                        <div className="flex items-center justify-center">
+                                            <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
+                                            Wysyłanie...
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center justify-center">
+                                            <RefreshCw className="w-5 h-5 mr-2" />
+                                            Wyślij ponownie
+                                        </div>
+                                    )}
+                                </UnifiedButton>
+
+                                {resendMessage && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className={`p-3 rounded-lg text-sm ${resendMessage.includes('wysłany')
+                                            ? 'bg-green-500/20 text-green-200 border border-green-500/30'
+                                            : 'bg-red-500/20 text-red-200 border border-red-500/30'
+                                            }`}
+                                    >
+                                        {resendMessage}
+                                    </motion.div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Back to Login */}
+                        <div className="mt-8 pt-6 border-t border-white/10">
+                            <Link
+                                href="/auth/signin"
+                                className="text-white/70 hover:text-white transition-colors duration-200 text-sm flex items-center justify-center"
+                            >
+                                <ArrowRight className="w-4 h-4 mr-2" />
+                                Wróć do logowania
+                            </Link>
+                        </div>
+                    </UnifiedCard>
+                </motion.div>
+            </div>
+        </UnifiedLayout>
+    )
+}
+
+export default function CheckEmailPage() {
+    return (
+        <Suspense fallback={
+            <UnifiedLayout>
+                <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 flex items-center justify-center relative overflow-hidden">
+                    <div className="absolute inset-0">
+                        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-pulse" />
+                        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
+                    </div>
+                    <UnifiedCard
+                        variant="3d"
+                        glow={true}
+                        className="p-12 text-center border-2 border-white/20 backdrop-blur-xl relative z-10 shadow-2xl"
+                    >
+                        <div className="relative mb-8">
+                            <div className="w-20 h-20 border-4 border-white/30 border-t-white rounded-full mx-auto animate-spin" />
+                            <div className="absolute inset-0 w-20 h-20 border-4 border-transparent border-r-amber-400 rounded-full mx-auto animate-spin [animation-direction:reverse] [animation-duration:2s]" />
+                        </div>
+                        <Text3D variant="glow" intensity="high" className="text-2xl font-bold mb-2">
+                            Ładowanie...
+                        </Text3D>
+                        <Text3D variant="shimmer" intensity="medium" className="text-lg">
+                            Sprawdzamy Twoje dane
+                        </Text3D>
+                    </UnifiedCard>
                 </div>
-            </motion.div>
-        </div>
+            </UnifiedLayout>
+        }>
+            <CheckEmailPageContent />
+        </Suspense>
     )
 }

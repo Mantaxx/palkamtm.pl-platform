@@ -49,6 +49,11 @@ interface MediaFile {
   type: 'image' | 'video'
 }
 
+interface CreateAuctionFormProps {
+  onSuccess?: () => void
+  onCancel?: () => void
+}
+
 const steps = [
   { id: 1, title: 'Kategoria', description: 'Wybierz typ produktu' },
   { id: 2, title: 'Szczegóły', description: 'Podstawowe informacje' },
@@ -57,7 +62,7 @@ const steps = [
   { id: 5, title: 'Podsumowanie', description: 'Sprawdź i opublikuj' }
 ]
 
-export default function CreateAuctionForm() {
+export default function CreateAuctionForm({ onSuccess, onCancel }: CreateAuctionFormProps) {
   const [currentStep, setCurrentStep] = useState(1)
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -159,8 +164,13 @@ export default function CreateAuctionForm() {
 
       console.log('Aukcja utworzona:', newAuction)
 
-      // Przekierowanie do strony aukcji
-      window.location.href = '/auctions'
+      // Wywołanie callback onSuccess
+      if (onSuccess) {
+        onSuccess()
+      } else {
+        // Fallback - przekierowanie do strony aukcji
+        window.location.href = '/auctions'
+      }
 
     } catch (error) {
       console.error('Błąd podczas tworzenia aukcji:', error)
@@ -185,7 +195,7 @@ export default function CreateAuctionForm() {
                 <label
                   key={category.value}
                   className={`relative flex flex-col items-center p-6 border-2 rounded-lg cursor-pointer transition-colors ${watchedCategory === category.value
-                    ? 'border-blue-500 bg-blue-50'
+                    ? 'border-slate-500 bg-slate-50'
                     : 'border-gray-200 hover:border-gray-300'
                     }`}
                 >
@@ -220,7 +230,7 @@ export default function CreateAuctionForm() {
                 <input
                   type="text"
                   {...register('title')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                   placeholder="np. Champion 'Thunder Storm' - Linia Janssen"
                 />
                 {errors.title && (
@@ -235,7 +245,7 @@ export default function CreateAuctionForm() {
                 <textarea
                   {...register('description')}
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                   placeholder="Opisz szczegółowo produkt, jego historię, osiągnięcia..."
                 />
                 {errors.description && (
@@ -252,7 +262,7 @@ export default function CreateAuctionForm() {
                     <input
                       type="text"
                       {...register('ringNumber')}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                       placeholder="PL 2024 123456"
                     />
                   </div>
@@ -264,7 +274,7 @@ export default function CreateAuctionForm() {
                     <input
                       type="text"
                       {...register('bloodline')}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                       placeholder="np. Janssen, Sion, Bricoux"
                     />
                   </div>
@@ -275,7 +285,7 @@ export default function CreateAuctionForm() {
                     </label>
                     <select
                       {...register('sex')}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                     >
                       <option value="">Wybierz płeć</option>
                       <option value="male">Samiec</option>
@@ -290,7 +300,7 @@ export default function CreateAuctionForm() {
                     <input
                       type="date"
                       {...register('birthDate')}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                     />
                   </div>
                 </div>
@@ -303,7 +313,7 @@ export default function CreateAuctionForm() {
                 <input
                   type="text"
                   {...register('location')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                   placeholder="np. Kraków, Polska"
                 />
                 {errors.location && (
@@ -333,7 +343,7 @@ export default function CreateAuctionForm() {
                     <label
                       key={format.value}
                       className={`flex items-start p-4 border rounded-lg cursor-pointer transition-colors ${watchedSaleFormat === format.value
-                        ? 'border-blue-500 bg-blue-50'
+                        ? 'border-slate-500 bg-slate-50'
                         : 'border-gray-200 hover:border-gray-300'
                         }`}
                     >
@@ -360,7 +370,7 @@ export default function CreateAuctionForm() {
                   <input
                     type="number"
                     {...register('startingPrice', { valueAsNumber: true })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                     placeholder="5000"
                   />
                   {errors.startingPrice && (
@@ -376,7 +386,7 @@ export default function CreateAuctionForm() {
                     <input
                       type="number"
                       {...register('buyNowPrice', { valueAsNumber: true })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                       placeholder="15000"
                     />
                   </div>
@@ -390,7 +400,7 @@ export default function CreateAuctionForm() {
                   </label>
                   <select
                     {...register('duration', { valueAsNumber: true })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                   >
                     <option value={1}>1 dzień</option>
                     <option value={3}>3 dni</option>
@@ -412,7 +422,7 @@ export default function CreateAuctionForm() {
             <div
               {...getRootProps()}
               className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${isDragActive
-                ? 'border-blue-500 bg-blue-50'
+                ? 'border-slate-500 bg-slate-50'
                 : 'border-gray-300 hover:border-gray-400'
                 }`}
             >
@@ -508,7 +518,7 @@ export default function CreateAuctionForm() {
             <div key={step.id} className="flex items-center">
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${currentStep >= step.id
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-slate-600 text-white'
                   : 'bg-gray-200 text-gray-600'
                   }`}
               >
@@ -556,7 +566,7 @@ export default function CreateAuctionForm() {
             <button
               type="button"
               onClick={nextStep}
-              className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-2 px-6 py-2 bg-slate-600 text-white rounded-md hover:bg-slate-700 transition-colors"
             >
               Dalej
               <ArrowRight className="w-4 h-4" />

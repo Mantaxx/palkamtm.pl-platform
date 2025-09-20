@@ -1,5 +1,6 @@
 'use client'
 
+import ImageModal from '@/components/ImageModal'
 import { format } from 'date-fns'
 import { pl } from 'date-fns/locale'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -76,6 +77,29 @@ export function ChampionProfile({ champion }: ChampionProfileProps) {
   const [selectedImage, setSelectedImage] = useState<number | null>(null)
   const [selectedVideo, setSelectedVideo] = useState<number | null>(null)
 
+  // Funkcje nawigacji - bez useCallback na razie
+  const handlePreviousImage = () => {
+    console.log('Previous clicked, current:', selectedImage, 'gallery length:', champion.gallery.length)
+    console.log('Can go previous?', selectedImage !== null && selectedImage > 0)
+    if (selectedImage !== null && selectedImage > 0) {
+      console.log('Setting selectedImage to:', selectedImage - 1)
+      setSelectedImage(selectedImage - 1)
+    } else {
+      console.log('Cannot go previous - selectedImage is null or <= 0')
+    }
+  }
+
+  const handleNextImage = () => {
+    console.log('Next clicked, current:', selectedImage, 'gallery length:', champion.gallery.length)
+    console.log('Can go next?', selectedImage !== null && selectedImage < champion.gallery.length - 1)
+    if (selectedImage !== null && selectedImage < champion.gallery.length - 1) {
+      console.log('Setting selectedImage to:', selectedImage + 1)
+      setSelectedImage(selectedImage + 1)
+    } else {
+      console.log('Cannot go next - selectedImage is null or >= gallery.length - 1')
+    }
+  }
+
   const tabs = [
     { id: 'gallery', label: 'Galeria', icon: '🖼️' },
     { id: 'pedigree', label: 'Rodowód', icon: '🌳' },
@@ -86,7 +110,7 @@ export function ChampionProfile({ champion }: ChampionProfileProps) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary-600 to-primary-800 text-white py-20">
+      <section className="bg-gradient-to-br from-slate-600 to-slate-800 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Champion Info */}
@@ -149,11 +173,11 @@ export function ChampionProfile({ champion }: ChampionProfileProps) {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="relative"
             >
-              <div className="bg-white/10 rounded-3xl p-8 backdrop-blur-sm">
+              <div className="bg-white/10 rounded-3xl p-8">
                 <div className="aspect-square bg-white/20 rounded-2xl overflow-hidden">
                   <img
                     src={champion.gallery[0].src}
-                    alt={champion.name}
+                    alt=""
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -206,15 +230,14 @@ export function ChampionProfile({ champion }: ChampionProfileProps) {
                       className="group cursor-pointer"
                       onClick={() => setSelectedImage(index)}
                     >
-                      <div className="aspect-video bg-gradient-to-br from-primary-100 to-primary-200 rounded-xl overflow-hidden">
+                      <div className="aspect-video bg-gradient-to-br from-slate-200 to-slate-300 rounded-xl overflow-hidden">
                         <img
                           src={image.thumbnail}
-                          alt={image.alt}
+                          alt=""
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                           <div className="bg-white/90 rounded-full p-2">
-                            <span className="text-primary-600 font-medium text-sm">Kliknij aby powiększyć</span>
                           </div>
                         </div>
                       </div>
@@ -235,17 +258,15 @@ export function ChampionProfile({ champion }: ChampionProfileProps) {
                         className="group cursor-pointer"
                         onClick={() => setSelectedVideo(index)}
                       >
-                        <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl aspect-video overflow-hidden relative">
+                        <div className="bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl aspect-video overflow-hidden relative">
                           <img
                             src={video.thumbnail}
-                            alt={video.title}
+                            alt=""
                             className="w-full h-full object-cover"
                           />
                           <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                             <div className="text-center text-white">
                               <Play className="w-12 h-12 mx-auto mb-2" />
-                              <h4 className="font-medium">{video.title}</h4>
-                              <p className="text-sm opacity-90">{video.duration}</p>
                             </div>
                           </div>
                         </div>
@@ -264,64 +285,67 @@ export function ChampionProfile({ champion }: ChampionProfileProps) {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-                  <h3 className="font-display font-bold text-2xl text-gray-900 mb-8">Drzewo Genealogiczne</h3>
-
-                  <div className="space-y-8">
-                    {/* Current Champion */}
-                    <div className="text-center">
-                      <div className="inline-block bg-primary-600 text-white px-6 py-4 rounded-xl">
-                        <h4 className="font-bold text-lg">{champion.name}</h4>
-                        <p className="text-sm opacity-90">{champion.ringNumber}</p>
-                      </div>
-                    </div>
-
-                    {/* Parents */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="champion-profile-card">
+                  <div className="champion-profile-card-header">
+                    <h3 className="champion-profile-card-title">Drzewo Genealogiczne</h3>
+                  </div>
+                  <div className="champion-profile-card-content">
+                    <div className="space-y-8">
+                      {/* Current Champion */}
                       <div className="text-center">
-                        <div className="bg-blue-100 text-blue-900 px-4 py-3 rounded-lg mb-2">
-                          <h5 className="font-semibold">Ojciec</h5>
-                        </div>
-                        <div className="bg-white border-2 border-blue-200 px-4 py-3 rounded-lg">
-                          <h6 className="font-medium">{champion.pedigree.father.name}</h6>
-                          <p className="text-sm text-gray-600">{champion.pedigree.father.ringNumber}</p>
-                          <p className="text-sm text-gray-600">{champion.pedigree.father.bloodline}</p>
+                        <div className="inline-block bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-6 rounded-2xl shadow-lg">
+                          <h4 className="font-bold text-xl">{champion.name}</h4>
+                          <p className="text-sm opacity-90">{champion.ringNumber}</p>
                         </div>
                       </div>
 
-                      <div className="text-center">
-                        <div className="bg-pink-100 text-pink-900 px-4 py-3 rounded-lg mb-2">
-                          <h5 className="font-semibold">Matka</h5>
+                      {/* Parents */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="text-center">
+                          <div className="pedigree-card">
+                            <div className="pedigree-card-title text-blue-200">Ojciec</div>
+                            <div className="pedigree-card-content">
+                              <h6 className="font-medium text-white text-lg">{champion.pedigree.father.name}</h6>
+                              <p className="text-blue-200">{champion.pedigree.father.ringNumber}</p>
+                              <p className="text-white/80">{champion.pedigree.father.bloodline}</p>
+                            </div>
+                          </div>
                         </div>
-                        <div className="bg-white border-2 border-pink-200 px-4 py-3 rounded-lg">
-                          <h6 className="font-medium">{champion.pedigree.mother.name}</h6>
-                          <p className="text-sm text-gray-600">{champion.pedigree.mother.ringNumber}</p>
-                          <p className="text-sm text-gray-600">{champion.pedigree.mother.bloodline}</p>
+
+                        <div className="text-center">
+                          <div className="pedigree-card">
+                            <div className="pedigree-card-title text-pink-200">Matka</div>
+                            <div className="pedigree-card-content">
+                              <h6 className="font-medium text-white text-lg">{champion.pedigree.mother.name}</h6>
+                              <p className="text-pink-200">{champion.pedigree.mother.ringNumber}</p>
+                              <p className="text-white/80">{champion.pedigree.mother.bloodline}</p>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Grandparents */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <div className="text-center">
-                        <div className="bg-gray-100 text-gray-900 px-4 py-3 rounded-lg mb-2">
-                          <h5 className="font-semibold">Dziadek (Ojca)</h5>
+                      {/* Grandparents */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="text-center">
+                          <div className="pedigree-card">
+                            <div className="pedigree-card-title text-gray-300">Dziadek (Ojca)</div>
+                            <div className="pedigree-card-content">
+                              <h6 className="font-medium text-white text-lg">{champion.pedigree.grandfather.name}</h6>
+                              <p className="text-gray-300">{champion.pedigree.grandfather.ringNumber}</p>
+                              <p className="text-white/80">{champion.pedigree.grandfather.bloodline}</p>
+                            </div>
+                          </div>
                         </div>
-                        <div className="bg-white border-2 border-gray-200 px-4 py-3 rounded-lg">
-                          <h6 className="font-medium">{champion.pedigree.grandfather.name}</h6>
-                          <p className="text-sm text-gray-600">{champion.pedigree.grandfather.ringNumber}</p>
-                          <p className="text-sm text-gray-600">{champion.pedigree.grandfather.bloodline}</p>
-                        </div>
-                      </div>
 
-                      <div className="text-center">
-                        <div className="bg-gray-100 text-gray-900 px-4 py-3 rounded-lg mb-2">
-                          <h5 className="font-semibold">Babcia (Ojca)</h5>
-                        </div>
-                        <div className="bg-white border-2 border-gray-200 px-4 py-3 rounded-lg">
-                          <h6 className="font-medium">{champion.pedigree.grandmother.name}</h6>
-                          <p className="text-sm text-gray-600">{champion.pedigree.grandmother.ringNumber}</p>
-                          <p className="text-sm text-gray-600">{champion.pedigree.grandmother.bloodline}</p>
+                        <div className="text-center">
+                          <div className="pedigree-card">
+                            <div className="pedigree-card-title text-gray-300">Babcia (Ojca)</div>
+                            <div className="pedigree-card-content">
+                              <h6 className="font-medium text-white text-lg">{champion.pedigree.grandmother.name}</h6>
+                              <p className="text-gray-300">{champion.pedigree.grandmother.ringNumber}</p>
+                              <p className="text-white/80">{champion.pedigree.grandmother.bloodline}</p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -401,7 +425,7 @@ export function ChampionProfile({ champion }: ChampionProfileProps) {
                       className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
                     >
                       <div className="flex items-center space-x-4 mb-4">
-                        <div className="w-16 h-16 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full flex items-center justify-center">
+                        <div className="w-16 h-16 bg-gradient-to-br from-slate-200 to-slate-300 rounded-full flex items-center justify-center">
                           <span className="text-primary-600 font-bold text-lg">
                             {child.name.split(' ').map(n => n[0]).join('')}
                           </span>
@@ -431,40 +455,21 @@ export function ChampionProfile({ champion }: ChampionProfileProps) {
       </section>
 
       {/* Image Modal */}
-      <AnimatePresence>
-        {selectedImage !== null && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
-            onClick={() => setSelectedImage(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-              className="relative max-w-4xl max-h-full"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={() => setSelectedImage(null)}
-                className="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors"
-                aria-label="Zamknij galerię"
-              >
-                <X className="w-8 h-8" />
-              </button>
-              <div className="bg-white rounded-xl overflow-hidden">
-                <img
-                  src={champion.gallery[selectedImage].src}
-                  alt={champion.gallery[selectedImage].alt}
-                  className="w-full h-full object-contain max-h-[80vh]"
-                />
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {selectedImage !== null && (
+        <ImageModal
+          image={{
+            id: champion.gallery[selectedImage].id || selectedImage.toString(),
+            src: champion.gallery[selectedImage].src,
+            alt: champion.gallery[selectedImage].alt || `Zdjęcie ${champion.name}`
+          }}
+          onClose={() => setSelectedImage(null)}
+          onPrevious={selectedImage > 0 ? handlePreviousImage : undefined}
+          onNext={selectedImage < champion.gallery.length - 1 ? handleNextImage : undefined}
+          hasPrevious={selectedImage > 0}
+          hasNext={selectedImage < champion.gallery.length - 1}
+        />
+      )}
+
 
       {/* Video Modal */}
       <AnimatePresence>
@@ -491,11 +496,9 @@ export function ChampionProfile({ champion }: ChampionProfileProps) {
                 <X className="w-8 h-8" />
               </button>
               <div className="bg-white rounded-xl overflow-hidden">
-                <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                <div className="aspect-video bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
                   <div className="text-center">
                     <Play className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                    <h4 className="font-medium text-gray-900 text-xl">{champion.videos[selectedVideo].title}</h4>
-                    <p className="text-gray-600">{champion.videos[selectedVideo].duration}</p>
                   </div>
                 </div>
               </div>

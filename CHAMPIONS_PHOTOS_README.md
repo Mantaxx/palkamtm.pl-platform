@@ -4,7 +4,7 @@
 
 Utwórz następującą strukturę w folderze `public/`:
 
-```
+```text
 public/
 ├── champions/
 │   ├── thunder-storm/           # ID championa (thunder-storm)

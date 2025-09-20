@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db"
+  url      = env("DATABASE_URL")
 }
 
 model Account {
@@ -37,6 +37,12 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+enum UserRole {
+  BUYER
+  SELLER
+  ADMIN
+}
+
 model User {
   id            String    @id @default(cuid())
   firstName     String?
@@ -45,7 +51,7 @@ model User {
   emailVerified DateTime?
   image         String?
   password      String?
-  role          String    @default("BUYER")
+  role          UserRole  @default(BUYER)
   isActive      Boolean   @default(false)
   activationToken String?
   
@@ -54,6 +60,11 @@ model User {
   city          String?
   postalCode    String?
   phoneNumber   String?
+  
+  // Phone verification
+  isPhoneVerified Boolean @default(false)
+  phoneVerificationCode String?
+  phoneVerificationExpires DateTime?
   
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -90,14 +101,21 @@ model Pigeon {
   weight      Float
   breeder     String
   description String?
-  images      String
-  videos      String
-  pedigree    String?
-  achievements String?
+  images      String   // JSON array of image URLs
+  videos      String   // JSON array of video URLs
+  pedigree    String?  // JSON string of pedigree data
+  achievements String? // JSON array of achievements
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   auctions Auction[]
+}
+
+enum AuctionStatus {
+  ACTIVE
+  ENDED
+  CANCELLED
+  PENDING
 }
 
 model Auction {
@@ -119,13 +137,13 @@ model Auction {
   // Timing
   startTime     DateTime
   endTime       DateTime
-  status        String        @default("ACTIVE")
+  status        AuctionStatus @default(ACTIVE)
   isApproved    Boolean       @default(false)
   
-  // Additional data
-  images        String
-  videos        String
-  documents     String
+  // Additional data - JSON arrays
+  images        String   // JSON array of image URLs
+  videos        String   // JSON array of video URLs  
+  documents     String   // JSON array of document URLs
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -204,7 +222,7 @@ model Reference {
   experience  String
   testimonial String
   rating      Int      @default(5)
-  achievements String  // JSON string of achievements array
+  achievements String  // JSON array of achievements
   isApproved  Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -219,7 +237,7 @@ model BreederMeeting {
   location    String?
   meetingDate DateTime?
   breederName String
-  images      String   // JSON string of image paths array
+  images      String   // JSON array of image paths
   uploadedBy  String
   uploader    User     @relation(fields: [uploadedBy], references: [id])
   isApproved  Boolean  @default(false)

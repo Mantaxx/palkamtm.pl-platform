@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { X, CreditCard, Shield, Clock, CheckCircle, AlertCircle } from 'lucide-react'
+import { CardElement, Elements, useElements, useStripe } from '@stripe/react-stripe-js'
 import { loadStripe } from '@stripe/stripe-js'
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
+import { AnimatePresence, motion } from 'framer-motion'
+import { AlertCircle, CheckCircle, CreditCard, Shield, X } from 'lucide-react'
+import { useState } from 'react'
 
 interface PaymentModalProps {
   isOpen: boolean
@@ -18,12 +18,12 @@ interface PaymentModalProps {
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
-const PaymentForm = ({ 
-  amount, 
-  auctionTitle, 
-  sellerName, 
-  onPaymentSuccess, 
-  onClose 
+const PaymentForm = ({
+  amount,
+  auctionTitle,
+  sellerName,
+  onPaymentSuccess,
+  onClose
 }: {
   amount: number
   auctionTitle: string
@@ -129,7 +129,7 @@ const PaymentForm = ({
   if (paymentStep === 'processing') {
     return (
       <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4"></div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">Przetwarzanie płatności...</h3>
         <p className="text-gray-600">Proszę czekać, nie zamykaj tej strony</p>
       </div>
@@ -148,7 +148,7 @@ const PaymentForm = ({
         </p>
         <button
           onClick={onClose}
-          className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
+          className="bg-slate-600 text-white px-6 py-2 rounded-md hover:bg-slate-700 transition-colors"
         >
           Zamknij
         </button>
@@ -167,7 +167,7 @@ const PaymentForm = ({
         <div className="flex gap-3 justify-center">
           <button
             onClick={() => setPaymentStep('form')}
-            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors"
+            className="bg-slate-600 text-white px-6 py-2 rounded-md hover:bg-slate-700 transition-colors"
           >
             Spróbuj ponownie
           </button>
@@ -184,12 +184,12 @@ const PaymentForm = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
         <div className="flex items-center gap-2 mb-2">
-          <Shield className="w-5 h-5 text-blue-600" />
-          <h3 className="font-semibold text-blue-900">Bezpieczna płatność</h3>
+          <Shield className="w-5 h-5 text-slate-600" />
+          <h3 className="font-semibold text-slate-900">Bezpieczna płatność</h3>
         </div>
-        <p className="text-sm text-blue-800">
+        <p className="text-sm text-slate-800">
           Twoje środki są bezpieczne. Pieniądze zostaną przekazane sprzedawcy dopiero po potwierdzeniu odbioru przedmiotu.
         </p>
       </div>
@@ -208,7 +208,7 @@ const PaymentForm = ({
             </div>
             <div className="flex justify-between text-lg font-semibold">
               <span>Do zapłaty:</span>
-              <span className="text-blue-600">{amount.toLocaleString()} zł</span>
+              <span className="text-slate-600">{amount.toLocaleString()} zł</span>
             </div>
           </div>
         </div>
@@ -227,7 +227,7 @@ const PaymentForm = ({
         <button
           type="submit"
           disabled={!stripe || isProcessing}
-          className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-md font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          className="flex-1 bg-slate-600 text-white py-3 px-4 rounded-md font-medium hover:bg-slate-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
         >
           {isProcessing ? 'Przetwarzanie...' : `Zapłać ${amount.toLocaleString()} zł`}
         </button>
@@ -273,8 +273,8 @@ export default function PaymentModal({
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <CreditCard className="w-5 h-5 text-blue-600" />
+                <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
+                  <CreditCard className="w-5 h-5 text-slate-600" />
                 </div>
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900">Płatność</h2>

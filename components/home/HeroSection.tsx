@@ -1,156 +1,163 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ArrowRight, Play } from 'lucide-react'
 import Link from 'next/link'
 
 export function HeroSection() {
   return (
-    <section className="relative h-[70vh] flex items-center justify-center overflow-hidden">
-      {/* Background Video Placeholder */}
-      <div className="absolute inset-0 z-0">
-        <div className="w-full h-full bg-gradient-to-br from-primary-900 via-primary-800 to-primary-600">
-          {/* Placeholder for video background */}
-          <div className="absolute inset-0 bg-black/20" />
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
 
-          {/* Animated pigeons overlay */}
-          <div className="absolute inset-0">
+
+      {/* Przyciski do podstron w jednym rzędzie na górze */}
+      <div className="absolute top-8 left-80 z-20">
+        <div className="flex items-center gap-3">
+          {[
+            { href: "/", icon: "fas fa-home", title: "Strona Główna", label: "Strona Główna" },
+            { href: "/auctions", icon: "fas fa-gavel", title: "Aukcje", label: "Aukcje" },
+            { href: "/heritage", icon: "fas fa-crown", title: "Nasze Dziedzictwo", label: "Dziedzictwo" },
+            { href: "/champions", icon: "fas fa-trophy", title: "Championy", label: "Championy" },
+            { href: "/breeder-meetings", icon: "fas fa-users", title: "Spotkania", label: "Spotkania" },
+            { href: "/references", icon: "fas fa-star", title: "Referencje", label: "Referencje" },
+            { href: "/press", icon: "fas fa-newspaper", title: "Prasa", label: "Prasa" },
+            { href: "/about", icon: "fas fa-info-circle", title: "O nas", label: "O Nas" },
+            { href: "/contact", icon: "fas fa-envelope", title: "Kontakt", label: "Kontakt" },
+            { href: "/dashboard", icon: "fas fa-tachometer-alt", title: "Panel Klienta", label: "Panel Klienta" }
+          ].map((item, index) => (
             <motion.div
-              className="absolute top-1/4 left-1/4 w-8 h-8 bg-white/20 rounded-full"
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            />
-            <motion.div
-              className="absolute top-1/3 right-1/3 w-6 h-6 bg-white/15 rounded-full"
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-            />
-            <motion.div
-              className="absolute bottom-1/3 left-1/3 w-7 h-7 bg-white/25 rounded-full"
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-            />
-            <motion.div
-              className="absolute bottom-1/4 right-1/4 w-5 h-5 bg-white/20 rounded-full"
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
-            />
-          </div>
+              key={item.href}
+              initial={{ opacity: 0, x: -300, rotate: -360 }}
+              animate={{ opacity: 1, x: 0, rotate: 0 }}
+              transition={{
+                duration: 1.0,
+                delay: 0.4 + (index * 0.1),
+                ease: "easeOut"
+              }}
+            >
+              <Link href={item.href} className="glass-nav-button" title={item.title}>
+                <i className={`${item.icon} relative z-10 text-3xl`}></i>
+                <span className="relative z-10 text-sm">{item.label}</span>
+              </Link>
+            </motion.div>
+          ))}
         </div>
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 text-center text-white px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+      {/* Przyciski logowania i rejestracji w prawym górnym rogu */}
+      <motion.div
+        initial={{ opacity: 0, y: -30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1, delay: 0.6 }}
+        className="absolute top-8 right-4 sm:right-8 z-20 flex items-center gap-2 sm:gap-3"
+      >
+        <Link href="/auth/signin" className="glass-nav-button" title="Zaloguj się">
+          <i className="fas fa-sign-in-alt relative z-10 text-2xl"></i>
+        </Link>
+        <Link href="/auth/signup" className="glass-nav-button" title="Zarejestruj się">
+          <i className="fas fa-user-plus relative z-10 text-2xl"></i>
+        </Link>
+      </motion.div>
 
+      {/* Content */}
+      <div className="relative z-10 text-center text-white px-6 sm:px-8 lg:px-12 xl:px-16 2xl:px-20 max-w-8xl mx-auto">
         <motion.div
-          initial={{ opacity: 0, scale: 0.5, rotateX: -90 }}
+          initial={{ opacity: 0, scale: 0.8, y: 50 }}
           animate={{
             opacity: 1,
             scale: 1,
-            rotateX: 0,
-            y: [0, -10, 0]
+            y: 0
           }}
           transition={{
-            duration: 2,
-            delay: 0.5,
+            duration: 1.2,
+            delay: 0.3,
             type: "spring",
-            stiffness: 60,
-            damping: 20,
-            y: {
-              duration: 4,
-              repeat: Infinity,
-              repeatType: "reverse",
-              ease: "easeInOut"
-            }
+            stiffness: 100,
+            damping: 20
           }}
           className="relative"
         >
-          <h1 className="font-display font-bold text-3xl sm:text-4xl lg:text-5xl xl:text-6xl mb-6 leading-tight relative">
-            {/* Glowing background effect */}
+          <h1 className="font-display font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl mb-6 sm:mb-8 leading-tight relative transform-3d perspective-1000">
+            {/* Enhanced 3D Glowing background effect */}
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 0.3, scale: 1.1 }}
-              transition={{ duration: 3, delay: 0.8, repeat: Infinity, repeatType: "reverse" }}
-              className="absolute inset-0 bg-gradient-to-r from-yellow-400/30 via-orange-400/30 to-red-400/30 blur-3xl rounded-full"
+              animate={{ opacity: 0.6, scale: 1.3 }}
+              transition={{ duration: 4, delay: 0.5, repeat: Infinity, repeatType: "reverse" }}
+              className="absolute inset-0 bg-gradient-to-r from-slate-400/50 via-slate-300/50 to-slate-500/50 blur-3xl xl:blur-[4rem] 2xl:blur-[6rem] rounded-full animate-glow3D"
             />
 
-            {/* Main text with shimmer effect */}
+            {/* 3D Main text with enhanced effects */}
             <motion.span
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1.2, delay: 1.2 }}
-              className="relative z-10 text-white drop-shadow-2xl"
+              initial={{ opacity: 0, y: 30, rotateX: -15 }}
+              animate={{ opacity: 1, y: 0, rotateX: 0 }}
+              transition={{ duration: 1.2, delay: 0.8, type: "spring", stiffness: 100 }}
+              className="relative z-10 text-white drop-shadow-2xl neon-glow block transform-3d hover-3d-tilt"
             >
               Pałka MTM
             </motion.span>
 
             <motion.span
-              className="block text-gradient bg-gradient-to-r from-yellow-300 via-yellow-200 to-yellow-100 relative z-10"
-              initial={{ opacity: 0, x: -100 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 1.5, delay: 1.8, type: "spring", stiffness: 60 }}
+              className="block text-gradient bg-gradient-to-r from-slate-300 via-slate-200 to-slate-100 relative z-10 mt-2 sm:mt-4 transform-3d hover-3d-tilt"
+              initial={{ opacity: 0, y: 30, rotateX: 15 }}
+              animate={{ opacity: 1, y: 0, rotateX: 0 }}
+              transition={{ duration: 1.2, delay: 1.2, type: "spring", stiffness: 80 }}
             >
-              {/* Shimmer overlay */}
+              {/* Enhanced 3D Shimmer overlay */}
               <motion.div
                 initial={{ x: "-100%" }}
                 animate={{ x: "100%" }}
                 transition={{
-                  duration: 2,
-                  delay: 1.5,
+                  duration: 3,
+                  delay: 2,
                   repeat: Infinity,
-                  repeatDelay: 3,
+                  repeatDelay: 4,
                   ease: "easeInOut"
                 }}
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12"
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent skew-x-12 animate-shimmer3D"
               />
               Mistrzowie Sprintu
             </motion.span>
           </h1>
         </motion.div>
 
-                  <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-lg sm:text-xl text-gray-200 mb-8 max-w-2xl mx-auto leading-relaxed"
-          >
-          Pasja, tradycja i nowoczesność w hodowli gołębi pocztowych.
-          Tworzymy historię polskiego sportu gołębiarskiego poprzez doskonałą hodowlę i nieustanne dążenie do perfekcji.
-        </motion.p>
-
-        <motion.div
+        <motion.p
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4"
+          transition={{ duration: 0.8, delay: 1.5 }}
+          className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl text-blue-100 mb-8 sm:mb-12 max-w-7xl mx-auto leading-relaxed font-light px-6"
         >
-          <Link
-            href="/auctions"
-            className="group bg-white text-primary-600 hover:bg-gray-100 font-semibold px-8 py-4 rounded-lg transition-all duration-300 flex items-center space-x-2 shadow-lg hover:shadow-xl"
-          >
-            <span>Zobacz Aukcje</span>
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </Link>
+          Pasja, tradycja i nowoczesność w hodowli gołębi pocztowych.
+          <br className="hidden sm:block" />
+          <span className="block sm:inline mt-2 sm:mt-0">
+            <span className="text-cyan-200 font-medium">Tworzymy historię polskiego sportu gołębiarskiego</span> poprzez doskonałą hodowlę i nieustanne dążenie do perfekcji.
+          </span>
+        </motion.p>
 
-          <button className="group bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary-600 font-semibold px-8 py-4 rounded-lg transition-all duration-300 flex items-center space-x-2">
-            <Play className="w-5 h-5" />
-            <span>Obejrzyj Film</span>
-          </button>
-        </motion.div>
-
-        {/* Scroll Indicator */}
+        {/* Enhanced 3D Scroll Indicator */}
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 1 }}
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 2.5 }}
+          className="absolute bottom-8 sm:bottom-12 left-1/2 transform -translate-x-1/2"
         >
-          <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
+          <div className="flex flex-col items-center space-y-2 transform-3d perspective-1000">
             <motion.div
-              animate={{ y: [0, 12, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-              className="w-1 h-3 bg-white/70 rounded-full mt-2"
-            />
+              animate={{ y: [0, 8, 0], rotateX: [0, 5, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              className="w-5 h-8 sm:w-6 sm:h-10 xl:w-8 xl:h-12 2xl:w-10 2xl:h-16 solid-morphism rounded-full flex justify-center hover-3d-lift"
+            >
+              <motion.div
+                animate={{ y: [0, 12, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                className="w-1 h-3 sm:h-4 xl:h-5 2xl:h-6 bg-gradient-to-b from-slate-300 to-slate-400 rounded-full mt-1 sm:mt-2 xl:mt-3 2xl:mt-4 animate-glow3D"
+              />
+            </motion.div>
+            <motion.span
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1, delay: 3 }}
+              className="text-white/70 text-xs sm:text-sm xl:text-base 2xl:text-lg font-medium tracking-wider solid-morphism px-3 py-1 xl:px-4 xl:py-2 2xl:px-6 2xl:py-3 rounded-full"
+            >
+              PRZEWIŃ
+            </motion.span>
           </div>
         </motion.div>
       </div>

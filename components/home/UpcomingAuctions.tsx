@@ -55,9 +55,11 @@ export function UpcomingAuctions() {
               viewport={{ once: true }}
             >
               <Link href={`/auctions/${auction.id}`} className="group block">
-                <div className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+                <div className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border-2 border-white" style={{
+                  boxShadow: '0 8px 32px rgba(255, 255, 255, 0.4), 0 16px 64px rgba(255, 255, 255, 0.2), 0 24px 96px rgba(255, 255, 255, 0.1)'
+                }}>
                   {/* Header */}
-                  <div className="bg-gradient-to-r from-primary-600 to-primary-700 p-6 text-white">
+                  <div className="bg-gradient-to-r from-slate-600 to-slate-700 p-6 text-white">
                     <h3 className="font-display font-bold text-xl mb-2">
                       {auction.title}
                     </h3>

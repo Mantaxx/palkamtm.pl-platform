@@ -191,7 +191,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Panel Administratora</h1>
@@ -211,8 +211,8 @@ export default function AdminDashboard() {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex items-center gap-2 py-2 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-slate-500 text-slate-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                       }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -235,8 +235,8 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <div className="flex items-center">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Users className="w-6 h-6 text-blue-600" />
+                  <div className="p-2 bg-slate-100 rounded-lg">
+                    <Users className="w-6 h-6 text-slate-600" />
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Użytkownicy</p>
@@ -323,7 +323,7 @@ export default function AdminDashboard() {
                         <p className="text-sm text-gray-600">{mockStats.pendingSellers} oczekuje</p>
                       </div>
                     </div>
-                    <button className="text-blue-600 hover:text-blue-800 font-medium">
+                    <button className="text-slate-600 hover:text-slate-800 font-medium">
                       Sprawdź
                     </button>
                   </div>
@@ -336,7 +336,7 @@ export default function AdminDashboard() {
                         <p className="text-sm text-gray-600">{mockStats.disputeCount} spraw</p>
                       </div>
                     </div>
-                    <button className="text-blue-600 hover:text-blue-800 font-medium">
+                    <button className="text-slate-600 hover:text-slate-800 font-medium">
                       Sprawdź
                     </button>
                   </div>
@@ -400,7 +400,7 @@ export default function AdminDashboard() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center gap-2">
-                            <button className="text-blue-600 hover:text-blue-900" title="Zobacz użytkownika" aria-label="Zobacz użytkownika">
+                            <button className="text-slate-600 hover:text-slate-900" title="Zobacz użytkownika" aria-label="Zobacz użytkownika">
                               <Eye className="w-4 h-4" />
                             </button>
                             <button className="text-green-600 hover:text-green-900" title="Zatwierdź użytkownika" aria-label="Zatwierdź użytkownika">
@@ -512,7 +512,7 @@ export default function AdminDashboard() {
                   <input
                     type="number"
                     defaultValue="5.0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                     aria-label="Prowizja platformy w procentach"
                   />
                 </div>
@@ -524,7 +524,7 @@ export default function AdminDashboard() {
                   <input
                     type="number"
                     defaultValue="30"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                     aria-label="Maksymalny czas trwania aukcji w dniach"
                   />
                 </div>
@@ -536,12 +536,12 @@ export default function AdminDashboard() {
                   <input
                     type="number"
                     defaultValue="100"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
                     aria-label="Minimalna cena wywoławcza w złotych"
                   />
                 </div>
 
-                <button className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                <button className="bg-slate-600 text-white px-6 py-2 rounded-md hover:bg-slate-700 transition-colors">
                   Zapisz ustawienia
                 </button>
               </div>

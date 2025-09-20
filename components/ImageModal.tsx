@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut } from 'lucide-react';
+import { X, ZoomIn, ZoomOut } from 'lucide-react';
 import { MouseEventHandler, useEffect, useState } from 'react';
 
 interface ImageItem {
@@ -17,26 +17,34 @@ interface ImageModalProps {
   onNext?: () => void;
   hasPrevious?: boolean;
   hasNext?: boolean;
+  currentIndex?: number;
+  totalImages?: number;
 }
 
-export default function ImageModal({ image, onClose, onPrevious, onNext, hasPrevious, hasNext }: ImageModalProps) {
+export default function ImageModal({ image, onClose, onPrevious, onNext, hasPrevious, hasNext, currentIndex, totalImages }: ImageModalProps) {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
+    // Sprawdź czy jesteśmy w przeglądarce
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+
     // Blokuj scroll
     const scrollY = window.scrollY;
     document.body.style.position = 'fixed';
     document.body.style.top = `-${scrollY}px`;
     document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
 
     const handleEscapeKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        console.log('ESC key pressed');
         onClose();
       }
     };
+
     window.addEventListener('keydown', handleEscapeKey);
 
     return () => {
@@ -44,10 +52,28 @@ export default function ImageModal({ image, onClose, onPrevious, onNext, hasPrev
       document.body.style.position = '';
       document.body.style.top = '';
       document.body.style.width = '';
+      document.body.style.overflow = '';
       window.scrollTo(0, scrollY);
       window.removeEventListener('keydown', handleEscapeKey);
     };
   }, [onClose]);
+
+  // Osobny useEffect dla obsługi klawiatury
+  useEffect(() => {
+    // Sprawdź czy jesteśmy w przeglądarce
+    if (typeof window === 'undefined') return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowLeft' && onPrevious && hasPrevious) {
+        onPrevious();
+      } else if (event.key === 'ArrowRight' && onNext && hasNext) {
+        onNext();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onPrevious, onNext, hasPrevious, hasNext]);
 
   const handleZoomIn = () => {
     setZoomLevel(prev => Math.min(prev + 0.5, 3));
@@ -83,7 +109,10 @@ export default function ImageModal({ image, onClose, onPrevious, onNext, hasPrev
   };
 
   const handleWheel = (e: React.WheelEvent) => {
-    e.preventDefault();
+    if (e.cancelable) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (e.deltaY < 0) {
       handleZoomIn();
     } else {
@@ -99,7 +128,7 @@ export default function ImageModal({ image, onClose, onPrevious, onNext, hasPrev
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+      className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/95 p-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -140,40 +169,62 @@ export default function ImageModal({ image, onClose, onPrevious, onNext, hasPrev
           </button>
         </div>
 
+        {/* Image Counter */}
+        {currentIndex !== undefined && totalImages && totalImages > 1 && (
+          <div className="absolute top-4 right-20 px-4 py-2 rounded-full bg-black/50 text-white text-sm font-medium z-10">
+            {currentIndex + 1} / {totalImages}
+          </div>
+        )}
+
         {/* Close Button */}
         <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors z-10"
+          onClick={(e) => {
+            e.stopPropagation();
+            console.log('Close button clicked');
+            onClose();
+          }}
+          className="absolute top-4 right-4 p-2 rounded-full bg-black/70 text-white hover:bg-black/90 transition-colors z-[100] cursor-pointer"
           aria-label="Zamknij"
         >
           <X size={24} />
         </button>
 
-        {/* Previous Button */}
+
+        {/* Previous Button - Widoczny */}
         {onPrevious && hasPrevious && (
-          <button
-            onClick={onPrevious}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 p-3 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors disabled:opacity-30 disabled:cursor-not-allowed z-10"
-            aria-label="Poprzednie zdjęcie"
-          >
-            <ChevronLeft size={24} />
-          </button>
+          <div className="absolute left-0 top-0 w-20 h-full flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity duration-300 z-40 group">
+            <button
+              onClick={onPrevious}
+              className="p-4 rounded-full bg-black/80 text-white hover:bg-black/90 transition-all duration-200 hover:scale-110 shadow-lg"
+              aria-label="Poprzednie zdjęcie"
+            >
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          </div>
         )}
 
-        {/* Next Button */}
+        {/* Next Button - Widoczny */}
         {onNext && hasNext && (
-          <button
-            onClick={onNext}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors disabled:opacity-30 disabled:cursor-not-allowed z-10"
-            aria-label="Następne zdjęcie"
-          >
-            <ChevronRight size={24} />
-          </button>
+          <div className="absolute right-0 top-0 w-20 h-full flex items-center justify-center opacity-80 hover:opacity-100 transition-opacity duration-300 z-40 group">
+            <button
+              onClick={onNext}
+              className="p-4 rounded-full bg-black/80 text-white hover:bg-black/90 transition-all duration-200 hover:scale-110 shadow-lg"
+              aria-label="Następne zdjęcie"
+            >
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
         )}
+
+
 
         {/* Image Container */}
         <div
-          className="w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing bg-black"
+          className="w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing bg-black touch-none"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}

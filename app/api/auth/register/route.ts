@@ -1,5 +1,6 @@
 import { createActivationEmail, generateActivationToken, sendEmail } from '@/lib/email'
 import { prisma } from '@/lib/prisma'
+import { authRateLimit } from '@/lib/rate-limit'
 import bcrypt from 'bcryptjs'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -11,6 +12,12 @@ const registerSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // Apply rate limiting
+    const rateLimitResponse = authRateLimit(request)
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
     const body = await request.json()
     const { email, password } = registerSchema.parse(body)
 

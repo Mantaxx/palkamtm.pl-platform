@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Search, X, Clock, TrendingUp } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { Clock, Search, TrendingUp, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useEffect, useRef, useState } from 'react'
 
 interface SearchSuggestion {
   id: string
@@ -54,8 +54,8 @@ interface QuickSearchProps {
   showSuggestions?: boolean
 }
 
-export default function QuickSearch({ 
-  placeholder = "Szukaj aukcji, linii krwi, sprzedawców...", 
+export default function QuickSearch({
+  placeholder = "Szukaj aukcji, linii krwi, sprzedawców...",
   className = "",
   showSuggestions = true
 }: QuickSearchProps) {
@@ -80,6 +80,9 @@ export default function QuickSearch({
   }, [query])
 
   useEffect(() => {
+    // Sprawdź czy jesteśmy w przeglądarce
+    if (typeof document === 'undefined') return;
+
     const handleClickOutside = (event: MouseEvent) => {
       if (inputRef.current && !inputRef.current.contains(event.target as Node)) {
         setIsOpen(false)
@@ -96,7 +99,7 @@ export default function QuickSearch({
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault()
-        setSelectedIndex(prev => 
+        setSelectedIndex(prev =>
           prev < suggestions.length - 1 ? prev + 1 : prev
         )
         break
@@ -123,7 +126,7 @@ export default function QuickSearch({
     setQuery(suggestion.title)
     setIsOpen(false)
     setSelectedIndex(-1)
-    
+
     // Przekieruj do odpowiedniej strony
     if (suggestion.type === 'auction') {
       router.push(`/auctions/${suggestion.id}`)
@@ -186,7 +189,7 @@ export default function QuickSearch({
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={() => query.length > 2 && setIsOpen(true)}
-          className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+          className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-slate-500 focus:border-slate-500"
           placeholder={placeholder}
         />
         {query && (
@@ -214,9 +217,8 @@ export default function QuickSearch({
                 <button
                   key={suggestion.id}
                   onClick={() => handleSuggestionClick(suggestion)}
-                  className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors ${
-                    index === selectedIndex ? 'bg-blue-50' : ''
-                  }`}
+                  className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors ${index === selectedIndex ? 'bg-slate-50' : ''
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex-shrink-0 text-gray-400">
@@ -234,7 +236,7 @@ export default function QuickSearch({
                   </div>
                 </button>
               ))}
-              
+
               {query && (
                 <div className="border-t border-gray-100">
                   <button

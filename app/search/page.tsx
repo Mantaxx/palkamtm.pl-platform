@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import AdvancedSearch from '@/components/search/AdvancedSearch'
+import { UnifiedLayout } from '@/components/layout/UnifiedLayout'
 
 export const metadata: Metadata = {
   title: 'Wyszukiwanie aukcji - Gołębie Pocztowe',
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 }
 
 export default function SearchPage() {
-  return <AdvancedSearch />
+  return (
+    <UnifiedLayout>
+      <AdvancedSearch />
+    </UnifiedLayout>
+  )
 }

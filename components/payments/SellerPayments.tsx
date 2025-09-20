@@ -1,19 +1,19 @@
 'use client'
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { 
-  CreditCard, 
-  Package, 
-  Truck, 
-  CheckCircle, 
-  AlertTriangle, 
-  Clock,
-  DollarSign,
-  MessageSquare
-} from 'lucide-react'
 import { format } from 'date-fns'
 import { pl } from 'date-fns/locale'
+import { motion } from 'framer-motion'
+import {
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  CreditCard,
+  DollarSign,
+  MessageSquare,
+  Package,
+  Truck
+} from 'lucide-react'
+import { useState } from 'react'
 
 interface Payment {
   id: string
@@ -80,7 +80,7 @@ export default function SellerPayments() {
       case 'pending':
         return 'bg-yellow-100 text-yellow-800'
       case 'shipped':
-        return 'bg-blue-100 text-blue-800'
+        return 'bg-slate-100 text-slate-800'
       case 'delivered':
         return 'bg-green-100 text-green-800'
       case 'disputed':
@@ -128,11 +128,11 @@ export default function SellerPayments() {
 
   const handleMarkAsShipped = async (paymentId: string) => {
     setIsMarkingShipped(paymentId)
-    
+
     try {
       // Symulacja API call
       await new Promise(resolve => setTimeout(resolve, 1000))
-      
+
       // Tutaj byłoby prawdziwe API call do aktualizacji statusu
       console.log('Oznaczono jako wysłane:', paymentId)
     } catch (error) {
@@ -178,8 +178,8 @@ export default function SellerPayments() {
 
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Clock className="w-6 h-6 text-blue-600" />
+            <div className="p-2 bg-slate-100 rounded-lg">
+              <Clock className="w-6 h-6 text-slate-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Oczekuje na wypłatę</p>
@@ -272,7 +272,7 @@ export default function SellerPayments() {
                 <button
                   onClick={() => handleMarkAsShipped(payment.id)}
                   disabled={isMarkingShipped === payment.id}
-                  className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="flex items-center gap-2 bg-slate-600 text-white px-4 py-2 rounded-md hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {isMarkingShipped === payment.id ? (
                     <Clock className="w-4 h-4 animate-spin" />

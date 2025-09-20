@@ -1,3 +1,27 @@
 {
-    "editor.tabCompletion": "on"
+  "css.validate": false,
+  "scss.validate": false,
+  "less.validate": false,
+  "css.lint.unknownAtRules": "ignore",
+  "css.lint.unknownProperties": "ignore",
+  "stylelint.enable": true,
+  "css.customData": [
+    {
+      "version": 1.1,
+      "atDirectives": [
+        {
+          "name": "@tailwind",
+          "description": "Use the @tailwind directive to insert Tailwind's base, components, utilities and variants styles into your CSS."
+        },
+        {
+          "name": "@apply",
+          "description": "Use @apply to inline any existing utility classes into your own custom CSS."
+        },
+        {
+          "name": "@layer",
+          "description": "Use the @layer directive to tell Tailwind which 'bucket' a set of custom styles belong to."
+        }
+      ]
+    }
+  ]
 }

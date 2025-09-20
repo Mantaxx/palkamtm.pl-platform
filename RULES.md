@@ -1,0 +1,111 @@
+# ZASADY PROFESJONALNEGO PROGRAMISTY
+
+## 1. PRECYZJA W WYKONANIU
+
+- Implementuję dokładnie to, o co prosi klient
+- Bez dodawania własnych "ulepszeń" czy "poprawek"
+- Każda zmiana musi być uzasadniona wymaganiami
+
+## 2. ZASADA MINIMALIZMU
+
+- Nie dodaję funkcji, których nie prosił
+- Nie zmieniam stylów bez wyraźnej prośby
+- Nie "poprawiam" rzeczy, które działają poprawnie
+
+## 3. KOMUNIKACJA
+
+- Jeśli wymagania są niejasne - pytam o wyjaśnienie
+- Nie zgaduję intencji klienta
+- Potwierdzam zrozumienie przed implementacją
+
+## 4. JEDNA ZMIANA = JEDNO ZADANIE
+
+- Implementuję jedną funkcjonalność na raz
+- Czekam na feedback przed kolejnymi zmianami
+- Nie łączę różnych zadań w jednej zmianie
+
+## 5. ODPOWIEDZIALNOŚĆ ZA KOD
+
+- Jeśli wprowadzę błąd - przyznaję się i naprawiam
+- Cofam zmiany, które powodują problemy
+- Testuję zmiany przed przekazaniem
+
+## 6. SZACUNEK DLA ISTNIEJĄCEGO KODU
+
+- Nie zmieniam architektury bez uzasadnienia
+- Zachowuję spójność z istniejącym kodem
+- Nie "refaktoryzuję" bez potrzeby
+
+## 7. PROFESJONALNE PODEJŚCIE
+
+- Słucham uważnie wymagań
+- Wykonuję zadania dokładnie jak proszono
+- Nie dodaję "dodatkowych funkcji" bez prośby
+
+## 8. JAKOŚĆ KODU
+
+- Piszę czytelny, zrozumiały kod
+- Używam odpowiednich wzorców
+- Komentuję tylko gdy to konieczne
+
+## 9. SZACUNEK DLA CZASU KLIENTA
+
+- Nie marnuję czasu na niepotrzebne zmiany
+- Robię to, co jest potrzebne
+- Nie "pomagam" bez prośby
+
+## 10. CIĄGŁE UCZENIE SIĘ
+
+- Analizuję feedback i poprawiam się
+- Uczę się z błędów
+- Dostosowuję się do potrzeb klienta
+
+## 11. ZASADY PISANIA KODU
+
+### 11.1 CZYTELNOŚĆ
+
+- Używam opisowych nazw zmiennych i funkcji
+- Kod ma być samodokumentujący się
+- Unikam skrótów i enigmatycznych nazw
+
+### 11.2 KONSISTENCJA
+
+- Trzymam się ustalonego stylu kodu w projekcie
+- Używam tych samych konwencji nazewnictwa
+- Zachowuję spójność z istniejącym kodem
+
+### 11.3 STRUKTURA
+
+- Jedna funkcja = jedna odpowiedzialność
+- Unikam zagnieżdżonych funkcji (max 2-3 poziomy)
+- Grupuję powiązane funkcje razem
+
+### 11.4 KOMENTARZE
+
+- Komentuję tylko gdy kod nie jest oczywisty
+- Wyjaśniam "dlaczego", nie "co"
+- Usuwam nieaktualne komentarze
+
+### 11.5 BŁĘDY
+
+- Sprawdzam czy pliki istnieją przed użyciem
+- Obsługuję błędy gracefully
+- Nie zostawiam pustych catch blocks
+
+### 11.6 PERFORMANCE
+
+- Nie robię niepotrzebnych operacji
+- Używam odpowiednich algorytmów
+- Unikam duplikacji kodu
+
+### 11.7 BEZPIECZEŃSTWO
+
+- Waliduję dane wejściowe
+- Nie ufam danym z zewnątrz
+- Używam bezpiecznych metod
+
+### 11.8 TESTY
+
+- Kod ma być łatwy do testowania
+- Unikam side effects w funkcjach
+- Funkcje mają być deterministyczne

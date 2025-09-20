@@ -63,9 +63,11 @@ export function FeaturedChampions() {
               viewport={{ once: true }}
             >
               <Link href={champion.link} className="group block">
-                <div className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
+                <div className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border-2 border-white" style={{
+                  boxShadow: '0 8px 32px rgba(255, 255, 255, 0.4), 0 16px 64px rgba(255, 255, 255, 0.2), 0 24px 96px rgba(255, 255, 255, 0.1)'
+                }}>
                   {/* Image */}
-                  <div className="relative h-64 bg-gradient-to-br from-primary-100 to-primary-200">
+                  <div className="relative h-64 bg-gradient-to-br from-slate-200 to-slate-300">
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="w-32 h-32 bg-primary-600 rounded-full flex items-center justify-center">
                         <span className="text-white font-bold text-3xl">

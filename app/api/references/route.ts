@@ -1,3 +1,4 @@
+// import { cacheKeys, withCache } from '@/lib/cache'
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -20,6 +21,19 @@ interface CreateReferenceRequest {
     achievements: Achievement[]
 }
 
+interface Reference {
+    id: string
+    breederName: string
+    location: string
+    experience: string
+    testimonial: string
+    rating: number
+    achievements: string
+    isApproved: boolean
+    createdAt: Date
+    updatedAt: Date
+}
+
 export async function GET() {
     try {
         const references = await prisma.reference.findMany({
@@ -28,10 +42,20 @@ export async function GET() {
             },
             orderBy: {
                 createdAt: 'desc'
+            },
+            select: {
+                id: true,
+                breederName: true,
+                location: true,
+                experience: true,
+                testimonial: true,
+                rating: true,
+                achievements: true,
+                createdAt: true
             }
         })
 
-        const formattedReferences = references.map(ref => ({
+        const formattedReferences = references.map((ref) => ({
             id: ref.id,
             breeder: {
                 name: ref.breederName,
