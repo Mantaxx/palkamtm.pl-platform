@@ -4,6 +4,8 @@ export const metadata = {
 }
 
 import { UnifiedLayout } from '@/components/layout/UnifiedLayout'
+import { Text3D } from '@/components/ui/Text3D'
+import { UnifiedCard } from '@/components/ui/UnifiedCard'
 
 export default function TermsPage() {
     return (
@@ -12,16 +14,16 @@ export default function TermsPage() {
                 <div className="max-w-4xl mx-auto">
                     {/* Header */}
                     <div className="text-center mb-12">
-                        <h1 className="text-4xl font-bold text-gray-900 mb-4">Regulamin</h1>
-                        <p className="text-xl text-gray-600">
+                        <Text3D variant="neon" intensity="high" className="text-4xl font-bold mb-4">Regulamin</Text3D>
+                        <p className="text-xl text-white/90">
                             Regulamin Serwisu Aukcyjnego Gołębie Pocztowe
                         </p>
                     </div>
 
                     {/* Terms Content */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+                    <UnifiedCard variant="3d" glow={true} className="p-8">
                         <div className="prose prose-lg max-w-none">
-                            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8">
+                            <div className="glass-morphism-strong border-l-4 border-yellow-400 p-4 mb-8">
                                 <div className="flex">
                                     <div className="flex-shrink-0">
                                         <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
@@ -29,7 +31,7 @@ export default function TermsPage() {
                                         </svg>
                                     </div>
                                     <div className="ml-3">
-                                        <p className="text-sm text-yellow-700 font-medium">
+                                        <p className="text-sm text-yellow-200 font-medium">
                                             <strong>UWAGA!</strong> Prosimy o dokładne zapoznanie się z treścią niniejszego regulaminu.
                                             Korzystanie z serwisu jest równoznaczne z akceptacją wszystkich jego postanowień.
                                             Serwis pełni rolę wirtualnej platformy kojarzącej Sprzedających i Kupujących i nie jest stroną zawieranych transakcji.
@@ -39,8 +41,8 @@ export default function TermsPage() {
                                 </div>
                             </div>
 
-                            <h2 className="text-2xl font-bold text-gray-900 mb-4">§ 1. Definicje</h2>
-                            <ul className="space-y-3 mb-8">
+                            <h2 className="text-2xl font-bold text-white mb-4">§ 1. Definicje</h2>
+                            <ul className="space-y-3 mb-8 text-white/90">
                                 <li><strong>Serwis</strong> – platforma internetowa dostępna pod adresem gołębiepocztowe.pl, umożliwiająca Użytkownikom publikowanie Ofert sprzedaży gołębi pocztowych i udział w Aukcjach.</li>
                                 <li><strong>Usługodawca</strong> – właściciel i administrator Serwisu.</li>
                                 <li><strong>Użytkownik</strong> – każda osoba fizyczna posiadająca pełną zdolność do czynności prawnych, osoba prawna lub jednostka organizacyjna nieposiadająca osobowości prawnej, która dokonała Rejestracji i korzysta z Serwisu.</li>
@@ -50,19 +52,19 @@ export default function TermsPage() {
                                 <li><strong>Regulamin</strong> – niniejszy dokument.</li>
                             </ul>
 
-                            <h2 className="text-2xl font-bold text-gray-900 mb-4">§ 2. Postanowienia Ogólne</h2>
-                            <ul className="space-y-3 mb-8">
+                            <h2 className="text-2xl font-bold text-white mb-4">§ 2. Postanowienia Ogólne</h2>
+                            <ul className="space-y-3 mb-8 text-white/90">
                                 <li>Serwis jest jedynie platformą technologiczną, która udostępnia Użytkownikom narzędzia do publikowania ofert i licytacji.</li>
                                 <li>Usługodawca nie jest pośrednikiem, komisantem, agentem ani przedstawicielem żadnego z Użytkowników.</li>
                                 <li>Umowa sprzedaży w wyniku wygranej Aukcji zawierana jest wyłącznie i bezpośrednio między Sprzedającym a Kupującym. Usługodawca nie jest stroną tej umowy i nie ponosi z jej tytułu żadnej odpowiedzialności.</li>
                                 <li>Rejestracja i korzystanie z Serwisu oznaczają pełną akceptację postanowień niniejszego Regulaminu.</li>
                             </ul>
 
-                            <h2 className="text-2xl font-bold text-gray-900 mb-4">§ 3. Obowiązki i Odpowiedzialność Użytkownika</h2>
-                            <ul className="space-y-3 mb-8">
+                            <h2 className="text-2xl font-bold text-white mb-4">§ 3. Obowiązki i Odpowiedzialność Użytkownika</h2>
+                            <ul className="space-y-3 mb-8 text-white/90">
                                 <li>Użytkownik zobowiązany jest do podania prawdziwych i kompletnych danych podczas rejestracji.</li>
                                 <li>Sprzedający ponosi pełną i wyłączną odpowiedzialność za treść publikowanej przez siebie oferty, w tym za:
-                                    <ul className="ml-6 mt-2 space-y-2">
+                                    <ul className="ml-6 mt-2 space-y-2 text-white/90">
                                         <li>Opis gołębia, jego pochodzenie, wyniki, cechy i stan zdrowia.</li>
                                         <li>Dołączone zdjęcia, skany rodowodów i inne materiały.</li>
                                         <li>Legalność pochodzenia oferowanego ptaka.</li>
@@ -72,11 +74,11 @@ export default function TermsPage() {
                                 <li>Użytkownik korzysta z Serwisu na własne ryzyko.</li>
                             </ul>
 
-                            <h2 className="text-2xl font-bold text-gray-900 mb-4">§ 4. Wyłączenie Odpowiedzialności Usługodawcy</h2>
-                            <p className="mb-4">Usługodawca, w najszerszym dopuszczalnym przez prawo zakresie, nie ponosi żadnej odpowiedzialności za:</p>
-                            <ul className="space-y-3 mb-8">
+                            <h2 className="text-2xl font-bold text-white mb-4">§ 4. Wyłączenie Odpowiedzialności Usługodawcy</h2>
+                            <p className="mb-4 text-white/90">Usługodawca, w najszerszym dopuszczalnym przez prawo zakresie, nie ponosi żadnej odpowiedzialności za:</p>
+                            <ul className="space-y-3 mb-8 text-white/90">
                                 <li><strong>a.</strong> <strong>Treść i prawdziwość ofert:</strong> Usługodawca nie weryfikuje informacji podawanych przez Sprzedających. Wszelkie dane dotyczące zdrowia, płci, wieku, kondycji, szczepień, wyników lotowych czy autentyczności rodowodu pochodzą wyłącznie od Sprzedającego.</li>
-                                <li><strong>b.</strong> <strong>Przedmiot Aukcji:</strong> Usługodawca nie gwarantuje jakości, stanu zdrowia, wartości, zdolności rozpłodowych ani lotowych oferowanych gołębi. Gołębie sprzedawane są w stanie "tak jak jest" (as is).</li>
+                                <li><strong>b.</strong> <strong>Przedmiot Aukcji:</strong> Usługodawca nie gwarantuje jakości, stanu zdrowia, wartości, zdolności rozpłodowych ani lotowych oferowanych gołębi. Gołębie sprzedawane są w stanie &quot;tak jak jest&quot; (as is).</li>
                                 <li><strong>c.</strong> <strong>Przebieg i realizację transakcji:</strong> Usługodawca nie ponosi odpowiedzialności za niewykonanie lub nienależyte wykonanie umowy zawartej między Użytkownikami, w tym za brak zapłaty przez Kupującego lub niewydanie gołębia przez Sprzedającego.</li>
                                 <li><strong>d.</strong> <strong>Wypłacalność Użytkowników:</strong> Usługodawca nie weryfikuje zdolności finansowej Użytkowników.</li>
                                 <li><strong>e.</strong> <strong>Transport i dostawę:</strong> Wszelkie kwestie związane z organizacją, kosztami i ryzykiem transportu gołębia leżą wyłącznie po stronie Sprzedającego i Kupującego. Usługodawca nie ponosi odpowiedzialności za uszkodzenia, zaginięcie lub śmierć ptaka w trakcie transportu.</li>
@@ -84,35 +86,36 @@ export default function TermsPage() {
                                 <li><strong>g.</strong> <strong>Działanie Serwisu:</strong> Usługodawca nie gwarantuje nieprzerwanego i bezbłędnego działania Serwisu. Nie ponosi odpowiedzialności za straty wynikające z awarii technicznych, przerw w dostępie do sieci, utraty danych czy działania złośliwego oprogramowania.</li>
                             </ul>
 
-                            <h2 className="text-2xl font-bold text-gray-900 mb-4">§ 5. Reklamacje i Spory</h2>
-                            <ul className="space-y-3 mb-8">
+                            <h2 className="text-2xl font-bold text-white mb-4">§ 5. Reklamacje i Spory</h2>
+                            <ul className="space-y-3 mb-8 text-white/90">
                                 <li>Wszelkie roszczenia, reklamacje i spory wynikające z zawartej umowy sprzedaży (dotyczące np. niezgodności gołębia z opisem, jego stanu zdrowia, problemów z płatnością czy dostawą) mogą być kierowane wyłącznie przez jedną stronę transakcji do drugiej strony transakcji.</li>
                                 <li>Usługodawca nie jest stroną w tych sporach, nie pośredniczy w ich rozwiązywaniu i nie będzie rozpatrywał tego typu reklamacji.</li>
                                 <li>Reklamacje dotyczące wyłącznie technicznego funkcjonowania Serwisu mogą być składane drogą mailową na adres kontakt@golebiepocztowe.pl, jednak nie gwarantuje to podjęcia jakichkolwiek działań ani nie rodzi roszczeń odszkodowawczych.</li>
                             </ul>
 
-                            <h2 className="text-2xl font-bold text-gray-900 mb-4">§ 6. Rękojmia i Gwarancja</h2>
-                            <ul className="space-y-3 mb-8">
+                            <h2 className="text-2xl font-bold text-white mb-4">§ 6. Rękojmia i Gwarancja</h2>
+                            <ul className="space-y-3 mb-8 text-white/90">
                                 <li>Wszelkie ewentualne uprawnienia z tytułu rękojmi za wady fizyczne lub prawne przedmiotu sprzedaży dotyczą wyłącznie stosunku prawnego między Sprzedającym a Kupującym. Usługodawca jest całkowicie wyłączony z jakiejkolwiek odpowiedzialności z tego tytułu.</li>
                                 <li>Usługodawca nie udziela żadnej gwarancji na oferowane w Serwisie gołębie.</li>
                             </ul>
 
-                            <h2 className="text-2xl font-bold text-gray-900 mb-4">§ 7. Postanowienia Końcowe</h2>
-                            <ul className="space-y-3 mb-8">
+                            <h2 className="text-2xl font-bold text-white mb-4">§ 7. Postanowienia Końcowe</h2>
+                            <ul className="space-y-3 mb-8 text-white/90">
                                 <li>Usługodawca zastrzega sobie prawo do zmiany niniejszego Regulaminu w dowolnym momencie.</li>
                                 <li>W sprawach nieuregulowanych niniejszym Regulaminem zastosowanie mają przepisy prawa polskiego.</li>
                                 <li>Wszelkie spory wynikające z usług świadczonych przez Usługodawcę na podstawie niniejszego Regulaminu będą rozstrzygane przez sąd właściwy dla siedziby Usługodawcy.</li>
                                 <li>Uznanie któregokolwiek z postanowień Regulaminu za nieważne lub nieskuteczne nie wpływa na ważność pozostałych postanowień.</li>
                             </ul>
 
-                            <div className="mt-12 p-6 bg-gray-50 rounded-lg border border-gray-200">
-                                <p className="text-sm text-gray-600 text-center">
-                                    <strong>Ostatnia aktualizacja:</strong> {new Date().toLocaleDateString('pl-PL')}
+                            <div className="mt-12 p-6 glass-morphism rounded-lg">
+                                <p className="text-sm text-white/80 text-center">
+                                    <strong>Ostatnia aktualizacja:</strong> 29.07.2024
                                 </p>
                             </div>
                         </div>
-                    </div>
+                    </UnifiedCard>
                 </div>
+            </div>
         </UnifiedLayout>
     )
 }

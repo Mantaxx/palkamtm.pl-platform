@@ -1,38 +1,27 @@
 // import { cacheKeys, withCache } from '@/lib/cache'
 import { prisma } from '@/lib/prisma'
+import { apiRateLimit } from '@/lib/rate-limit'
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 
-interface Achievement {
-    pigeon: string
-    ringNumber: string
-    results: Array<{
-        competition: string
-        place: number
-        date: string
-    }>
-}
+const achievementSchema = z.object({
+    pigeon: z.string(),
+    ringNumber: z.string(),
+    results: z.array(z.object({
+        competition: z.string(),
+        place: z.number(),
+        date: z.string()
+    }))
+})
 
-interface CreateReferenceRequest {
-    breederName: string
-    location: string
-    experience: string
-    testimonial: string
-    rating: number
-    achievements: Achievement[]
-}
-
-interface Reference {
-    id: string
-    breederName: string
-    location: string
-    experience: string
-    testimonial: string
-    rating: number
-    achievements: string
-    isApproved: boolean
-    createdAt: Date
-    updatedAt: Date
-}
+const createReferenceSchema = z.object({
+    breederName: z.string(),
+    location: z.string(),
+    experience: z.string(),
+    testimonial: z.string(),
+    rating: z.number().min(1).max(5),
+    achievements: z.array(achievementSchema)
+})
 
 export async function GET() {
     try {
@@ -81,48 +70,23 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
     try {
-        const body: CreateReferenceRequest = await request.json()
-
-        // Walidacja danych
-        if (!body.breederName || !body.location || !body.experience || !body.testimonial) {
-            return NextResponse.json(
-                { error: 'Wszystkie pola są wymagane' },
-                { status: 400 }
-            )
+        // Apply rate limiting
+        const rateLimitResponse = apiRateLimit(request)
+        if (rateLimitResponse) {
+            return rateLimitResponse
         }
 
-        if (body.rating < 1 || body.rating > 5) {
-            return NextResponse.json(
-                { error: 'Ocena musi być między 1 a 5' },
-                { status: 400 }
-            )
-        }
-
-        if (!Array.isArray(body.achievements)) {
-            return NextResponse.json(
-                { error: 'Osiągnięcia muszą być tablicą' },
-                { status: 400 }
-            )
-        }
-
-        // Walidacja osiągnięć
-        for (const achievement of body.achievements) {
-            if (!achievement.pigeon || !achievement.ringNumber || !Array.isArray(achievement.results)) {
-                return NextResponse.json(
-                    { error: 'Nieprawidłowy format osiągnięć' },
-                    { status: 400 }
-                )
-            }
-        }
+        const body = await request.json()
+        const parsedData = createReferenceSchema.parse(body)
 
         const reference = await prisma.reference.create({
             data: {
-                breederName: body.breederName,
-                location: body.location,
-                experience: body.experience,
-                testimonial: body.testimonial,
-                rating: body.rating,
-                achievements: JSON.stringify(body.achievements),
+                breederName: parsedData.breederName,
+                location: parsedData.location,
+                experience: parsedData.experience,
+                testimonial: parsedData.testimonial,
+                rating: parsedData.rating,
+                achievements: JSON.stringify(parsedData.achievements || []),
                 isApproved: false // Nowe referencje wymagają zatwierdzenia
             }
         })
@@ -133,6 +97,9 @@ export async function POST(request: NextRequest) {
         }, { status: 201 })
 
     } catch (error) {
+        if (error instanceof z.ZodError) {
+            return NextResponse.json({ error: error.errors[0].message }, { status: 400 })
+        }
         console.error('Error creating reference:', error)
         return NextResponse.json(
             { error: 'Nie udało się dodać referencji' },

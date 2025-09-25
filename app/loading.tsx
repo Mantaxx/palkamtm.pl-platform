@@ -41,10 +41,10 @@ export default function LoadingPage() {
             clearInterval(stepInterval)
             clearInterval(progressInterval)
         }
-    }, [])
+    }, [loadingSteps.length])
 
     return (
-        <UnifiedLayout showNavigation={false} showAuthButtons={false}>
+        <UnifiedLayout showNavigation={false}>
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 flex items-center justify-center relative overflow-hidden">
                 {/* Tło z animowanymi elementami */}
                 <div className="absolute inset-0">

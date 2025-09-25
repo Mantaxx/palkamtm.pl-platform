@@ -82,6 +82,20 @@ model User {
   breederMeetings    BreederMeeting[]
 }
 
+model BreederMeeting {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  location    String
+  date        DateTime
+  images      String   // JSON array of image URLs
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
 model VerificationToken {
   identifier String
   token      String   @unique
@@ -105,6 +119,7 @@ model Pigeon {
   videos      String   // JSON array of video URLs
   pedigree    String?  // JSON string of pedigree data
   achievements String? // JSON array of achievements
+  isChampion  Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -140,13 +155,11 @@ model Auction {
   status        AuctionStatus @default(ACTIVE)
   isApproved    Boolean       @default(false)
   
-  // Additional data - JSON arrays
-  images        String   // JSON array of image URLs
-  videos        String   // JSON array of video URLs  
-  documents     String   // JSON array of document URLs
-  
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  // Relacja do zasobów
+  assets       AuctionAsset[]
 
   bids         Bid[]
   watchlist    WatchlistItem[]
@@ -154,6 +167,21 @@ model Auction {
   transactions Transaction[]
 
   @@index([isApproved])
+}
+
+enum AssetType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+}
+
+model AuctionAsset {
+  id        String    @id @default(cuid())
+  auctionId String
+  auction   Auction   @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+  type      AssetType
+  url       String
+  createdAt DateTime  @default(now())
 }
 
 model Bid {
@@ -229,23 +257,4 @@ model Reference {
 
   @@index([isApproved])
 }
-
-model BreederMeeting {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  location    String?
-  meetingDate DateTime?
-  breederName String
-  images      String   // JSON array of image paths
-  uploadedBy  String
-  uploader    User     @relation(fields: [uploadedBy], references: [id])
-  isApproved  Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([isApproved])
-  @@index([uploadedBy])
-}
-
 

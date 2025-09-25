@@ -5,6 +5,7 @@ import { format } from 'date-fns'
 import { pl } from 'date-fns/locale'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Calendar, Heart, MapPin, Play, Share2, Trophy, Users, X } from 'lucide-react'
+import Image from 'next/image'
 import { useState } from 'react'
 
 interface Champion {
@@ -174,10 +175,12 @@ export function ChampionProfile({ champion }: ChampionProfileProps) {
               className="relative"
             >
               <div className="bg-white/10 rounded-3xl p-8">
-                <div className="aspect-square bg-white/20 rounded-2xl overflow-hidden">
-                  <img
+                <div className="aspect-[1/1] bg-white/20 rounded-2xl overflow-hidden">
+                  <Image
                     src={champion.gallery[0].src}
                     alt=""
+                    width={400}
+                    height={400}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -194,7 +197,7 @@ export function ChampionProfile({ champion }: ChampionProfileProps) {
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id as 'gallery' | 'pedigree' | 'results' | 'offspring')}
                 className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors ${activeTab === tab.id
                   ? 'bg-primary-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -220,7 +223,7 @@ export function ChampionProfile({ champion }: ChampionProfileProps) {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 w-full">
                   {champion.gallery.map((image, index) => (
                     <motion.div
                       key={image.id}
@@ -228,13 +231,16 @@ export function ChampionProfile({ champion }: ChampionProfileProps) {
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.3, delay: index * 0.1 }}
                       className="group cursor-pointer"
-                      onClick={() => setSelectedImage(index)}
+                      onClick={() => setSelectedImage(index)} // Zachowujemy kliknięcie do modala
                     >
-                      <div className="aspect-video bg-gradient-to-br from-slate-200 to-slate-300 rounded-xl overflow-hidden">
-                        <img
+                      <div className="aspect-[16/9] w-full max-w-xs bg-gradient-to-br from-slate-200 to-slate-300 rounded-xl overflow-hidden">
+                        <Image
                           src={image.thumbnail}
                           alt=""
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          fill
+                          width={400} // Zachowujemy oryginalne wymiary
+                          height={225} // Zachowujemy oryginalne wymiary
+                          className="w-full h-full object-cover" // Zmieniamy na object-cover i usuwamy skalowanie
                         />
                         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                           <div className="bg-white/90 rounded-full p-2">
@@ -259,10 +265,13 @@ export function ChampionProfile({ champion }: ChampionProfileProps) {
                         onClick={() => setSelectedVideo(index)}
                       >
                         <div className="bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl aspect-video overflow-hidden relative">
-                          <img
+                          <Image
                             src={video.thumbnail}
                             alt=""
-                            className="w-full h-full object-cover"
+                            fill
+                            width={400}
+                            height={225}
+                            className="w-full h-full object-cover" // Zmieniamy na object-cover
                           />
                           <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                             <div className="text-center text-white">
@@ -478,7 +487,7 @@ export function ChampionProfile({ champion }: ChampionProfileProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/80 flex items-center justify-center z-[99999] p-4"
             onClick={() => setSelectedVideo(null)}
           >
             <motion.div

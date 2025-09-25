@@ -63,14 +63,15 @@ export const getAllBreederMeetingImages = (): string[] => {
 }
 
 // Funkcja do pobierania wszystkich spotkań z hodowcami
-export const getAllBreederMeetings = (): Array<{
+export const getAllBreederMeetings = async (): Promise<Array<{
     id: string
     name: string
     location: string
     date: string
     description: string
     images: string[]
-}> => {
+}>> => {
+    // Używaj tylko prawdziwych danych z folderów - bez fallback do mocków
     const breeders = [
         {
             name: 'Geert Munnik',

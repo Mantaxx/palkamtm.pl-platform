@@ -1,11 +1,11 @@
-import { Metadata } from 'next'
-import SellerDashboard from '@/components/dashboard/SellerDashboard'
+'use client'
 
-export const metadata: Metadata = {
-  title: 'Panel Sprzedawcy - Gołębie Pocztowe',
-  description: 'Zarządzaj swoimi aukcjami i sprzedażami'
-}
+// This page is intentionally left blank.
+// The routing logic in /app/dashboard/page.tsx handles displaying the correct dashboard.
+// This file is kept to prevent Next.js from throwing a 404 error for the /seller/dashboard route,
+// but it renders nothing to avoid duplicate content.
+// Consider removing this route entirely in the future.
 
 export default function SellerDashboardPage() {
-  return <SellerDashboard />
+  return null
 }

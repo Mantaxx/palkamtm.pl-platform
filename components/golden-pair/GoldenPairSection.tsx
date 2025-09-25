@@ -3,6 +3,7 @@
 import { getImagesFromFolder } from '@/utils/getImagesFromFolder'
 import { motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight, Download, Eye, X } from 'lucide-react'
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 
 interface Photo {
@@ -168,23 +169,18 @@ export default function GoldenPairSection() {
                                     whileInView={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.6, delay: index * 0.1 }}
                                     viewport={{ once: true }}
-                                    className="group cursor-pointer w-96"
+                                    className="group cursor-pointer w-96" // Usuwamy hover:scale-105
                                     onClick={() => photos[index] && openPhotoModal(photos[index], index)}
                                 >
                                     <div className="relative overflow-hidden rounded-lg shadow-lg bg-white hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
                                         <div className="relative h-[36rem]">
                                             {photos[index] ? (
-                                                <img
+                                                <Image
                                                     src={photos[index].src}
                                                     alt={photos[index].alt}
+                                                    width={400}
+                                                    height={576}
                                                     className="w-full h-full object-cover"
-                                                    onError={(e) => {
-                                                        e.currentTarget.style.display = 'none'
-                                                        const nextElement = e.currentTarget.nextElementSibling as HTMLElement
-                                                        if (nextElement) {
-                                                            nextElement.style.display = 'flex'
-                                                        }
-                                                    }}
                                                 />
                                             ) : null}
                                             <div className="hidden w-full h-full bg-gray-200 items-center justify-center">
@@ -203,22 +199,17 @@ export default function GoldenPairSection() {
                                     whileInView={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.6, delay: 0.2 }}
                                     viewport={{ once: true }}
-                                    className="group cursor-pointer w-[52rem]"
+                                    className="group cursor-pointer w-[52rem]" // Usuwamy hover:scale-105
                                     onClick={() => openPhotoModal(photos[2], 2)}
                                 >
                                     <div className="relative overflow-hidden rounded-lg shadow-lg bg-white hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
                                         <div className="relative h-[36rem]">
-                                            <img
+                                            <Image
                                                 src={photos[2].src}
                                                 alt={photos[2].alt}
+                                                width={832}
+                                                height={576}
                                                 className="w-full h-full object-cover"
-                                                onError={(e) => {
-                                                    e.currentTarget.style.display = 'none'
-                                                    const nextElement = e.currentTarget.nextElementSibling as HTMLElement
-                                                    if (nextElement) {
-                                                        nextElement.style.display = 'flex'
-                                                    }
-                                                }}
                                             />
                                             <div className="hidden w-full h-full bg-gray-200 items-center justify-center">
                                                 <span className="text-gray-500">Brak zdjęcia</span>
@@ -287,7 +278,7 @@ export default function GoldenPairSection() {
 
                 {/* Photo Modal */}
                 {selectedPhoto && (
-                    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+                    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[99999] p-4">
                         <div className="relative max-w-4xl max-h-full">
                             <button
                                 onClick={closePhotoModal}
@@ -319,9 +310,11 @@ export default function GoldenPairSection() {
                             )}
 
                             <div className="bg-white rounded-xl overflow-hidden">
-                                <img
+                                <Image
                                     src={selectedPhoto.src}
                                     alt={selectedPhoto.alt}
+                                    width={800}
+                                    height={600}
                                     className="w-full h-full object-contain max-h-[80vh]"
                                 />
                             </div>
@@ -339,7 +332,7 @@ export default function GoldenPairSection() {
 
                 {/* Pedigree Modal */}
                 {selectedPedigree && (
-                    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+                    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[99999] p-4">
                         <div className="relative max-w-6xl max-h-full w-full">
                             <button
                                 onClick={closePedigreeModal}
@@ -365,7 +358,7 @@ export default function GoldenPairSection() {
                                                     Podgląd PDF
                                                 </p>
                                                 <p className="text-sm text-gray-500 mb-4">
-                                                    Kliknij "Pobierz" aby otworzyć rodowód
+                                                    Kliknij &quot;Pobierz&quot; aby otworzyć rodowód
                                                 </p>
                                                 <button
                                                     onClick={() => downloadPedigree(selectedPedigree)}

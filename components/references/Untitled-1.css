@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Champion Pigeons - Editorial Display</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .scene-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+        }
+
+        .glass-panel {
+            position: relative;
+            width: 800px;
+            height: 500px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            box-shadow: 
+                0 20px 40px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.2),
+                0 0 100px rgba(255,255,255,0.1);
+            transform: rotateY(-5deg) rotateX(2deg);
+            animation: glassFloat 6s ease-in-out infinite;
+        }
+
+        @keyframes glassFloat {
+            0%, 100% { transform: rotateY(-5deg) rotateX(2deg) translateY(0px); }
+            50% { transform: rotateY(-5deg) rotateX(2deg) translateY(-10px); }
+        }
+
+        .led-backlight {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            background: linear-gradient(45deg, rgba(255,255,255,0.4), rgba(200,220,255,0.6));
+            border-radius: 25px;
+            filter: blur(20px);
+            opacity: 0.8;
+            animation: ledPulse 4s ease-in-out infinite;
+        }
+
+        @keyframes ledPulse {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.02); }
+        }
+
+        .achievements-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            color: rgba(255,255,255,0.95);
+            text-align: center;
+            font-size: 18px;
+            line-height: 1.8;
+            font-weight: 500;
+            text-shadow: 
+                0 0 10px rgba(255,255,255,0.8),
+                0 0 20px rgba(255,255,255,0.4),
+                0 2px 4px rgba(0,0,0,0.3);
+            letter-spacing: 0.5px;
+        }
+
+        .achievements-text strong {
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 
+                0 0 15px rgba(255,255,255,1),
+                0 0 30px rgba(255,255,255,0.6);
+        }
+
+        .pigeon {
+            position: absolute;
+            width: 200px;
+            height: 180px;
+            border-radius: 50% 40% 50% 40%;
+            background: linear-gradient(135deg, #4a4a4a 0%, #6d6d6d 30%, #8a8a8a 60%, #4a4a4a 100%);
+            box-shadow: 
+                0 20px 40px rgba(0,0,0,0.4),
+                inset -10px -10px 20px rgba(0,0,0,0.3),
+                inset 10px 10px 20px rgba(255,255,255,0.1);
+            animation: pigeonFloat 5s ease-in-out infinite;
+        }
+
+        .pigeon-left {
+            top: 20%;
+            left: -150px;
+            transform: rotate(-15deg);
+            animation-delay: -1s;
+        }
+
+        .pigeon-right {
+            top: 15%;
+            right: -150px;
+            transform: rotate(15deg);
+            animation-delay: -3s;
+        }
+
+        @keyframes pigeonFloat {
+            0%, 100% { transform: translateY(0px) rotate(var(--rotation, 0deg)); }
+            50% { transform: translateY(-15px) rotate(var(--rotation, 0deg)); }
+        }
+
+        .pigeon-left { --rotation: -15deg; }
+        .pigeon-right { --rotation: 15deg; }
+
+        .pigeon::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 30%;
+            width: 15px;
+            height: 15px;
+            background: radial-gradient(circle, #000 40%, #444 100%);
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .pigeon::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 20%;
+            width: 40px;
+            height: 20px;
+            background: linear-gradient(45deg, #ffaa00 0%, #ff8800 50%, #cc6600 100%);
+            border-radius: 50% 10px 50% 10px;
+            transform: rotate(-10deg);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .wing {
+            position: absolute;
+            width: 80px;
+            height: 40px;
+            background: linear-gradient(45deg, #555 0%, #777 50%, #555 100%);
+            border-radius: 50% 20% 50% 20%;
+            top: 40%;
+            right: -20px;
+            transform: rotate(20deg);
+            box-shadow: 
+                0 5px 15px rgba(0,0,0,0.3),
+                inset 0 2px 4px rgba(255,255,255,0.1);
+            animation: wingFlutter 3s ease-in-out infinite;
+        }
+
+        @keyframes wingFlutter {
+            0%, 100% { transform: rotate(20deg) scale(1); }
+            50% { transform: rotate(25deg) scale(1.05); }
+        }
+
+        .light-rays {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse 200% 100% at 50% 50%, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%),
+                conic-gradient(from 0deg, transparent, rgba(255,255,255,0.05), transparent, rgba(255,255,255,0.05), transparent);
+            opacity: 0.6;
+            animation: raysRotate 20s linear infinite;
+        }
+
+        @keyframes raysRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .premium-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(200,220,255,0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .depth-blur {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse 60% 40% at center, transparent 20%, rgba(0,0,0,0.1) 80%);
+            pointer-events: none;
+        }
+
+        @media (max-width: 1200px) {
+            .glass-panel { width: 90vw; height: 60vh; }
+            .achievements-text { font-size: 16px; }
+            .pigeon { width: 150px; height: 135px; }
+            .pigeon-left { left: -100px; }
+            .pigeon-right { right: -100px; }
+        }
+
+        @media (max-width: 768px) {
+            .achievements-text { font-size: 14px; line-height: 1.6; }
+            .pigeon { width: 120px; height: 108px; }
+            .pigeon-left { left: -80px; top: 10%; }
+            .pigeon-right { right: -80px; top: 10%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="scene-container">
+        <div class="light-rays"></div>
+        
+        <div class="glass-panel">
+            <div class="led-backlight"></div>
+            <div class="achievements-text">
+                <strong>Sezon 2001</strong><br><br>
+                <strong>Oddział Lubań A</strong> - Mistrz 235,77 coeff 20 kon.<br>
+                <strong>Oddział Lubań B</strong> - I Wicemistrz 503,62 coeff 16 kon.<br>
+                <strong>Oddział Lubań GMO</strong> - Mistrz<br><br>
+                <strong>Okręg Jelenia Góra A</strong> - I Wicemistrz<br>
+                <strong>Okręg Jelenia Góra B</strong> - IX Przodownik<br>
+                <strong>Okręg Jelenia Góra GMO</strong> - I Wicemistrz
+            </div>
+        </div>
+
+        <div class="pigeon pigeon-left">
+            <div class="wing"></div>
+        </div>
+        
+        <div class="pigeon pigeon-right">
+            <div class="wing"></div>
+        </div>
+        
+        <div class="premium-overlay"></div>
+        <div class="depth-blur"></div>
+    </div>
+
+    <script>
+        // Add subtle interactive effects
+        document.addEventListener('mousemove', (e) => {
+            const glassPanel = document.querySelector('.glass-panel');
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            
+            const deltaX = (e.clientX - centerX) / centerX;
+            const deltaY = (e.clientY - centerY) / centerY;
+            
+            const rotateX = deltaY * 5;
+            const rotateY = -deltaX * 10;
+            
+            glassPanel.style.transform = `rotateY(${-5 + rotateY}deg) rotateX(${2 + rotateX}deg)`;
+        });
+
+        // Add depth of field effect
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const parallax = scrolled * 0.5;
+            
+            document.querySelector('.light-rays').style.transform = `rotate(${parallax * 0.1}deg)`;
+        });
+
+        // Enhanced LED pulsing based on time
+        setInterval(() => {
+            const ledBacklight = document.querySelector('.led-backlight');
+            const intensity = 0.6 + 0.4 * Math.sin(Date.now() * 0.003);
+            ledBacklight.style.opacity = intensity;
+        }, 50);
+    </script>
+</body>
+</html>

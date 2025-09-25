@@ -19,8 +19,8 @@ export default function GoogleMap() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Mapa */}
                 <div className="relative">
-                    <div className="aspect-video rounded-2xl overflow-hidden border-2 border-white" style={{
-                        boxShadow: '0 8px 32px rgba(255, 255, 255, 0.4), 0 16px 64px rgba(255, 255, 255, 0.2), 0 24px 96px rgba(255, 255, 255, 0.1)'
+                    <div className="aspect-video rounded-2xl overflow-hidden border-2 border-white bg-white/10 backdrop-blur-xl" style={{
+                        boxShadow: 'none'
                     }}>
                         <iframe
                             src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(address)}&zoom=15`}
@@ -37,12 +37,13 @@ export default function GoogleMap() {
 
                 {/* Informacje o dojeździe */}
                 <div className="space-y-6">
-                    <div className="text-center lg:text-left">
+                    <div className="relative group p-6 rounded-2xl border-2 border-white bg-white/25 backdrop-blur-xl text-center lg:text-left transition-transform duration-300 hover:-translate-y-1" style={{ boxShadow: 'none' }}>
+                        <span className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ boxShadow: '0 0 28px 8px rgba(255,255,255,0.9)' }}></span>
                         <h3 className="text-2xl font-bold text-white mb-4 flex items-center justify-center lg:justify-start">
-                            <MapPin className="w-6 h-6 mr-2 text-slate-400" />
+                            <MapPin className="w-6 h-6 mr-2 text-slate-300" />
                             Jak do nas trafić
                         </h3>
-                        <p className="text-slate-200 mb-6">
+                        <p className="text-slate-200">
                             Nasza hodowla znajduje się w Lubaniu, w sercu Dolnego Śląska.
                             Zapraszamy do odwiedzenia nas po wcześniejszym umówieniu.
                         </p>
@@ -54,17 +55,16 @@ export default function GoogleMap() {
                             href={googleMapsUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="block w-full p-4 glass-morphism rounded-2xl border-2 border-white hover:glass-morphism-strong transition-all duration-300 group"
+                            className="relative group block w-full p-4 rounded-2xl border-2 border-white bg-white/25 backdrop-blur-xl transition-transform duration-300 hover:-translate-y-1"
                             style={{
-                                boxShadow: '0 8px 32px rgba(255, 255, 255, 0.4), 0 16px 64px rgba(255, 255, 255, 0.2), 0 24px 96px rgba(255, 255, 255, 0.1)'
+                                boxShadow: 'none'
                             }}
                         >
+                            <span className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ boxShadow: '0 0 28px 8px rgba(255,255,255,0.9)' }}></span>
                             <div className="flex items-center justify-center">
-                                <MapPin className="w-5 h-5 mr-3 text-slate-400 group-hover:text-white transition-colors" />
+                                <MapPin className="w-5 h-5 mr-3 text-slate-300" />
                                 <span className="text-white font-medium">Zobacz na mapie</span>
-                                <ExternalLink className="w-4 h-4 ml-2 text-slate-400 group-hover:text-white transition-colors" />
+                                <ExternalLink className="w-4 h-4 ml-2 text-slate-300" />
                             </div>
                         </motion.a>
 
@@ -72,25 +72,25 @@ export default function GoogleMap() {
                             href={directionsUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="block w-full p-4 glass-morphism rounded-2xl border-2 border-white hover:glass-morphism-strong transition-all duration-300 group"
+                            className="relative group block w-full p-4 rounded-2xl border-2 border-white bg-white/25 backdrop-blur-xl transition-transform duration-300 hover:-translate-y-1"
                             style={{
-                                boxShadow: '0 8px 32px rgba(255, 255, 255, 0.4), 0 16px 64px rgba(255, 255, 255, 0.2), 0 24px 96px rgba(255, 255, 255, 0.1)'
+                                boxShadow: 'none'
                             }}
                         >
+                            <span className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ boxShadow: '0 0 28px 8px rgba(255,255,255,0.9)' }}></span>
                             <div className="flex items-center justify-center">
-                                <Navigation className="w-5 h-5 mr-3 text-slate-400 group-hover:text-white transition-colors" />
+                                <Navigation className="w-5 h-5 mr-3 text-slate-300" />
                                 <span className="text-white font-medium">Pobierz trasę</span>
-                                <ExternalLink className="w-4 h-4 ml-2 text-slate-400 group-hover:text-white transition-colors" />
+                                <ExternalLink className="w-4 h-4 ml-2 text-slate-300" />
                             </div>
                         </motion.a>
                     </div>
 
                     {/* Dodatkowe informacje */}
-                    <div className="mt-8 p-6 glass-morphism rounded-2xl border-2 border-white" style={{
-                        boxShadow: '0 8px 32px rgba(255, 255, 255, 0.4), 0 16px 64px rgba(255, 255, 255, 0.2), 0 24px 96px rgba(255, 255, 255, 0.1)'
+                    <div className="relative group mt-8 p-6 rounded-2xl border-2 border-white bg-white/25 backdrop-blur-xl transition-transform duration-300 hover:-translate-y-1" style={{
+                        boxShadow: 'none'
                     }}>
+                        <span className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ boxShadow: '0 0 28px 8px rgba(255,255,255,0.9)' }}></span>
                         <h4 className="text-lg font-semibold text-white mb-4">Wskazówki dojazdu</h4>
                         <ul className="space-y-2 text-slate-200 text-sm">
                             <li>• Z centrum Lubania: 5 minut samochodem</li>

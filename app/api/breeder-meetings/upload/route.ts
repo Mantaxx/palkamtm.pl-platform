@@ -33,8 +33,24 @@ export async function POST(request: NextRequest) {
     const breederName = formData.get('breederName') as string
     const files = formData.getAll('images') as File[]
 
-    if (!title || !breederName || files.length === 0) {
-      return NextResponse.json({ error: 'Brakuje wymaganych pól' }, { status: 400 })
+    // Walidacja danych wejściowych - BEZPIECZEŃSTWO
+    if (!title || typeof title !== 'string' || title.trim().length < 3) {
+      return NextResponse.json({ error: 'Tytuł jest wymagany i musi mieć co najmniej 3 znaki' }, { status: 400 })
+    }
+
+    if (!breederName || typeof breederName !== 'string' || breederName.trim().length < 2) {
+      return NextResponse.json({ error: 'Nazwa hodowcy jest wymagana i musi mieć co najmniej 2 znaki' }, { status: 400 })
+    }
+
+    if (!Array.isArray(files) || files.length === 0) {
+      return NextResponse.json({ error: 'Przynajmniej jedno zdjęcie jest wymagane' }, { status: 400 })
+    }
+
+    // Walidacja rozmiaru plików
+    for (const file of files) {
+      if (file.size > MAX_FILE_SIZE) {
+        return NextResponse.json({ error: `Plik jest za duży. Maksymalny rozmiar to ${MAX_FILE_SIZE / (1024 * 1024)}MB` }, { status: 400 })
+      }
     }
 
     // Validate file count
@@ -61,12 +77,16 @@ export async function POST(request: NextRequest) {
 
     // Utwórz folder dla spotkania
     const meetingId = `meeting-${Date.now()}`
-    const meetingFolder = join(process.cwd(), 'public', 'breeder-meetings', breederName.replace(/\s+/g, '-').toLowerCase())
+    const meetingFolder = join(process.cwd(), 'public', 'breeder-meetings', meetingId)
 
     try {
       await mkdir(meetingFolder, { recursive: true })
-    } catch (error) {
-      // Folder może już istnieć
+    } catch (error: unknown) {
+      // Log error if it's not about the folder already existing
+      if (error && typeof error === 'object' && 'code' in error && error.code !== 'EEXIST') {
+        console.error('Failed to create directory:', error)
+        throw error;
+      }
     }
 
     // Zapisz zdjęcia
@@ -81,20 +101,19 @@ export async function POST(request: NextRequest) {
       const filePath = join(meetingFolder, fileName)
 
       await writeFile(filePath, buffer)
-      imagePaths.push(`/breeder-meetings/${breederName.replace(/\s+/g, '-').toLowerCase()}/${fileName}`)
+      imagePaths.push(`/breeder-meetings/${meetingId}/${fileName}`)
     }
 
     // Zapisz do bazy danych
     const breederMeeting = await prisma.breederMeeting.create({
       data: {
+        id: meetingId, // Use the generated meetingId as the primary key
         title,
         description: description || null,
-        location: location || null,
-        meetingDate: meetingDate ? new Date(meetingDate) : null,
-        breederName,
+        location: location || '',
+        date: meetingDate ? new Date(meetingDate) : new Date(),
         images: JSON.stringify(imagePaths),
-        uploadedBy: session.user.id,
-        isApproved: false, // Wymaga zatwierdzenia
+        userId: session.user.id,
       },
     })
 

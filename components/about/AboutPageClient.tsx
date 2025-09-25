@@ -1,21 +1,20 @@
 'use client'
 
-import { UnifiedLayout } from '@/components/layout/UnifiedLayout'
 import { Text3D } from '@/components/ui/Text3D'
 import { UnifiedCard } from '@/components/ui/UnifiedCard'
 import { motion } from 'framer-motion'
 
 export default function AboutPageClient() {
     return (
-        <UnifiedLayout>
+        <>
             {/* Hero Section */}
             <motion.section
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, delay: 0.6 }}
-                className="relative z-10 pt-64 pb-20 px-4 sm:px-6 lg:px-8"
+                className="relative z-10 pt-8 pb-20 px-4 sm:px-6 lg:px-8"
             >
-                <div className="max-w-4xl mx-auto text-center">
+                <div className="w-full mx-auto text-center">
                     <Text3D
                         variant="neon"
                         intensity="high"
@@ -72,7 +71,7 @@ export default function AboutPageClient() {
                                     U steru naszej hodowli od samego początku, czyli od lat 80., stoi Tadeusz Pałka – patriarcha, mentor i wizjoner. To on wpoił nam filozofię, że prawdziwego hodowcę poznaje się nie po zasobności portfela, lecz po oddaniu. Przez 365 dni w roku jesteśmy dla naszych ptaków weterynarzami, dietetykami i trenerami.
                                 </p>
                                 <p className="mb-6">
-                                    Tadeusz mawia: "Ptaki to czują", a wyniki, które osiągamy, są tego najlepszym dowodem. Jego dekady doświadczenia to kapitał, na którym budujemy nasze dzisiejsze sukcesy.
+                                    Tadeusz mawia: &quot;Ptaki to czują&quot;, a wyniki, które osiągamy, są tego najlepszym dowodem. Jego dekady doświadczenia to kapitał, na którym budujemy nasze dzisiejsze sukcesy.
                                 </p>
 
                                 <h3 className="text-2xl font-bold text-cyan-200 mb-4 mt-8">Siła Pokoleń: Energia, Która Zmieniła Wszystko</h3>
@@ -80,7 +79,7 @@ export default function AboutPageClient() {
                                     Prawdziwy przełom nastąpił, gdy do Tadeusza dołączyli synowie, wnosząc nową energię i odwagę do działania. To właśnie Mariusz Pałka, jego prawa ręka, wraz z ojcem na przełomie wieków zrewolucjonizował naszą hodowlę. Import elitarnych gołębi z linii Janssen, Vandenabeele czy od mistrzów jak Gerhard Peters, nasycił nasze stado genem zwycięzców i nadał mu niezrównaną szybkość.
                                 </p>
                                 <p className="mb-6">
-                                    Dziś tę misję kontynuuje Marcin Pałka, który od dziecka związany jest z gołębnikiem. Jego precyzja w logistyce i organizacji lotów zapewnia, że każdy start naszych podopiecznych jest przygotowany perfekcyjnie. To dzięki tej synergii pokoleń MTM Pałka stało się synonimem "mistrzów sprintu".
+                                    Dziś tę misję kontynuuje Marcin Pałka, który od dziecka związany jest z gołębnikiem. Jego precyzja w logistyce i organizacji lotów zapewnia, że każdy start naszych podopiecznych jest przygotowany perfekcyjnie. To dzięki tej synergii pokoleń MTM Pałka stało się synonimem &quot;mistrzów sprintu&quot;.
                                 </p>
 
                                 <h3 className="text-2xl font-bold text-blue-300 mb-4 mt-8">W Cieniu Skrzydeł: Historia, Która Daje Nam Siłę</h3>
@@ -105,43 +104,9 @@ export default function AboutPageClient() {
                         </div>
                     </motion.section>
 
-                    {/* Osiągnięcia */}
-                    <motion.section
-                        initial={{ opacity: 0, y: 50 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, delay: 0.6 }}
-                        viewport={{ once: true }}
-                    >
-                        <UnifiedCard variant="gradient" glow={true} className="p-8">
-                            <Text3D
-                                variant="shimmer"
-                                intensity="high"
-                                className="text-3xl md:text-4xl font-bold mb-6"
-                            >
-                                Nasze Osiągnięcia
-                            </Text3D>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                <div className="text-center">
-                                    <div className="text-4xl font-bold text-white mb-2" style={{ textShadow: '0 0 20px rgba(255, 255, 255, 0.8)' }}>50+</div>
-                                    <p className="text-white/90">Championów</p>
-                                </div>
-                                <div className="text-center">
-                                    <div className="text-4xl font-bold text-white mb-2" style={{ textShadow: '0 0 20px rgba(255, 255, 255, 0.8)' }}>100+</div>
-                                    <p className="text-white/90">Wygranych konkursów</p>
-                                </div>
-                                <div className="text-center">
-                                    <div className="text-4xl font-bold text-white mb-2" style={{ textShadow: '0 0 20px rgba(255, 255, 255, 0.8)' }}>20+</div>
-                                    <p className="text-white/90">Lat doświadczenia</p>
-                                </div>
-                                <div className="text-center">
-                                    <div className="text-4xl font-bold text-white mb-2" style={{ textShadow: '0 0 20px rgba(255, 255, 255, 0.8)' }}>500+</div>
-                                    <p className="text-white/90">Zadowolonych klientów</p>
-                                </div>
-                            </div>
-                        </UnifiedCard>
-                    </motion.section>
+                    
                 </div>
             </div>
-        </UnifiedLayout>
+        </>
     )
 }

@@ -1,8 +1,10 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Award, Medal, Star, Trophy } from 'lucide-react'
+import { Award, Medal, Pause, Play, Star, Trophy } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 
+// Mock data for timeline events (reusing from previous version)
 const timelineEvents = [
   {
     year: 2001,
@@ -13,10 +15,10 @@ const timelineEvents = [
       'Mistrz Oddziału Lubań - GMO',
       'I Wicemistrz Okręgu Jelenia Góra - Kat. A (235,77 coef., 20 konkursów)',
       'IX Przodownik Okręgu Jelenia Góra - Kat. B (503,62 coef., 16 konkursów)',
-      'I Wicemistrz Okręgu Jelenia Góra - GMO'
+      'I Wicemistrz Okręgu Jelenia Góra - GMO',
     ],
     icon: Star,
-    color: 'bg-green-500'
+    color: 'bg-green-500',
   },
   {
     year: 2002,
@@ -27,10 +29,10 @@ const timelineEvents = [
       'Mistrz Okręgu Jelenia Góra - Kat. A (501,52 coef., 20 konkursów)',
       'Mistrz Okręgu Jelenia Góra - GMO (40 pkt)',
       '50. Przodownik Regionu V - Kat. A (501,52 coef., 20 konkursów)',
-      'II Przodownik Regionu V - Kat. B (168,11 coef., 16 konkursów)'
+      'II Przodownik Regionu V - Kat. B (168,11 coef., 16 konkursów)',
     ],
     icon: Trophy,
-    color: 'bg-slate-500'
+    color: 'bg-slate-500',
   },
   {
     year: 2003,
@@ -50,10 +52,10 @@ const timelineEvents = [
       'II Przodownik Regionu V - Kat. D',
       '11. Przodownik Regionu V - GMP (1066,26 pkt)',
       '13. Przodownik Mistrzostw Polski - Kat. C (71,99 coef., 9 konkursów)',
-      '28. Przodownik Mistrzostw Polski - GMP (1066,26 pkt)'
+      '28. Przodownik Mistrzostw Polski - GMP (1066,26 pkt)',
     ],
     icon: Award,
-    color: 'bg-purple-500'
+    color: 'bg-purple-500',
   },
   {
     year: 2004,
@@ -67,10 +69,10 @@ const timelineEvents = [
       'I Przodownik Okręgu Jelenia Góra - GMO',
       '18. Przodownik Regionu V - Kat. A (180,91 coef., 20 konkursów)',
       '35. Przodownik Regionu V - Kat. D (839,32 pkt)',
-      '32. Przodownik Mistrzostw Polski - Kat. A (180,91 coef., 20 konkursów)'
+      '32. Przodownik Mistrzostw Polski - Kat. A (180,91 coef., 20 konkursów)',
     ],
     icon: Trophy,
-    color: 'bg-yellow-500'
+    color: 'bg-yellow-500',
   },
   {
     year: 2005,
@@ -84,10 +86,10 @@ const timelineEvents = [
       'I Przodownik Okręgu Jelenia Góra - GMO',
       'II Wicemistrz Regionu V - Kat. A (90,65 coef., 20 konkursów)',
       'I Przodownik Mistrzostw Polski - Kat. A (90,65 coef., 20 konkursów)',
-      'V Przodownik Mistrzostw Polski - Kat. B (66,96 coef., 16 konkursów)'
+      'V Przodownik Mistrzostw Polski - Kat. B (66,96 coef., 16 konkursów)',
     ],
     icon: Trophy,
-    color: 'bg-red-500'
+    color: 'bg-red-500',
   },
   {
     year: 2006,
@@ -102,10 +104,10 @@ const timelineEvents = [
       '18. Przodownik Regionu V - Kat. A (240,15 coef., 20 konkursów)',
       '24. Przodownik Regionu V - Kat. B (183,25 coef., 16 konkursów)',
       '3. Przodownik Regionu V - GMO (82,77 pkt, 15 konkursów)',
-      'VI Przodownik Mistrzostw Polski - GMO (82,77 pkt, 15 konkursów)'
+      'VI Przodownik Mistrzostw Polski - GMO (82,77 pkt, 15 konkursów)',
     ],
     icon: Medal,
-    color: 'bg-indigo-500'
+    color: 'bg-indigo-500',
   },
   {
     year: 2007,
@@ -115,10 +117,10 @@ const timelineEvents = [
       'II Wicemistrz Oddziału Lubań - GMO',
       'Mistrz Okręgu Jelenia Góra - Kat. A (78,06 coef., 20 konkursów)',
       'II Przodownik Regionu V - Kat. A (78,06 coef., 20 konkursów)',
-      'I Przodownik Mistrzostw Polski - Kat. A (78,06 coef., 20 konkursów)'
+      'I Przodownik Mistrzostw Polski - Kat. A (78,06 coef., 20 konkursów)',
     ],
     icon: Star,
-    color: 'bg-pink-500'
+    color: 'bg-pink-500',
   },
   {
     year: 2008,
@@ -134,10 +136,10 @@ const timelineEvents = [
       'XX Przodownik Regionu V - Kat. B (158,27 coef., 16 konkursów)',
       'I Wicemistrz Regionu V - GMP (49,88 pkt)',
       '20. Przodownik Regionu V - GMP (158,27 pkt)',
-      '3. Przodownik Mistrzostw Polski - Kat. A (49,88 coef., 20 konkursów)'
+      '3. Przodownik Mistrzostw Polski - Kat. A (49,88 coef., 20 konkursów)',
     ],
     icon: Medal,
-    color: 'bg-slate-500'
+    color: 'bg-slate-500',
   },
   {
     year: 2009,
@@ -148,10 +150,10 @@ const timelineEvents = [
       'Mistrz Okręgu Jelenia Góra - Kat. A (82,33 coef., 20 konkursów)',
       'Mistrz Okręgu Jelenia Góra - Kat. B (81,43 coef., 16 konkursów)',
       'Mistrz Regionu V - Kat. A (82,33 coef., 20 konkursów)',
-      '148. Przodownik Ogólnopolski - GMP (1401,99 pkt)'
+      '148. Przodownik Ogólnopolski - GMP (1401,99 pkt)',
     ],
     icon: Trophy,
-    color: 'bg-violet-500'
+    color: 'bg-violet-500',
   },
   {
     year: 2011,
@@ -171,10 +173,10 @@ const timelineEvents = [
       'Mistrz Okręgu Jelenia Góra - Kat. D',
       'Mistrz Okręgu Jelenia Góra - Kat. M (6 konkursów)',
       'Mistrz Regionu V - Kat. B (16 konkursów)',
-      'Mistrz Regionu V - Kat. D'
+      'Mistrz Regionu V - Kat. D',
     ],
     icon: Award,
-    color: 'bg-emerald-500'
+    color: 'bg-emerald-500',
   },
   {
     year: 2012,
@@ -192,10 +194,10 @@ const timelineEvents = [
       'I Mistrz Oddziału Lubań - Roczne (413,58 coef., 20 konkursów)',
       'I Mistrz Oddziału Lubań - Olimpijskie (646,45 pkt)',
       'I Mistrz Oddziału Lubań - Total dorośli (1080,51 pkt)',
-      'II Wicemistrz Oddziału Lubań - Total młodzi (150,62 pkt)'
+      'II Wicemistrz Oddziału Lubań - Total młodzi (150,62 pkt)',
     ],
     icon: Trophy,
-    color: 'bg-teal-500'
+    color: 'bg-teal-500',
   },
   {
     year: 2013,
@@ -222,10 +224,10 @@ const timelineEvents = [
       'Mistrz Oddziału Lubań - Kat. H (338,68 coef., 18 konkursów)',
       '3. Przodownik Oddziału Lubań - Roczne (1025,61 coef., 28 konkursów)',
       'I Wicemistrz Oddziału Lubań - Total młodzi (562,03 coef., 25 konkursów)',
-      'Mistrz Oddziału Lubań - 5 najlepszych młodzi (1139,02 coef., 21 konkursów)'
+      'Mistrz Oddziału Lubań - 5 najlepszych młodzi (1139,02 coef., 21 konkursów)',
     ],
     icon: Star,
-    color: 'bg-orange-500'
+    color: 'bg-orange-500',
   },
   {
     year: 2014,
@@ -244,10 +246,10 @@ const timelineEvents = [
       'I Mistrz Oddziału Lubań - Kat. D (557,24 pkt)',
       'I Mistrz Oddziału Lubań - Kat. H (577,48 pkt)',
       'I Mistrz Oddziału Lubań - Roczne (239,29 coef., 20 konkursów)',
-      '2. Przodownik Oddziału Lubań - Lotniki (524,88 pkt)'
+      '2. Przodownik Oddziału Lubań - Lotniki (524,88 pkt)',
     ],
     icon: Trophy,
-    color: 'bg-yellow-500'
+    color: 'bg-yellow-500',
   },
   {
     year: 2015,
@@ -260,10 +262,10 @@ const timelineEvents = [
       'I Mistrz Oddziału Lubań - Kat. A (86,77 coef., 20 konkursów)',
       'I Mistrz Oddziału Lubań - Kat. B (237,95 coef., 16 konkursów)',
       'I Mistrz Oddziału Lubań - Kat. C (199,65 coef., 9 konkursów)',
-      'I Mistrz Oddziału Lubań - Kat. D (520,82 pkt, 45 konkursów)'
+      'I Mistrz Oddziału Lubań - Kat. D (520,82 pkt, 45 konkursów)',
     ],
     icon: Medal,
-    color: 'bg-lime-500'
+    color: 'bg-lime-500',
   },
   {
     year: 2017,
@@ -271,10 +273,10 @@ const timelineEvents = [
     achievements: [
       '54. Przodownik Mistrzostw Polski - GMP (148,16 pkt)',
       '1. Przodownik Oddziału Lubań - Kat. A (348,53 coef., 20 konkursów)',
-      '1. Przodownik Oddziału Lubań - Kat. B (153,39 coef., 16 konkursów)'
+      '1. Przodownik Oddziału Lubań - Kat. B (153,39 coef., 16 konkursów)',
     ],
     icon: Trophy,
-    color: 'bg-violet-500'
+    color: 'bg-violet-500',
   },
   {
     year: 2018,
@@ -285,42 +287,82 @@ const timelineEvents = [
       'I Wicemistrz Okręgu Jelenia Góra - Kat. A (25,94 coef., 20 konkursów)',
       '16. Przodownik Oddziału Lubań - Total (XIII) (942,69 pkt)',
       'I Wicemistrz Oddziału Lubań - Kat. A (25,94 coef., 20 konkursów)',
-      'I Mistrz Oddziału Lubań - Kat. B (35,74 coef., 16 konkursów)'
+      'I Mistrz Oddziału Lubań - Kat. B (35,74 coef., 16 konkursów)',
     ],
     icon: Medal,
-    color: 'bg-rose-500'
+    color: 'bg-rose-500',
   },
   {
     year: 2019,
     title: 'Podwójne Mistrzostwo',
     achievements: [
       'I Mistrz Oddziału Lubań - Kat. A (82,76 coef.)',
-      'I Mistrz Oddziału Lubań - Kat. B (130,64 coef.)'
+      'I Mistrz Oddziału Lubań - Kat. B (130,64 coef.)',
     ],
     icon: Trophy,
-    color: 'bg-slate-500'
+    color: 'bg-slate-500',
   },
   {
     year: 2021,
     title: 'Powrót do Formy',
-    achievements: [
-      '61. Przodownik Mistrzostw Polski - Kat. A (249,85 pkt)'
-    ],
+    achievements: ['61. Przodownik Mistrzostw Polski - Kat. A (249,85 pkt)'],
     icon: Star,
-    color: 'bg-sky-500'
+    color: 'bg-sky-500',
   },
   {
     year: 2024,
     title: 'Współczesna Hodowla',
-    achievements: [
-      '13. Przodownik Mistrzostw Polski - Kat. A (85,05 pkt)'
-    ],
+    achievements: ['13. Przodownik Mistrzostw Polski - Kat. A (85,05 pkt)'],
     icon: Star,
-    color: 'bg-amber-500'
-  }
+    color: 'bg-amber-500',
+  },
 ]
 
 export default function TimelineSection() {
+  const [isAutoScrolling, setIsAutoScrolling] = useState(false)
+  const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  const toggleAutoScroll = () => {
+    setIsAutoScrolling(prev => !prev)
+  }
+
+  useEffect(() => {
+    const stopScrolling = () => {
+      if (scrollIntervalRef.current) {
+        clearInterval(scrollIntervalRef.current)
+        scrollIntervalRef.current = null
+        setIsAutoScrolling(false)
+      }
+    }
+
+    if (isAutoScrolling) {
+      scrollIntervalRef.current = setInterval(() => {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 2) {
+          stopScrolling()
+        } else {
+          window.scrollBy({ top: 1, behavior: 'smooth' })
+        }
+      }, 15) // Szybkość przewijania (mniejsza wartość = szybciej)
+    } else {
+      stopScrolling()
+    }
+
+    const handleUserScroll = () => {
+      if (isAutoScrolling) {
+        stopScrolling()
+      }
+    }
+
+    window.addEventListener('wheel', handleUserScroll)
+    window.addEventListener('touchmove', handleUserScroll)
+
+    return () => {
+      stopScrolling()
+      window.removeEventListener('wheel', handleUserScroll)
+      window.removeEventListener('touchmove', handleUserScroll)
+    }
+  }, [isAutoScrolling])
+
   return (
     <section className="py-20 bg-gradient-to-br from-slate-800 via-slate-700 to-slate-600 relative overflow-hidden">
       {/* Background Elements */}
@@ -337,6 +379,22 @@ export default function TimelineSection() {
           <p className="text-xl sm:text-2xl text-slate-200 max-w-4xl mx-auto leading-relaxed">
             Ponad 20 lat dominacji w polskim sporcie gołębiarskim. Od pierwszych sukcesów w 2001 roku, przez wielokrotne mistrzostwa Polski, po współczesne osiągnięcia w hodowli
           </p>
+          <div className="mt-8 flex justify-center">
+            <motion.button
+              type="button"
+              onClick={toggleAutoScroll}
+              className="flex items-center gap-3 px-6 py-3 rounded-full text-white font-semibold transition-all duration-300 glass-morphism-strong hover:bg-white/20"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {isAutoScrolling ? (
+                <Pause className="w-6 h-6" />
+              ) : (
+                <Play className="w-6 h-6" />
+              )}
+              <span>{isAutoScrolling ? 'Zatrzymaj przewijanie' : 'Rozpocznij przewijanie'}</span>
+            </motion.button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 lg:gap-8">
@@ -345,36 +403,36 @@ export default function TimelineSection() {
             return (
               <motion.div
                 key={event.year}
-                className={`relative ${isLeft ? 'md:col-start-1' : 'md:col-start-2'}`}
+                className={`group relative ${isLeft ? 'md:col-start-1' : 'md:col-start-2'}`}
                 initial={{
                   opacity: 0,
                   y: 50,
                   x: isLeft ? -100 : 100,
-                  rotateX: -10
+                  rotateX: -10,
                 }}
                 whileInView={{
                   opacity: 1,
                   y: 0,
                   x: 0,
                   rotateX: 0,
-                  scale: 1
+                  scale: 1,
                 }}
                 transition={{
                   duration: 0.8,
                   delay: index * 0.1,
                   ease: "easeOut",
                   type: "spring",
-                  stiffness: 100
+                  stiffness: 100,
                 }}
                 viewport={{ once: true, margin: "-100px" }}
                 whileHover={{
                   rotateY: isLeft ? 5 : -5,
                   scale: 1.02,
-                  transition: { duration: 0.3 }
+                  transition: { duration: 0.3 },
                 }}
                 style={{
                   transformStyle: "preserve-3d",
-                  perspective: "1000px"
+                  perspective: "1000px",
                 }}
               >
                 {/* Punkt zaczepienia */}
@@ -383,14 +441,18 @@ export default function TimelineSection() {
                 </div>
 
                 {/* Karta z osiągnięciami */}
-                <div className="glass-morphism-strong border-2 border-white group-hover:border-slate-400 transition-all duration-300 rounded-xl p-4 md:p-6 lg:p-8 shadow-xl w-full">
+                <div className="relative glass-morphism-strong border-2 border-white group-hover:border-slate-400 transition-all duration-300 rounded-xl p-4 md:p-6 lg:p-8 shadow-xl w-full overflow-hidden">
+                  {/* Shimmer effect overlay */}
+                  <div className="animate-shimmer absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12" />
+
+                  {/* Card Content */}
                   <div className="flex items-center mb-6">
                     <motion.span
                       className="text-3xl font-bold text-white mr-6"
                       whileHover={{
                         rotate: 360,
                         scale: 1.1,
-                        transition: { duration: 0.5 }
+                        transition: { duration: 0.5 },
                       }}
                     >
                       {event.year}
@@ -407,7 +469,7 @@ export default function TimelineSection() {
                         whileInView={{ opacity: 1, x: 0 }}
                         transition={{
                           duration: 0.5,
-                          delay: (index * 0.1) + (achievementIndex * 0.05)
+                          delay: (index * 0.1) + (achievementIndex * 0.05),
                         }}
                         viewport={{ once: true }}
                       >

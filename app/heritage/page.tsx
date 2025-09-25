@@ -1,4 +1,5 @@
-import HeritagePageClient from '@/components/heritage/HeritagePageClient'
+import { HeritageFlyingPages } from '@/components/heritage/HeritageFlyingPages';
+import { UnifiedLayout } from '@/components/layout/UnifiedLayout';
 
 export const metadata = {
   title: 'Nasze Dziedzictwo - Gołębie Pocztowe',
@@ -6,5 +7,9 @@ export const metadata = {
 }
 
 export default function HeritagePage() {
-  return <HeritagePageClient />
+  return (
+    <UnifiedLayout showNavigation>
+      <HeritageFlyingPages />
+    </UnifiedLayout>
+  );
 }

@@ -1,7 +1,8 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import Link from 'next/link'
+import { motion } from 'framer-motion';
+import Image from 'next/image';
+import Link from 'next/link';
 
 export function LogoGlow() {
     return (
@@ -9,29 +10,28 @@ export function LogoGlow() {
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 2.5, delay: 0.8 }}
-            className="absolute top-8 left-8 z-20"
+            className="relative z-20"
         >
-            {/* Światła lamp */}
-            <div
-                className="absolute top-40 -left-8 w-[28rem] h-40 rounded-full animate-pulse logo-glow-1"
-            ></div>
-            <div
-                className="absolute top-44 -left-6 w-96 h-32 rounded-full animate-pulse logo-glow-2"
-            ></div>
-            <div
-                className="absolute top-48 -left-4 w-80 h-24 rounded-full animate-pulse logo-glow-3"
-            ></div>
-            <div
-                className="absolute top-52 -left-2 w-64 h-16 rounded-full animate-pulse logo-glow-4"
-            ></div>
+            {/* Ulepszona poświata logo */}
+            <motion.div
+                className="absolute top-1/2 left-1/2 w-60 h-60 rounded-full logo-glow-effect"
+                style={{ x: '-50%', y: '-50%' }}
+                animate={{
+                    scale: [1, 1.1, 1],
+                    opacity: [0.7, 1, 0.7],
+                }}
+                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            />
 
             {/* Logo 3D - proste obracanie */}
             <div className="logo-3d-simple">
                 <Link href="/">
-                    <img
+                    <Image
                         src="/logo.png"
                         alt="Pałka M.T.M. Mistrzowie Sprintu"
-                        className="h-72 w-auto object-contain cursor-pointer logo-3d-rotate"
+                        width={240}
+                        height={240}
+                        className="h-60 w-auto object-contain cursor-pointer logo-3d-rotate logo-glow-img"
                     />
                 </Link>
             </div>

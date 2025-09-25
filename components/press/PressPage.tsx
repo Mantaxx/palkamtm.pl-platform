@@ -1,11 +1,11 @@
 'use client'
 
-import { UnifiedLayout } from '@/components/layout/UnifiedLayout'
 import { Text3D } from '@/components/ui/Text3D'
 import { UnifiedCard } from '@/components/ui/UnifiedCard'
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
-import React, { useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
+import { useEffect, useState } from 'react'
 
 // Automatyczne wykrywanie gazet z folderów
 const newspaperFolders = [
@@ -61,62 +61,12 @@ const newspaperFolders = [
   }
 ]
 
-const ThreeDCard = ({ children, folder }: { children: React.ReactNode; folder: { id: number; name: string; path: string; cover: string; images: string[]; year: string } }) => {
-  const cardRef = useRef<HTMLDivElement>(null)
-  const x = useMotionValue(0)
-  const y = useMotionValue(0)
-
-  const mouseXSpring = useSpring(x)
-  const mouseYSpring = useSpring(y)
-
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ['12.5deg', '-12.5deg'])
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ['-12.5deg', '12.5deg'])
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return
-    const { width, height, left, top } = cardRef.current.getBoundingClientRect()
-    const mouseX = e.clientX - left
-    const mouseY = e.clientY - top
-    const xPct = mouseX / width - 0.5
-    const yPct = mouseY / height - 0.5
-    x.set(xPct)
-    y.set(yPct)
-  }
-
-  const handleMouseLeave = () => {
-    x.set(0)
-    y.set(0)
-  }
-
-  return (
-    <motion.div
-      ref={cardRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{
-        rotateX, // framer-motion will handle this
-        rotateY, // framer-motion will handle this
-      }}
-      className="relative w-full h-full rounded-3xl glass-morphism-strong hover-3d-lift transition-all duration-500 border-2 border-white shadow-xl"
-    >
-      <div className="absolute inset-4 grid place-content-center rounded-2xl glass-morphism-ultra animate-glow3D transform-3d" style={{ transform: 'translateZ(75px)' }}>
-        {children}
-      </div>
-    </motion.div>
-  )
-}
 
 export function PressPage() {
-  const [selectedImage, setSelectedImage] = useState<{ src: string, title: string, folderId: number } | null>(null)
   const [selectedImagePair, setSelectedImagePair] = useState<{ left: string, right: string, folderId: number } | null>(null)
   const [currentPageIndex, setCurrentPageIndex] = useState(0)
   const [isNewspaperOpen, setIsNewspaperOpen] = useState(false)
   const [currentNewspaperImages, setCurrentNewspaperImages] = useState<string[]>([])
-  const [isAnimating, setIsAnimating] = useState(false)
-  const [zoomLevel, setZoomLevel] = useState(100)
-  const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 })
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
 
   // Obsługa klawiatury dla modala
   useEffect(() => {
@@ -137,150 +87,152 @@ export function PressPage() {
 
   return (
     <>
-      <UnifiedLayout>
-        {/* Hero Section */}
-        <motion.section
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.6 }}
-          className="relative z-10 pt-64 pb-20 px-4 sm:px-6 lg:px-8"
-        >
-          <div className="max-w-4xl mx-auto text-center">
-            <Text3D
-              variant="neon"
-              intensity="high"
-              className="text-5xl md:text-6xl font-bold mb-6"
-            >
-              Prasa i Media
-            </Text3D>
-            <motion.p
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 1 }}
-              className="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto"
-            >
-              Artykuły, wywiady i materiały prasowe o hodowli MTM Pałka
-            </motion.p>
-          </div>
-        </motion.section>
+      {/* Hero Section */}
+      <motion.section
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1, delay: 0.6 }}
+        className="relative z-10 pt-8 pb-20 px-4 sm:px-6 lg:px-8"
+      >
+        <div className="max-w-4xl mx-auto text-center">
+          <Text3D
+            variant="neon"
+            intensity="high"
+            className="text-5xl md:text-6xl font-bold mb-6"
+          >
+            Prasa i Media
+          </Text3D>
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1 }}
+            className="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto"
+          >
+            Artykuły, wywiady i materiały prasowe o hodowli MTM Pałka
+          </motion.p>
+        </div>
+      </motion.section>
 
-        {/* Content */}
-        <div className="relative z-10 px-2 sm:px-4 lg:px-6 pb-20">
-          <div className="max-w-none mx-auto">
-            {/* DVD Section - na górze */}
-            <motion.section
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              viewport={{ once: true }}
-              className="mb-20"
-            >
-              <UnifiedCard variant="glass" glow={true} className="p-16 lg:p-20 xl:p-24 2xl:p-28">
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-16 lg:gap-20 xl:gap-24 2xl:gap-28 items-center w-full">
-                  {/* Okładka DVD */}
-                  <motion.div
-                    initial={{ opacity: 0, x: -30 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.6 }}
-                    viewport={{ once: true }}
-                    className="w-full h-full max-w-md mx-auto"
-                  >
-                    <div className="relative group w-full h-full">
-                      <div className="absolute inset-0 bg-black/20 rounded-lg transform rotate-3 translate-x-2 translate-y-2 group-hover:translate-x-3 group-hover:translate-y-3 transition-all duration-300"></div>
-                      <div className="relative card-gradient rounded-lg shadow-2xl border-2 border-white group-hover:border-slate-400 group-hover:-translate-y-2 group-hover:scale-105 transition-all duration-300 w-full h-full aspect-video">
-                        <img
-                          src="/press/articles/older/movie-cover.jpg"
-                          alt="Okładka DVD - Film o hodowli gołębi"
-                          className="w-full h-full object-contain rounded-lg shadow-lg"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none'
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </motion.div>
-
-                  {/* Film YouTube */}
-                  <motion.div
-                    initial={{ opacity: 0, x: 30 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
-                    viewport={{ once: true }}
-                    className="flex justify-center"
-                  >
-                    <div className="relative w-full max-w-4xl xl:max-w-5xl 2xl:max-w-6xl aspect-video rounded-lg overflow-hidden shadow-xl">
-                      <iframe
-                        src="https://www.youtube.com/embed/utXkaMWyZfk"
-                        title="Film o hodowli MTM Pałka"
-                        className="w-full h-full"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      ></iframe>
-                    </div>
-                  </motion.div>
-                </div>
-              </UnifiedCard>
-            </motion.section>
-
-
-            {/* Gazety Grid - na dole */}
-            <motion.section
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-              className="mb-20"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-8xl mx-auto">
-                {newspaperFolders.map((folder, index) => (
-                  <motion.div
-                    key={folder.id}
-                    initial={{ opacity: 0, y: 50, scale: 0.9 }}
-                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ duration: 0.8, delay: index * 0.1 }}
-                    viewport={{ once: true }}
-                    className="h-[32rem]"
-                  >
-                    <div className="w-full h-full relative group">
-                      <img
-                        src={`/press/articles/older/${folder.id}/${folder.cover}`}
-                        alt={`Okładka ${folder.name}`}
-                        className="w-full h-full object-cover rounded-lg"
+      {/* Content */}
+      <div className="relative z-10 px-2 sm:px-4 lg:px-6 pb-20">
+        <div className="max-w-none mx-auto">
+          {/* DVD Section - na górze */}
+          <motion.section
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            viewport={{ once: true }}
+            className="mb-20"
+          >
+            <UnifiedCard variant="glass" className="p-16 lg:p-20 xl:p-24 2xl:p-28 border-2 border-white rounded-2xl">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-16 lg:gap-20 xl:gap-24 2xl:gap-28 items-center w-full">
+                {/* Okładka DVD */}
+                <motion.div
+                  initial={{ opacity: 0, x: -30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.6 }}
+                  viewport={{ once: true }}
+                  className="w-full h-full max-w-md mx-auto"
+                >
+                  <div className="relative group w-full h-full">
+                    <div className="absolute inset-0 bg-black/20 rounded-lg transform rotate-3 translate-x-2 translate-y-2 group-hover:translate-x-3 group-hover:translate-y-3 transition-all duration-300"></div>
+                    <div className="relative card-gradient rounded-lg shadow-2xl border-2 border-white group-hover:border-slate-400 group-hover:-translate-y-2 group-hover:scale-105 transition-all duration-300 w-full h-full aspect-video">
+                      <Image
+                        src="/press/articles/older/movie-cover.jpg"
+                        alt="Okładka DVD - Film o hodowli gołębi"
+                        width={400}
+                        height={225}
+                      className="w-full h-full object-cover rounded-lg shadow-lg" // Zmieniamy na object-cover
                         onError={(e) => {
-                          console.error('Błąd ładowania obrazu:', e.currentTarget.src)
                           e.currentTarget.style.display = 'none'
                         }}
                       />
-                      <div className="absolute inset-0 bg-black/20 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <button
-                          onClick={() => {
-                            console.log('Kliknięto przycisk dla folderu:', folder.name, 'ID:', folder.id)
-                            setSelectedImagePair({
-                              left: folder.cover,
-                              right: folder.images[0] || folder.cover,
-                              folderId: folder.id
-                            })
-                            setCurrentNewspaperImages(folder.images)
-                            setIsNewspaperOpen(false)
-                            setCurrentPageIndex(0)
-                          }}
-                          className="px-4 py-2 glass-morphism text-white rounded-lg hover:glass-morphism-strong transition-all duration-300 text-sm font-medium hover-3d-lift border-2 border-white"
-                        >
-                          Zobacz
-                        </button>
-                      </div>
                     </div>
-                  </motion.div>
-                ))}
+                  </div>
+                </motion.div>
+
+                {/* Film YouTube */}
+                <motion.div
+                  initial={{ opacity: 0, x: 30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  viewport={{ once: true }}
+                  className="flex justify-center"
+                >
+                  <div className="relative w-full max-w-4xl xl:max-w-5xl 2xl:max-w-6xl aspect-video rounded-lg overflow-hidden shadow-xl">
+                    <iframe
+                      src="https://www.youtube.com/embed/utXkaMWyZfk"
+                      title="Film o hodowli MTM Pałka"
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                </motion.div>
               </div>
-            </motion.section>
-          </div>
+            </UnifiedCard>
+          </motion.section>
+
+
+          {/* Gazety Grid - na dole */}
+          <motion.section
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="mb-20"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-8xl mx-auto">
+              {newspaperFolders.map((folder, index) => (
+                <motion.div
+                  key={folder.id}
+                  initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.8, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="h-[32rem]"
+                >
+                  <div className="w-full h-full relative group">
+                    <Image
+                      src={`/press/articles/older/${folder.id}/${folder.cover}`}
+                      alt={`Okładka ${folder.name}`}
+                      width={400}
+                      height={300}
+                      className="w-full h-full object-cover rounded-lg"
+                      onError={(e) => {
+                        console.error('Błąd ładowania obrazu:', e.currentTarget.src)
+                        e.currentTarget.style.display = 'none'
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-black/20 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <button
+                        onClick={() => {
+                          console.log('Kliknięto przycisk dla folderu:', folder.name, 'ID:', folder.id)
+                          setSelectedImagePair({
+                            left: folder.cover,
+                            right: folder.images[0] || folder.cover,
+                            folderId: folder.id
+                          })
+                          setCurrentNewspaperImages(folder.images)
+                          setIsNewspaperOpen(false)
+                          setCurrentPageIndex(0)
+                        }}
+                        className="px-4 py-2 glass-morphism text-white rounded-lg hover:glass-morphism-strong transition-all duration-300 text-sm font-medium hover-3d-lift border-2 border-white"
+                      >
+                        Zobacz
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.section>
         </div>
-      </UnifiedLayout>
+      </div>
 
       {/* Modal dla zdjęć - poza layout */}
       {selectedImagePair && (
-        <div className="fixed inset-0 bg-black/95 backdrop-blur-md z-[9999] flex items-center justify-center p-1">
+        <div className="fixed inset-0 bg-black/95 backdrop-blur-md z-[99999] flex items-center justify-center p-1">
           <div className="relative w-full h-full bg-transparent flex items-center justify-center">
             <button
               onClick={() => {
@@ -337,9 +289,11 @@ export function PressPage() {
                 transition={{ duration: 0.6, ease: "easeInOut" }}
                 className="w-auto h-auto"
               >
-                <img
+                <Image
                   src={`/press/articles/older/${selectedImagePair.folderId}/${selectedImagePair.left}`}
                   alt="Okładka gazety"
+                  width={400}
+                  height={600}
                   className="w-auto h-auto object-contain rounded-lg shadow-2xl"
                   style={{
                     width: 'auto',
@@ -368,10 +322,12 @@ export function PressPage() {
                   transition={{ duration: 0.6, delay: 0.2 }}
                   className="flex-1 max-w-[45vw] max-h-[90vh]"
                 >
-                  <img
+                  <Image
                     src={`/press/articles/older/${selectedImagePair.folderId}/${currentNewspaperImages[currentPageIndex] || selectedImagePair.left}`}
                     alt={`Strona ${currentPageIndex + 1}`}
-                    className="w-full h-full object-contain rounded-lg shadow-2xl"
+                    width={400}
+                    height={600}
+                  className="w-full h-full object-cover rounded-lg shadow-2xl" // Zmieniamy na object-cover
                   />
                 </motion.div>
 
@@ -383,10 +339,12 @@ export function PressPage() {
                     transition={{ duration: 0.6, delay: 0.4 }}
                     className="flex-1 max-w-[45vw] max-h-[90vh]"
                   >
-                    <img
+                    <Image
                       src={`/press/articles/older/${selectedImagePair.folderId}/${currentNewspaperImages[currentPageIndex + 1]}`}
                       alt={`Strona ${currentPageIndex + 2}`}
-                      className="w-full h-full object-contain rounded-lg shadow-2xl"
+                      width={400}
+                      height={600}
+                    className="w-full h-full object-cover rounded-lg shadow-2xl" // Zmieniamy na object-cover
                     />
                   </motion.div>
                 )}

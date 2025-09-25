@@ -12,7 +12,7 @@ interface PerformanceMetric {
   name: string
   duration: number
   timestamp: number
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 class MonitoringService {
@@ -43,7 +43,7 @@ class MonitoringService {
   }
 
   // Track performance metrics
-  trackPerformance(name: string, duration: number, metadata?: Record<string, any>): void {
+  trackPerformance(name: string, duration: number, metadata?: Record<string, unknown>): void {
     const performanceMetric: PerformanceMetric = {
       name,
       duration,
@@ -83,7 +83,7 @@ class MonitoringService {
   }
 
   // Track user actions
-  trackUserAction(action: string, userId?: string, metadata?: Record<string, any>): void {
+  trackUserAction(action: string, userId?: string, metadata?: Record<string, unknown>): void {
     this.trackMetric('user_action', 1, {
       action,
       userId: userId || 'anonymous',
@@ -105,7 +105,7 @@ class MonitoringService {
   }
 
   // Track conversion events
-  trackConversion(event: string, value?: number, metadata?: Record<string, any>): void {
+  trackConversion(event: string, value?: number, metadata?: Record<string, unknown>): void {
     this.trackMetric('conversion', value || 1, {
       event,
       ...metadata,
@@ -113,7 +113,7 @@ class MonitoringService {
   }
 
   // Track errors
-  trackError(error: Error, context?: Record<string, any>): void {
+  trackError(error: Error, context?: Record<string, unknown>): void {
     this.trackMetric('error', 1, {
       error_name: error.name,
       error_message: error.message,
@@ -218,7 +218,7 @@ export const trackApiCall = (method: string, endpoint: string, statusCode: numbe
   monitoring.trackApiResponse(method, endpoint, statusCode, duration)
 }
 
-export const trackUserAction = (action: string, userId?: string, metadata?: Record<string, any>) => {
+export const trackUserAction = (action: string, userId?: string, metadata?: Record<string, unknown>) => {
   monitoring.trackUserAction(action, userId, metadata)
 }
 
@@ -226,11 +226,11 @@ export const trackPageView = (page: string, userId?: string) => {
   monitoring.trackPageView(page, userId)
 }
 
-export const trackConversion = (event: string, value?: number, metadata?: Record<string, any>) => {
+export const trackConversion = (event: string, value?: number, metadata?: Record<string, unknown>) => {
   monitoring.trackConversion(event, value, metadata)
 }
 
-export const trackError = (error: Error, context?: Record<string, any>) => {
+export const trackError = (error: Error, context?: Record<string, unknown>) => {
   monitoring.trackError(error, context)
 }
 
@@ -240,10 +240,10 @@ export const trackBusinessMetric = (metric: string, value: number, tags?: Record
 
 // Performance tracking decorator
 export function trackPerformance(name: string) {
-  return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+  return function (target: unknown, propertyName: string, descriptor: PropertyDescriptor) {
     const method = descriptor.value
 
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (...args: unknown[]) {
       const start = Date.now()
       try {
         const result = await method.apply(this, args)
@@ -262,11 +262,5 @@ export function trackPerformance(name: string) {
   }
 }
 
-// React hook for tracking component performance
-// Note: This hook should be moved to a separate file in components/ or hooks/ directory
-// and imported with 'use client' directive for client-side usage
-export function usePerformanceTracking(componentName: string) {
-  // This hook requires React and should be used in client components only
-  // Implementation moved to avoid server-side rendering issues
-  console.warn('usePerformanceTracking should be used in client components only')
-}
+// React hook dla śledzenia wydajności komponentów został przeniesiony do hooks/usePerformanceTracking.ts
+// Ten moduł powinien być importowany z 'use client' directive dla komponentów po stronie klienta

@@ -139,6 +139,6 @@ export default function RodoClausePage() {
             </div>
           </div>
         </div>
-    </UnifiedLayout>
-  )
+      </div>
+    </UnifiedLayout>)
 }

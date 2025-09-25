@@ -18,7 +18,7 @@ export function rateLimit(options: RateLimitOptions) {
       request.headers.get('x-real-ip') ||
       'unknown'
     const now = Date.now()
-    const windowStart = now - windowMs
+    // const windowStart = now - windowMs
 
     // Clean up expired entries
     for (const [key, value] of Array.from(rateLimitStore.entries())) {

@@ -90,23 +90,23 @@ export default function SignUpPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="w-full max-w-md mx-auto px-4"
+          className="w-full max-w-2xl mx-auto px-4"
         >
           <UnifiedCard
-            variant="3d"
+            variant="glass"
             glow={true}
-            className="p-8 border-2 border-white/20 backdrop-blur-xl shadow-2xl"
+            className="p-6 border border-white/60 shadow-2xl bg-white/10 backdrop-blur-xl rounded-3xl"
           >
             {/* Header */}
-            <div className="text-center mb-8">
+            <div className="text-center mb-6">
               <Text3D
                 variant="neon"
                 intensity="high"
-                className="text-3xl font-bold mb-2"
+                className="text-2xl font-bold mb-2 text-white"
               >
                 Zarejestruj się
               </Text3D>
-              <p className="text-white/90">
+              <p className="text-white/90 text-sm">
                 Stwórz konto, aby rozpocząć przygodę z gołębiami
               </p>
             </div>
@@ -116,9 +116,9 @@ export default function SignUpPage() {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-6 p-4 glass-morphism-strong border-l-4 border-red-400 rounded-lg"
+                className="mb-6 p-4 bg-red-50 border-l-4 border-red-400 rounded-xl"
               >
-                <p className="text-red-200 text-sm">{error}</p>
+                <p className="text-red-600 text-sm">{error}</p>
               </motion.div>
             )}
 
@@ -138,7 +138,7 @@ export default function SignUpPage() {
                     value={formData.email}
                     onChange={handleInputChange}
                     required
-                    className="w-full pl-10 pr-4 py-3 glass-morphism rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-300"
+                    className="w-full pl-10 pr-4 py-2 glass-morphism rounded-xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-300"
                     placeholder="twoj@email.pl"
                   />
                 </div>
@@ -146,11 +146,11 @@ export default function SignUpPage() {
 
               {/* Password Field */}
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-white mb-2">
+                <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-2">
                   Hasło
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 w-5 h-5" />
                   <input
                     id="password"
                     name="password"
@@ -158,13 +158,13 @@ export default function SignUpPage() {
                     value={formData.password}
                     onChange={handleInputChange}
                     required
-                    className="w-full pl-10 pr-12 py-3 glass-morphism rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-300"
+                    className="w-full pl-10 pr-12 py-2 bg-white/80 border border-slate-300 rounded-xl text-slate-800 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
                     placeholder="Minimum 8 znaków"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white/80 transition-colors duration-200"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors duration-200"
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -177,7 +177,7 @@ export default function SignUpPage() {
                   Potwierdź hasło
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 w-5 h-5" />
                   <input
                     id="confirmPassword"
                     name="confirmPassword"
@@ -185,13 +185,13 @@ export default function SignUpPage() {
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
                     required
-                    className="w-full pl-10 pr-12 py-3 glass-morphism rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-300"
+                    className="w-full pl-10 pr-12 py-2 bg-white/80 border border-slate-300 rounded-xl text-slate-800 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
                     placeholder="Powtórz hasło"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white/80 transition-colors duration-200"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors duration-200"
                   >
                     {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
@@ -206,15 +206,15 @@ export default function SignUpPage() {
                   type="checkbox"
                   checked={formData.acceptTerms}
                   onChange={handleInputChange}
-                  className="mt-1 w-4 h-4 text-white/80 bg-white/10 border-white/20 rounded focus:ring-white/50 focus:ring-2"
+                  className="mt-1 w-4 h-4 text-blue-600 bg-white border-slate-300 rounded focus:ring-blue-500 focus:ring-2"
                 />
-                <label htmlFor="acceptTerms" className="text-sm text-white/90">
+                <label htmlFor="acceptTerms" className="text-sm text-slate-700">
                   Akceptuję{' '}
-                  <Link href="/terms" className="text-white/70 hover:text-white underline">
+                  <Link href="/terms" className="text-blue-600 hover:text-blue-800 underline">
                     regulamin
                   </Link>{' '}
                   i{' '}
-                  <Link href="/privacy" className="text-white/70 hover:text-white underline">
+                  <Link href="/privacy" className="text-blue-600 hover:text-blue-800 underline">
                     politykę prywatności
                   </Link>
                 </label>
@@ -247,10 +247,10 @@ export default function SignUpPage() {
             <div className="mt-8 mb-6">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-white/20"></div>
+                  <div className="w-full border-t border-slate-300"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-gray-900 text-white/60">lub zarejestruj się z</span>
+                  <span className="px-4 bg-slate-100 text-slate-500">lub zarejestruj się z</span>
                 </div>
               </div>
             </div>
@@ -260,8 +260,8 @@ export default function SignUpPage() {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => signIn('google', { callbackUrl: '/buyer/dashboard' })}
-                className="w-full flex items-center justify-center px-4 py-3 border-2 border-white/20 rounded-2xl text-white hover:bg-white/10 transition-all duration-300 group"
+                onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+                className="w-full flex items-center justify-center px-4 py-2 border-2 border-slate-300 rounded-xl text-slate-700 hover:bg-slate-50 transition-all duration-300 group"
               >
                 <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
                   <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -275,8 +275,8 @@ export default function SignUpPage() {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => signIn('facebook', { callbackUrl: '/buyer/dashboard' })}
-                className="w-full flex items-center justify-center px-4 py-3 border-2 border-white/20 rounded-2xl text-white hover:bg-white/10 transition-all duration-300 group"
+                onClick={() => signIn('facebook', { callbackUrl: '/dashboard' })}
+                className="w-full flex items-center justify-center px-4 py-2 border-2 border-slate-300 rounded-xl text-slate-700 hover:bg-slate-50 transition-all duration-300 group"
               >
                 <svg className="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
@@ -288,8 +288,8 @@ export default function SignUpPage() {
             {/* Links */}
             <div className="mt-8 text-center space-y-4">
               <Link
-                href="/auth/signin"
-                className="text-white/70 hover:text-white transition-colors duration-200 text-sm"
+                href="/auth"
+                className="text-slate-600 hover:text-slate-800 transition-colors duration-200 text-sm"
               >
                 Masz już konto? Zaloguj się
               </Link>

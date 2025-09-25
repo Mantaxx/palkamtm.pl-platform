@@ -1,809 +1,427 @@
 'use client'
 
-import { PhoneVerification } from '@/components/auth/PhoneVerification'
-import PaymentManagement from '@/components/payments/PaymentManagement'
-import { usePhoneVerification } from '@/hooks/usePhoneVerification'
-import { format } from 'date-fns'
-import { pl } from 'date-fns/locale'
-import { motion } from 'framer-motion'
-import {
-    CreditCard,
-    Eye,
-    Filter,
-    Gavel,
-    Heart,
-    Lock,
-    MapPin,
-    Package,
-    Search,
-    Settings,
-    ShoppingCart,
-    TrendingUp,
-    Trophy,
-    User
-} from 'lucide-react'
+import { UnifiedButton } from '@/components/ui/UnifiedButton'
+import { UnifiedCard } from '@/components/ui/UnifiedCard'
+import { Activity, AlertTriangle, Bookmark, Box, ChevronRight, Gavel, MessageCircle, Package, Plus, Receipt, Settings, ShoppingBag, Star, Truck } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 
-// Mock data - w rzeczywistej aplikacji dane będą pobierane z API
+// Mock data
 const mockData = {
     watchlist: [
         {
             id: 1,
-            title: 'Thunder Storm - Champion Międzynarodowy',
-            currentPrice: 2500,
-            endTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 dni
-            image: '/api/placeholder/200/150',
-            bids: 15,
+            title: "Champion Olimpijski 2023",
+            currentPrice: 12500,
+            bids: 24,
+            timeLeft: "2h 15m",
+            imageUrl: "/images/pigeon1.jpg"
         },
         {
             id: 2,
-            title: 'Golden Eagle - Linia Janssen',
-            currentPrice: 1800,
-            endTime: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 dni
-            image: '/api/placeholder/200/150',
-            bids: 8,
+            title: "Młody Zawodnik z Rodu Mistrzów",
+            currentPrice: 5200,
+            bids: 12,
+            timeLeft: "5h 30m",
+            imageUrl: "/images/pigeon2.jpg"
         },
+        {
+            id: 3,
+            title: "Córka Championa z 2022",
+            currentPrice: 8750,
+            bids: 18,
+            timeLeft: "1d 4h",
+            imageUrl: "/images/pigeon3.jpg"
+        }
     ],
-    recentBids: [
+    orders: [
         {
-            id: 1,
-            auctionTitle: 'Silver Arrow - Mistrz Polski',
-            bidAmount: 3200,
-            isWinning: true,
-            timeLeft: '1 dzień 5 godzin',
-            image: '/api/placeholder/100/100',
+            id: 101,
+            orderNumber: "ORD-2023-08-001",
+            date: "2023-08-15",
+            amount: 12500,
+            status: "delivered"
         },
         {
-            id: 2,
-            auctionTitle: 'Storm King - Linia Van Loon',
-            bidAmount: 2100,
-            isWinning: false,
-            timeLeft: '3 dni 2 godziny',
-            image: '/api/placeholder/100/100',
+            id: 102,
+            orderNumber: "ORD-2023-09-002",
+            date: "2023-09-02",
+            amount: 8750,
+            status: "shipped"
         },
+        {
+            id: 103,
+            orderNumber: "ORD-2023-09-003",
+            date: "2023-09-10",
+            amount: 5200,
+            status: "processing"
+        }
     ],
-    purchaseHistory: [
+    messages: [
         {
-            id: 1,
-            title: 'Lightning Bolt - Champion Europy',
-            purchasePrice: 4500,
-            purchaseDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-            status: 'delivered',
-            image: '/api/placeholder/100/100',
+            id: 201,
+            sender: "Administracja MTM",
+            subject: "Potwierdzenie złożenia oferty",
+            date: "2023-09-10",
+            read: true
         },
         {
-            id: 2,
-            title: 'Wind Dancer - Mistrzyni Długodystansowa',
-            purchasePrice: 3800,
-            purchaseDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
-            status: 'shipped',
-            image: '/api/placeholder/100/100',
+            id: 202,
+            sender: "Jan Kowalski",
+            subject: "Pytanie o rodowód gołębia",
+            date: "2023-09-08",
+            read: false
         },
+        {
+            id: 203,
+            sender: "Obsługa Klienta",
+            subject: "Aktualizacja statusu zamówienia",
+            date: "2023-09-05",
+            read: false
+        }
     ],
-    statistics: {
-        totalSpent: 8300,
-        auctionsWon: 2,
-        watchlistItems: 5,
-        activeBids: 3,
-    }
+    activityData: [
+        { name: 'Sty', bids: 12, purchases: 5 },
+        { name: 'Lut', bids: 19, purchases: 2 },
+        { name: 'Mar', bids: 8, purchases: 3 },
+        { name: 'Kwi', bids: 25, purchases: 4 },
+        { name: 'Maj', bids: 30, purchases: 6 },
+        { name: 'Cze', bids: 14, purchases: 1 },
+    ]
 }
 
 export function BuyerDashboard() {
-    const [activeTab, setActiveTab] = useState<'overview' | 'watchlist' | 'bids' | 'history' | 'payments' | 'settings'>('overview')
-    const { isPhoneVerified, phoneNumber, isLoading: phoneVerificationLoading } = usePhoneVerification()
+    const [activeTab, setActiveTab] = useState('overview')
+    const router = useRouter()
 
     const tabs = [
-        { id: 'overview', label: 'Przegląd', icon: TrendingUp },
-        { id: 'watchlist', label: 'Obserwowane', icon: Heart },
-        { id: 'bids', label: 'Moje Oferty', icon: Gavel },
-        { id: 'payments', label: 'Płatności', icon: CreditCard },
-        { id: 'history', label: 'Historia', icon: Package },
+        { id: 'overview', label: 'Przegląd', icon: Activity },
+        { id: 'watchlist', label: 'Obserwowane', icon: Bookmark },
+        { id: 'orders', label: 'Zamówienia', icon: Box },
+        { id: 'messages', label: 'Wiadomości', icon: MessageCircle },
         { id: 'settings', label: 'Ustawienia', icon: Settings },
     ]
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700">
-            {/* Przyciski do podstron w jednym rzędzie na górze */}
-            <div className="absolute top-8 left-80 z-20">
-                <div className="flex items-center gap-3">
-                    {[
-                        { href: "/", icon: "fas fa-home", title: "Strona Główna", label: "Strona Główna" },
-                        { href: "/auctions", icon: "fas fa-gavel", title: "Aukcje", label: "Aukcje" },
-                        { href: "/heritage", icon: "fas fa-crown", title: "Nasze Dziedzictwo", label: "Dziedzictwo" },
-                        { href: "/champions", icon: "fas fa-trophy", title: "Championy", label: "Championy" },
-                        { href: "/breeder-meetings", icon: "fas fa-users", title: "Spotkania", label: "Spotkania" },
-                        { href: "/references", icon: "fas fa-star", title: "Referencje", label: "Referencje" },
-                        { href: "/press", icon: "fas fa-newspaper", title: "Prasa", label: "Prasa" },
-                        { href: "/about", icon: "fas fa-info-circle", title: "O nas", label: "O Nas" },
-                        { href: "/contact", icon: "fas fa-envelope", title: "Kontakt", label: "Kontakt" },
-                        { href: "/dashboard", icon: "fas fa-tachometer-alt", title: "Panel Klienta", label: "Panel Klienta" }
-                    ].map((item, index) => (
-                        <motion.div
-                            key={item.href}
-                            initial={{ opacity: 0, x: -300, rotate: -360 }}
-                            animate={{ opacity: 1, x: 0, rotate: 0 }}
-                            transition={{
-                                duration: 1.0,
-                                delay: 0.4 + (index * 0.1),
-                                ease: "easeOut"
-                            }}
-                        >
-                            <Link href={item.href} className="glass-nav-button" title={item.title}>
-                                <i className={`${item.icon} relative z-10 text-3xl`}></i>
-                                <span className="relative z-10 text-sm">{item.label}</span>
-                            </Link>
-                        </motion.div>
-                    ))}
-                </div>
-            </div>
-
-            {/* Content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 mt-16">
-                {/* Phone Verification Alert */}
-                {!phoneVerificationLoading && !isPhoneVerified && (
-                    <div className="mb-8">
-                        <PhoneVerification
-                            user={{ phoneNumber, isPhoneVerified }}
-                            onVerificationComplete={() => window.location.reload()}
-                        />
-                    </div>
-                )}
-
-                {activeTab === 'overview' && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="space-y-8"
-                    >
-                        {/* Statistics Cards */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {[
-                                {
-                                    title: 'Wydane Łącznie',
-                                    value: `${mockData.statistics.totalSpent.toLocaleString()} zł`,
-                                    icon: ShoppingCart,
-                                    color: 'from-white/80 to-white/60'
-                                },
-                                {
-                                    title: 'Wygrane Aukcje',
-                                    value: mockData.statistics.auctionsWon.toString(),
-                                    icon: Trophy,
-                                    color: 'from-yellow-500 to-yellow-600'
-                                },
-                                {
-                                    title: 'Obserwowane',
-                                    value: mockData.statistics.watchlistItems.toString(),
-                                    icon: Heart,
-                                    color: 'from-red-500 to-red-600'
-                                },
-                                {
-                                    title: 'Aktywne Oferty',
-                                    value: mockData.statistics.activeBids.toString(),
-                                    icon: Gavel,
-                                    color: 'from-green-500 to-green-600'
-                                },
-                            ].map((stat, index) => (
-                                <motion.div
-                                    key={stat.title}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                                    className="bg-white rounded-xl shadow-sm border border-gray-100 p-6"
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <p className="text-gray-600 text-sm font-medium">{stat.title}</p>
-                                            <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
-                                        </div>
-                                        <div className={`w-12 h-12 rounded-lg bg-gradient-to-r ${stat.color} flex items-center justify-center`}>
-                                            <stat.icon className="w-6 h-6 text-white" />
-                                        </div>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32">
+                <div className="flex flex-col md:flex-row gap-6">
+                    {/* Sidebar */}
+                    <div className="w-full md:w-64 shrink-0">
+                        <UnifiedCard variant="glass" className="p-4 lg:p-6 sticky top-20">
+                            <div className="flex items-center space-x-4 mb-8">
+                                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-white">
+                                    <div className="w-full h-full bg-blue-600 flex items-center justify-center text-white text-xl">
+                                        MK
                                     </div>
-                                </motion.div>
-                            ))}
-                        </div>
-
-                        {/* Recent Activity */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            {/* Watchlist */}
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                                <div className="flex items-center justify-between mb-6">
-                                    <h3 className="font-display font-bold text-xl text-gray-900">
-                                        Obserwowane Aukcje
-                                    </h3>
-                                    <button className="text-slate-600 hover:text-slate-700 font-medium text-sm">
-                                        Zobacz wszystkie
-                                    </button>
                                 </div>
-                                <div className="space-y-4">
-                                    {mockData.watchlist.map((item) => (
-                                        <div key={item.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-                                            <div className="w-16 h-16 bg-gradient-to-br from-slate-200 to-slate-300 rounded-lg flex items-center justify-center">
-                                                <span className="text-slate-600 font-bold text-sm">TS</span>
-                                            </div>
-                                            <div className="flex-1">
-                                                <h4 className="font-medium text-gray-900 text-sm">{item.title}</h4>
-                                                <p className="text-slate-600 font-semibold">{item.currentPrice.toLocaleString()} zł</p>
-                                                <p className="text-gray-500 text-xs">
-                                                    {item.bids} ofert • Kończy się {format(item.endTime, 'dd MMM', { locale: pl })}
-                                                </p>
-                                            </div>
-                                            <button
-                                                className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                                                title="Usuń z obserwowanych"
-                                            >
-                                                <Heart className="w-5 h-5 fill-current" />
-                                            </button>
-                                        </div>
-                                    ))}
+                                <div>
+                                    <h2 className="text-lg font-semibold text-white">Marek Kowalski</h2>
+                                    <p className="text-sm text-gray-300">Premium Buyer</p>
                                 </div>
                             </div>
 
-                            {/* Recent Bids */}
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                                <div className="flex items-center justify-between mb-6">
-                                    <h3 className="font-display font-bold text-xl text-gray-900">
-                                        Ostatnie Oferty
-                                    </h3>
-                                    <button className="text-slate-600 hover:text-slate-700 font-medium text-sm">
-                                        Zobacz wszystkie
+                            <nav className="space-y-1">
+                                {tabs.map((tab) => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === tab.id
+                                            ? 'bg-white/20 backdrop-blur-sm text-white'
+                                            : 'text-gray-300 hover:bg-white/10 hover:text-white'
+                                            }`}
+                                    >
+                                        <tab.icon className="w-5 h-5" />
+                                        <span>{tab.label}</span>
+                                        {tab.id === 'messages' && (
+                                            <span className="ml-auto bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                                                2
+                                            </span>
+                                        )}
                                     </button>
-                                </div>
-                                <div className="space-y-4">
-                                    {mockData.recentBids.map((bid) => (
-                                        <div key={bid.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-                                            <div className="w-16 h-16 bg-gradient-to-br from-slate-200 to-slate-300 rounded-lg flex items-center justify-center">
-                                                <span className="text-slate-600 font-bold text-sm">SA</span>
+                                ))}
+                            </nav>
+
+                            <div className="mt-8 pt-6 border-t border-white/10">
+                                <button
+                                    onClick={() => router.push('/auth/logout')}
+                                    className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg backdrop-blur-sm transition-all duration-200"
+                                >
+                                    <span>Wyloguj się</span>
+                                </button>
+                            </div>
+                        </UnifiedCard>
+                    </div>
+
+                    {/* Main Content */}
+                    <div className="flex-1">
+                        {/* Dashboard Overview */}
+                        {activeTab === 'overview' && (
+                            <div className="space-y-6">
+                                <h1 className="text-2xl font-semibold text-white mb-6">Panel Klienta</h1>
+
+                                {/* Stats Overview */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <UnifiedCard variant="glass" className="p-6">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-sm text-gray-300">Aktywne oferty</p>
+                                                <p className="text-2xl font-semibold text-white">7</p>
                                             </div>
-                                            <div className="flex-1">
-                                                <h4 className="font-medium text-gray-900 text-sm">{bid.auctionTitle}</h4>
-                                                <p className="text-slate-600 font-semibold">{bid.bidAmount.toLocaleString()} zł</p>
-                                                <div className="flex items-center space-x-2">
-                                                    <span className={`text-xs px-2 py-1 rounded-full ${bid.isWinning
-                                                        ? 'bg-green-100 text-green-800'
-                                                        : 'bg-yellow-100 text-yellow-800'
-                                                        }`}>
-                                                        {bid.isWinning ? 'Wygrywasz' : 'Przegrywasz'}
-                                                    </span>
-                                                    <span className="text-gray-500 text-xs">{bid.timeLeft}</span>
+                                            <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                                                <Gavel className="w-5 h-5 text-blue-400" />
+                                            </div>
+                                        </div>
+                                    </UnifiedCard>
+
+                                    <UnifiedCard variant="glass" className="p-6">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-sm text-gray-300">Obserwowane</p>
+                                                <p className="text-2xl font-semibold text-white">12</p>
+                                            </div>
+                                            <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                                                <Star className="w-5 h-5 text-green-400" />
+                                            </div>
+                                        </div>
+                                    </UnifiedCard>
+
+                                    <UnifiedCard variant="glass" className="p-6">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-sm text-gray-300">Zamówienia</p>
+                                                <p className="text-2xl font-semibold text-white">3</p>
+                                            </div>
+                                            <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+                                                <Package className="w-5 h-5 text-purple-400" />
+                                            </div>
+                                        </div>
+                                    </UnifiedCard>
+                                </div>
+
+                                {/* Recent Activity Chart */}
+                                <UnifiedCard variant="glass" className="p-6">
+                                    <h2 className="text-lg font-semibold text-white mb-4">Twoja aktywność</h2>
+                                    <div className="h-72">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={mockData.activityData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                                                <CartesianGrid strokeDasharray="3 3" stroke="#444" />
+                                                <XAxis dataKey="name" stroke="#888" />
+                                                <YAxis stroke="#888" />
+                                                <Tooltip
+                                                    contentStyle={{ backgroundColor: '#333', borderColor: '#555' }}
+                                                    labelStyle={{ color: '#fff' }}
+                                                />
+                                                <Legend />
+                                                <Bar dataKey="bids" stackId="a" fill="#60a5fa" radius={[4, 4, 0, 0]} />
+                                                <Bar dataKey="purchases" stackId="a" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </UnifiedCard>
+
+                                {/* Watchlist */}
+                                <UnifiedCard variant="glass" className="p-6">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h2 className="text-lg font-semibold text-white">Obserwowane aukcje</h2>
+                                        <Link href="/dashboard/watchlist" className="text-blue-400 text-sm hover:text-blue-300 flex items-center">
+                                            <span>Zobacz wszystkie</span>
+                                            <ChevronRight className="w-4 h-4" />
+                                        </Link>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        {mockData.watchlist.map((item) => (
+                                            <div key={item.id} className="flex items-center justify-between p-3 bg-white/5 rounded-xl backdrop-blur-sm">
+                                                <div className="flex items-center space-x-3">
+                                                    <div className="w-12 h-12 rounded-lg bg-gray-700 flex-shrink-0 overflow-hidden">
+                                                        {item.imageUrl ? (
+                                                            <Image src={item.imageUrl} alt={item.title} width={48} height={48} className="object-cover" />
+                                                        ) : (
+                                                            <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-700"></div>
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-white font-medium">{item.title}</h3>
+                                                        <div className="flex items-center space-x-3 text-xs text-gray-300">
+                                                            <span>{item.bids} ofert</span>
+                                                            <span className="text-orange-300">{item.timeLeft}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-right">
+                                                        <p className="text-white font-medium">
+                                                            {new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(item.currentPrice)}
+                                                        </p>
+                                                        <UnifiedButton variant="secondary" size="sm" className="mt-1">
+                                                            Licytuj
+                                                        </UnifiedButton>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
+                                </UnifiedCard>
+
+                                {/* Recent Orders */}
+                                <UnifiedCard variant="glass" className="p-6">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h2 className="text-lg font-semibold text-white">Ostatnie zamówienia</h2>
+                                        <Link href="/dashboard/orders" className="text-blue-400 text-sm hover:text-blue-300 flex items-center">
+                                            <span>Zobacz wszystkie</span>
+                                            <ChevronRight className="w-4 h-4" />
+                                        </Link>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        {mockData.orders.map((order) => (
+                                            <div key={order.id} className="flex items-center justify-between p-3 bg-white/5 rounded-xl backdrop-blur-sm">
+                                                <div className="flex items-center space-x-3">
+                                                    <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+                                                        {order.status === 'processing' && <Package className="w-5 h-5 text-yellow-400" />}
+                                                        {order.status === 'shipped' && <Truck className="w-5 h-5 text-blue-400" />}
+                                                        {order.status === 'delivered' && <ShoppingBag className="w-5 h-5 text-green-400" />}
+                                                        {order.status === 'cancelled' && <AlertTriangle className="w-5 h-5 text-red-400" />}
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-white font-medium">{order.orderNumber}</h3>
+                                                        <div className="flex items-center space-x-3 text-xs text-gray-300">
+                                                            <span>{new Date(order.date).toLocaleDateString('pl-PL')}</span>
+                                                            <span className={`
+                                                                ${order.status === 'processing' && 'text-yellow-400'}
+                                                                ${order.status === 'shipped' && 'text-blue-400'}
+                                                                ${order.status === 'delivered' && 'text-green-400'}
+                                                                ${order.status === 'cancelled' && 'text-red-400'}
+                                                            `}>
+                                                                {order.status === 'processing' && 'W przygotowaniu'}
+                                                                {order.status === 'shipped' && 'Wysłane'}
+                                                                {order.status === 'delivered' && 'Dostarczone'}
+                                                                {order.status === 'cancelled' && 'Anulowane'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-right">
+                                                        <p className="text-white font-medium">
+                                                            {new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(order.amount)}
+                                                        </p>
+                                                        <Link href={`/dashboard/orders/${order.id}`} className="text-xs text-blue-400 hover:text-blue-300">
+                                                            Szczegóły
+                                                        </Link>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </UnifiedCard>
+
+                                {/* Recent Messages */}
+                                <UnifiedCard variant="glass" className="p-6">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h2 className="text-lg font-semibold text-white">Wiadomości</h2>
+                                        <Link href="/dashboard/messages" className="text-blue-400 text-sm hover:text-blue-300 flex items-center">
+                                            <span>Zobacz wszystkie</span>
+                                            <ChevronRight className="w-4 h-4" />
+                                        </Link>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        {mockData.messages.map((message) => (
+                                            <div key={message.id} className={`flex items-center justify-between p-3 rounded-xl backdrop-blur-sm ${message.read ? 'bg-white/5' : 'bg-blue-500/10 border border-blue-500/30'}`}>
+                                                <div className="flex items-center space-x-3">
+                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-medium">
+                                                        {message.sender.charAt(0)}
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-white font-medium flex items-center">
+                                                            {message.subject}
+                                                            {!message.read && (
+                                                                <span className="ml-2 w-2 h-2 bg-blue-500 rounded-full"></span>
+                                                            )}
+                                                        </h3>
+                                                        <div className="flex items-center space-x-3 text-xs text-gray-300">
+                                                            <span>{message.sender}</span>
+                                                            <span>{new Date(message.date).toLocaleDateString('pl-PL')}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <Link href={`/dashboard/messages/${message.id}`} className="text-blue-400 hover:text-blue-300">
+                                                    <ChevronRight className="w-5 h-5" />
+                                                </Link>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </UnifiedCard>
+                            </div>
+                        )}
+
+                        {/* Watchlist Tab */}
+                        {activeTab === 'watchlist' && (
+                            <div>
+                                <div className="flex items-center justify-between mb-6">
+                                    <h1 className="text-2xl font-semibold text-white">Obserwowane aukcje</h1>
+                                    <UnifiedButton variant="primary" size="sm">
+                                        <Plus className="w-4 h-4 mr-1" />
+                                        Obserwuj więcej
+                                    </UnifiedButton>
                                 </div>
-                            </div>
-                        </div>
-                    </motion.div>
-                )}
 
-                {activeTab === 'watchlist' && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
-                    >
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                            <div className="flex items-center justify-between mb-6">
-                                <h3 className="font-display font-bold text-xl text-gray-900">
-                                    Obserwowane Aukcje
-                                </h3>
-                                <div className="flex items-center space-x-4">
-                                    <div className="relative">
-                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                        <input
-                                            type="text"
-                                            placeholder="Szukaj aukcji..."
-                                            aria-label="Szukaj aukcji"
-                                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
-                                        />
+                                <UnifiedCard variant="glass" className="p-6">
+                                    <div className="space-y-4">
+                                        <p className="text-gray-300">Lista wszystkich obserwowanych aukcji będzie tutaj.</p>
                                     </div>
-                                    <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                                        <Filter className="w-4 h-4" />
-                                        <span>Filtry</span>
-                                    </button>
+                                </UnifiedCard>
+                            </div>
+                        )}
+
+                        {/* Orders Tab */}
+                        {activeTab === 'orders' && (
+                            <div>
+                                <div className="flex items-center justify-between mb-6">
+                                    <h1 className="text-2xl font-semibold text-white">Twoje zamówienia</h1>
+                                    <UnifiedButton variant="secondary" size="sm">
+                                        <Receipt className="w-4 h-4 mr-1" />
+                                        Historia zamówień
+                                    </UnifiedButton>
                                 </div>
-                            </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {mockData.watchlist.map((item) => (
-                                    <div key={item.id} className="border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-shadow">
-                                        <div className="aspect-video bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center">
-                                            <span className="text-slate-600 font-bold text-lg">Zdjęcie</span>
-                                        </div>
-                                        <div className="p-4">
-                                            <h4 className="font-medium text-gray-900 mb-2">{item.title}</h4>
-                                            <p className="text-slate-600 font-semibold text-lg mb-2">
-                                                {item.currentPrice.toLocaleString()} zł
-                                            </p>
-                                            <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                                                <span>{item.bids} ofert</span>
-                                                <span>Kończy się {format(item.endTime, 'dd MMM', { locale: pl })}</span>
-                                            </div>
-                                            <div className="flex space-x-2">
-                                                <button className="flex-1 btn-primary text-sm py-2">
-                                                    Licytuj
-                                                </button>
-                                                <button
-                                                    className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                                                    title="Zobacz szczegóły"
-                                                >
-                                                    <Eye className="w-4 h-4" />
-                                                </button>
-                                                <button
-                                                    className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                                                    title="Dodaj do obserwowanych"
-                                                >
-                                                    <Heart className="w-4 h-4 fill-current text-red-500" />
-                                                </button>
-                                            </div>
-                                        </div>
+                                <UnifiedCard variant="glass" className="p-6">
+                                    <div className="space-y-4">
+                                        <p className="text-gray-300">Historia wszystkich zamówień będzie tutaj.</p>
                                     </div>
-                                ))}
+                                </UnifiedCard>
                             </div>
-                        </div>
-                    </motion.div>
-                )}
+                        )}
 
-                {activeTab === 'bids' && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
-                    >
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                            <h3 className="font-display font-bold text-xl text-gray-900 mb-6">
-                                Moje Oferty
-                            </h3>
-
-                            <div className="space-y-4">
-                                {mockData.recentBids.map((bid) => (
-                                    <div key={bid.id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
-                                        <div className="w-20 h-20 bg-gradient-to-br from-slate-200 to-slate-300 rounded-lg flex items-center justify-center">
-                                            <span className="text-slate-600 font-bold">SA</span>
-                                        </div>
-                                        <div className="flex-1">
-                                            <h4 className="font-medium text-gray-900">{bid.auctionTitle}</h4>
-                                            <p className="text-slate-600 font-semibold text-lg">
-                                                {bid.bidAmount.toLocaleString()} zł
-                                            </p>
-                                            <div className="flex items-center space-x-4 text-sm text-gray-500">
-                                                <span>Złożona: {format(new Date(), 'dd MMM yyyy', { locale: pl })}</span>
-                                                <span>Pozostało: {bid.timeLeft}</span>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${bid.isWinning
-                                                ? 'bg-green-100 text-green-800'
-                                                : 'bg-yellow-100 text-yellow-800'
-                                                }`}>
-                                                {bid.isWinning ? 'Wygrywasz' : 'Przegrywasz'}
-                                            </div>
-                                            <div className="mt-2">
-                                                <button className="text-slate-600 hover:text-slate-700 font-medium text-sm">
-                                                    Zwiększ ofertę
-                                                </button>
-                                            </div>
-                                        </div>
+                        {/* Messages Tab */}
+                        {activeTab === 'messages' && (
+                            <div>
+                                <h1 className="text-2xl font-semibold text-white mb-6">Wiadomości</h1>
+                                <UnifiedCard variant="glass" className="p-6">
+                                    <div className="space-y-4">
+                                        <p className="text-gray-300">System wiadomości będzie tutaj.</p>
                                     </div>
-                                ))}
+                                </UnifiedCard>
                             </div>
-                        </div>
-                    </motion.div>
-                )}
+                        )}
 
-                {activeTab === 'history' && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
-                    >
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                            <h3 className="font-display font-bold text-xl text-gray-900 mb-6">
-                                Historia Zakupów
-                            </h3>
-
-                            <div className="space-y-4">
-                                {mockData.purchaseHistory.map((purchase) => (
-                                    <div key={purchase.id} className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
-                                        <div className="w-20 h-20 bg-gradient-to-br from-slate-200 to-slate-300 rounded-lg flex items-center justify-center">
-                                            <span className="text-slate-600 font-bold">LB</span>
-                                        </div>
-                                        <div className="flex-1">
-                                            <h4 className="font-medium text-gray-900">{purchase.title}</h4>
-                                            <p className="text-slate-600 font-semibold text-lg">
-                                                {purchase.purchasePrice.toLocaleString()} zł
-                                            </p>
-                                            <p className="text-gray-500 text-sm">
-                                                Zakup: {format(purchase.purchaseDate, 'dd MMMM yyyy', { locale: pl })}
-                                            </p>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${purchase.status === 'delivered'
-                                                ? 'bg-green-100 text-green-800'
-                                                : 'bg-slate-100 text-slate-800'
-                                                }`}>
-                                                {purchase.status === 'delivered' ? 'Dostarczone' : 'Wysłane'}
-                                            </div>
-                                            <div className="mt-2">
-                                                <button className="text-slate-600 hover:text-slate-700 font-medium text-sm">
-                                                    Szczegóły
-                                                </button>
-                                            </div>
-                                        </div>
+                        {/* Settings Tab */}
+                        {activeTab === 'settings' && (
+                            <div>
+                                <h1 className="text-2xl font-semibold text-white mb-6">Ustawienia konta</h1>
+                                <UnifiedCard variant="glass" className="p-6">
+                                    <div className="space-y-4">
+                                        <p className="text-gray-300">Ustawienia konta będą tutaj.</p>
                                     </div>
-                                ))}
+                                </UnifiedCard>
                             </div>
-                        </div>
-                    </motion.div>
-                )}
-
-                {/* Payments Tab */}
-                {activeTab === 'payments' && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
-                    >
-                        <PaymentManagement />
-                    </motion.div>
-                )}
-
-                {/* Settings Tab */}
-                {activeTab === 'settings' && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="space-y-8"
-                    >
-                        <UserSettings />
-                    </motion.div>
-                )}
-            </div>
-        </div>
-    )
-}
-
-// Komponent ustawień użytkownika
-function UserSettings() {
-    const [activeSettingsTab, setActiveSettingsTab] = useState<'profile' | 'password' | 'contact'>('profile')
-    const [isLoading, setIsLoading] = useState(false)
-    const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
-
-    // Stan formularzy
-    const [profileData, setProfileData] = useState({
-        firstName: 'Jan',
-        lastName: 'Kowalski',
-        email: 'jan.kowalski@example.com'
-    })
-
-    const [passwordData, setPasswordData] = useState({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-    })
-
-    const [contactData, setContactData] = useState({
-        address: 'ul. Przykładowa 123',
-        city: 'Lubań',
-        postalCode: '59-800',
-        phoneNumber: '+48 123 456 789'
-    })
-
-    const settingsTabs = [
-        { id: 'profile', label: 'Profil', icon: User },
-        { id: 'password', label: 'Hasło', icon: Lock },
-        { id: 'contact', label: 'Kontakt', icon: MapPin },
-    ]
-
-    const handleProfileUpdate = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setIsLoading(true)
-        setMessage(null)
-
-        try {
-            // Symulacja API call
-            await new Promise(resolve => setTimeout(resolve, 1000))
-            setMessage({ type: 'success', text: 'Profil został zaktualizowany' })
-        } catch (error) {
-            setMessage({ type: 'error', text: 'Błąd podczas aktualizacji profilu' })
-        } finally {
-            setIsLoading(false)
-        }
-    }
-
-    const handlePasswordChange = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setIsLoading(true)
-        setMessage(null)
-
-        if (passwordData.newPassword !== passwordData.confirmPassword) {
-            setMessage({ type: 'error', text: 'Hasła nie są identyczne' })
-            setIsLoading(false)
-            return
-        }
-
-        if (passwordData.newPassword.length < 8) {
-            setMessage({ type: 'error', text: 'Hasło musi mieć co najmniej 8 znaków' })
-            setIsLoading(false)
-            return
-        }
-
-        try {
-            // Symulacja API call
-            await new Promise(resolve => setTimeout(resolve, 1000))
-            setMessage({ type: 'success', text: 'Hasło zostało zmienione' })
-            setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' })
-        } catch (error) {
-            setMessage({ type: 'error', text: 'Błąd podczas zmiany hasła' })
-        } finally {
-            setIsLoading(false)
-        }
-    }
-
-    const handleContactUpdate = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setIsLoading(true)
-        setMessage(null)
-
-        // Walidacja numeru telefonu
-        const phoneRegex = /^(\+48\s?)?[0-9]{3}\s?[0-9]{3}\s?[0-9]{3}$/
-        if (!phoneRegex.test(contactData.phoneNumber)) {
-            setMessage({ type: 'error', text: 'Nieprawidłowy format numeru telefonu' })
-            setIsLoading(false)
-            return
-        }
-
-        // Walidacja kodu pocztowego
-        const postalCodeRegex = /^[0-9]{2}-[0-9]{3}$/
-        if (!postalCodeRegex.test(contactData.postalCode)) {
-            setMessage({ type: 'error', text: 'Nieprawidłowy format kodu pocztowego (XX-XXX)' })
-            setIsLoading(false)
-            return
-        }
-
-        try {
-            // Symulacja API call
-            await new Promise(resolve => setTimeout(resolve, 1000))
-            setMessage({ type: 'success', text: 'Dane kontaktowe zostały zaktualizowane' })
-        } catch (error) {
-            setMessage({ type: 'error', text: 'Błąd podczas aktualizacji danych kontaktowych' })
-        } finally {
-            setIsLoading(false)
-        }
-    }
-
-    return (
-        <div className="space-y-8">
-            {/* Header */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h2 className="font-display font-bold text-2xl text-gray-900 mb-2">
-                    Ustawienia Konta
-                </h2>
-                <p className="text-gray-600">
-                    Zarządzaj swoimi danymi osobowymi, hasłem i informacjami kontaktowymi
-                </p>
-            </div>
-
-            {/* Settings Tabs */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-                <div className="border-b border-gray-200">
-                    <div className="flex space-x-8 px-6">
-                        {settingsTabs.map((tab) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveSettingsTab(tab.id as any)}
-                                className={`flex items-center space-x-2 py-4 border-b-2 font-medium transition-colors ${activeSettingsTab === tab.id
-                                    ? 'border-slate-500 text-slate-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                                    }`}
-                            >
-                                <tab.icon className="w-5 h-5" />
-                                <span>{tab.label}</span>
-                            </button>
-                        ))}
+                        )}
                     </div>
-                </div>
-
-                <div className="p-6">
-                    {/* Message */}
-                    {message && (
-                        <div className={`mb-6 p-4 rounded-lg ${message.type === 'success'
-                            ? 'bg-green-50 text-green-800 border border-green-200'
-                            : 'bg-red-50 text-red-800 border border-red-200'
-                            }`}>
-                            {message.text}
-                        </div>
-                    )}
-
-                    {/* Profile Tab */}
-                    {activeSettingsTab === 'profile' && (
-                        <form onSubmit={handleProfileUpdate} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Imię *
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={profileData.firstName}
-                                        onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
-                                        aria-label="Imię"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Nazwisko *
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={profileData.lastName}
-                                        onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
-                                        aria-label="Nazwisko"
-                                        required
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Email *
-                                </label>
-                                <input
-                                    type="email"
-                                    value={profileData.email}
-                                    onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
-                                    aria-label="Email"
-                                    required
-                                />
-                            </div>
-                            <div className="flex justify-end">
-                                <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {isLoading ? 'Zapisywanie...' : 'Zapisz zmiany'}
-                                </button>
-                            </div>
-                        </form>
-                    )}
-
-                    {/* Password Tab */}
-                    {activeSettingsTab === 'password' && (
-                        <form onSubmit={handlePasswordChange} className="space-y-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Aktualne hasło *
-                                </label>
-                                <input
-                                    type="password"
-                                    value={passwordData.currentPassword}
-                                    onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
-                                    aria-label="Aktualne hasło"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Nowe hasło *
-                                </label>
-                                <input
-                                    type="password"
-                                    value={passwordData.newPassword}
-                                    onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
-                                    aria-label="Nowe hasło"
-                                    required
-                                    minLength={8}
-                                />
-                                <p className="text-sm text-gray-500 mt-1">
-                                    Hasło musi mieć co najmniej 8 znaków
-                                </p>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Potwierdź nowe hasło *
-                                </label>
-                                <input
-                                    type="password"
-                                    value={passwordData.confirmPassword}
-                                    onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
-                                    aria-label="Potwierdź nowe hasło"
-                                    required
-                                />
-                            </div>
-                            <div className="flex justify-end">
-                                <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {isLoading ? 'Zmienianie...' : 'Zmień hasło'}
-                                </button>
-                            </div>
-                        </form>
-                    )}
-
-                    {/* Contact Tab */}
-                    {activeSettingsTab === 'contact' && (
-                        <form onSubmit={handleContactUpdate} className="space-y-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Adres *
-                                </label>
-                                <input
-                                    type="text"
-                                    value={contactData.address}
-                                    onChange={(e) => setContactData({ ...contactData, address: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
-                                    aria-label="Adres"
-                                    required
-                                />
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Miasto *
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={contactData.city}
-                                        onChange={(e) => setContactData({ ...contactData, city: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
-                                        aria-label="Miasto"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Kod pocztowy *
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={contactData.postalCode}
-                                        onChange={(e) => setContactData({ ...contactData, postalCode: e.target.value })}
-                                        placeholder="XX-XXX"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
-                                        required
-                                        pattern="[0-9]{2}-[0-9]{3}"
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Numer telefonu *
-                                </label>
-                                <input
-                                    type="tel"
-                                    value={contactData.phoneNumber}
-                                    onChange={(e) => setContactData({ ...contactData, phoneNumber: e.target.value })}
-                                    placeholder="+48 123 456 789"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500"
-                                    required
-                                />
-                                <p className="text-sm text-gray-500 mt-1">
-                                    Format: +48 123 456 789 lub 123 456 789
-                                </p>
-                            </div>
-                            <div className="flex justify-end">
-                                <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {isLoading ? 'Zapisywanie...' : 'Zapisz zmiany'}
-                                </button>
-                            </div>
-                        </form>
-                    )}
                 </div>
             </div>
         </div>

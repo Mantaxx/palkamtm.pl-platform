@@ -11,10 +11,15 @@
       "static/chunks/main-app.js",
       "static/chunks/app/loading.js"
     ],
-    "/page": [
+    "/auctions/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
+      "static/chunks/app/auctions/page.js"
+    ],
+    "/api/auth/[...nextauth]/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/auth/[...nextauth]/route.js"
     ]
   }
 }

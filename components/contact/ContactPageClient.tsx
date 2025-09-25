@@ -1,22 +1,21 @@
 'use client'
 
-import { UnifiedLayout } from '@/components/layout/UnifiedLayout'
+import GoogleMap from '@/components/contact/GoogleMap'
 import { Text3D } from '@/components/ui/Text3D'
 import { UnifiedButton } from '@/components/ui/UnifiedButton'
 import { UnifiedCard } from '@/components/ui/UnifiedCard'
 import { motion } from 'framer-motion'
 import { Mail, MapPin, Phone } from 'lucide-react'
-import GoogleMap from './GoogleMap'
 
 export default function ContactPageClient() {
   return (
-    <UnifiedLayout>
+    <>
       {/* Hero Section */}
       <motion.section
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 0.6 }}
-        className="relative z-10 pt-80 pb-20 px-4 sm:px-6 lg:px-8"
+        className="relative z-10 pt-8 pb-20 px-4 sm:px-6 lg:px-8"
       >
         <div className="max-w-4xl mx-auto text-center">
           <Text3D
@@ -49,7 +48,12 @@ export default function ContactPageClient() {
             className="mb-20"
           >
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <UnifiedCard variant="3d" glow={true} className="p-8 text-center">
+              <UnifiedCard
+                variant="glass"
+                glow={false}
+                className="p-8 text-center rounded-2xl border-2 border-white bg-white/25 backdrop-blur-xl"
+                style={{ boxShadow: '0 0 14px 3px rgba(255,255,255,0.55)' }}
+              >
                 <motion.div
                   whileHover={{ rotateY: 360 }}
                   transition={{ duration: 0.6 }}
@@ -58,7 +62,7 @@ export default function ContactPageClient() {
                     boxShadow: '0 8px 32px rgba(255, 255, 255, 0.4), 0 16px 64px rgba(255, 255, 255, 0.2), 0 24px 96px rgba(255, 255, 255, 0.1)'
                   }}
                 >
-                  <Phone className="w-8 h-8 text-white/60 animate-glow3D" />
+                  <Phone className="w-8 h-8 text-white/60" />
                 </motion.div>
                 <Text3D
                   variant="glow"
@@ -67,11 +71,16 @@ export default function ContactPageClient() {
                 >
                   Telefon
                 </Text3D>
-                <p className="text-white/90 mb-4">+48 75 722 47 29</p>
+                <p className="text-white/90 mb-4">75 722 47 29</p>
                 <p className="text-white/70 text-sm">Dostępny 8:00 - 20:00</p>
               </UnifiedCard>
 
-              <UnifiedCard variant="glass" glow={true} className="p-8 text-center">
+              <UnifiedCard
+                variant="glass"
+                glow={false}
+                className="p-8 text-center rounded-2xl border-2 border-white bg-white/25 backdrop-blur-xl"
+                style={{ boxShadow: '0 0 14px 3px rgba(255,255,255,0.55)' }}
+              >
                 <motion.div
                   whileHover={{ rotateY: 360 }}
                   transition={{ duration: 0.6 }}
@@ -80,7 +89,7 @@ export default function ContactPageClient() {
                     boxShadow: '0 8px 32px rgba(255, 255, 255, 0.4), 0 16px 64px rgba(255, 255, 255, 0.2), 0 24px 96px rgba(255, 255, 255, 0.1)'
                   }}
                 >
-                  <Mail className="w-8 h-8 text-white/60 animate-glow3D" />
+                  <Mail className="w-8 h-8 text-white/60" />
                 </motion.div>
                 <Text3D
                   variant="gradient"
@@ -89,11 +98,16 @@ export default function ContactPageClient() {
                 >
                   Email
                 </Text3D>
-                <p className="text-white/90 mb-4">mtm.palka@wp.pl</p>
+                <p className="text-white/90 mb-4">kontakt@palkamtm.pl</p>
                 <p className="text-slate-200 text-sm">Odpowiadamy w ciągu 24h</p>
               </UnifiedCard>
 
-              <UnifiedCard variant="floating" glow={true} className="p-8 text-center">
+              <UnifiedCard
+                variant="glass"
+                glow={false}
+                className="p-8 text-center rounded-2xl border-2 border-white bg-white/25 backdrop-blur-xl"
+                style={{ boxShadow: '0 0 14px 3px rgba(255,255,255,0.55)' }}
+              >
                 <motion.div
                   whileHover={{ rotateY: 360 }}
                   transition={{ duration: 0.6 }}
@@ -102,7 +116,7 @@ export default function ContactPageClient() {
                     boxShadow: '0 8px 32px rgba(255, 255, 255, 0.4), 0 16px 64px rgba(255, 255, 255, 0.2), 0 24px 96px rgba(255, 255, 255, 0.1)'
                   }}
                 >
-                  <MapPin className="w-8 h-8 text-slate-300 animate-glow3D" />
+                  <MapPin className="w-8 h-8 text-slate-300" />
                 </motion.div>
                 <Text3D
                   variant="neon"
@@ -111,7 +125,7 @@ export default function ContactPageClient() {
                 >
                   Adres
                 </Text3D>
-                <p className="text-white/90 mb-4">ul. Stawowa 6<br />59-800 Lubań</p>
+                <p className="text-white/90 mb-4">Pałka MTM<br />ul. Stawowa 6<br />59-800 Lubań<br />woj. dolnośląskie</p>
                 <p className="text-slate-200 text-sm">Wizyty po umówieniu</p>
               </UnifiedCard>
             </div>
@@ -119,6 +133,7 @@ export default function ContactPageClient() {
 
           {/* Google Map */}
           <GoogleMap />
+
 
           {/* Contact Form */}
           <motion.section
@@ -128,7 +143,12 @@ export default function ContactPageClient() {
             viewport={{ once: true }}
             className="mb-20"
           >
-            <UnifiedCard variant="gradient" glow={true} className="p-8">
+            <UnifiedCard
+              variant="glass"
+              glow={false}
+              className="p-8 rounded-2xl border-2 border-white bg-white/25 backdrop-blur-xl"
+              style={{ boxShadow: '0 0 14px 3px rgba(255,255,255,0.55)' }}
+            >
               <Text3D
                 variant="shimmer"
                 intensity="high"
@@ -225,7 +245,12 @@ export default function ContactPageClient() {
             transition={{ duration: 0.8, delay: 0.4 }}
             viewport={{ once: true }}
           >
-            <UnifiedCard variant="3d" glow={true} className="p-8">
+            <UnifiedCard
+              variant="glass"
+              glow={false}
+              className="relative p-8 rounded-2xl border-2 border-white bg-white/25 backdrop-blur-xl"
+              style={{ boxShadow: '0 0 14px 3px rgba(255,255,255,0.55)' }}
+            >
               <Text3D
                 variant="glow"
                 intensity="medium"
@@ -251,6 +276,6 @@ export default function ContactPageClient() {
           </motion.section>
         </div>
       </div>
-    </UnifiedLayout>
+    </>
   )
 }

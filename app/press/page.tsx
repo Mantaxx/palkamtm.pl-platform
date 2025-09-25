@@ -1,4 +1,5 @@
 import { PressPage } from '@/components/press/PressPage'
+import { UnifiedLayout } from '@/components/layout/UnifiedLayout'
 
 export const metadata = {
     title: 'Prasa - Gołębie Pocztowe',
@@ -6,5 +7,9 @@ export const metadata = {
 }
 
 export default function Press() {
-    return <PressPage />
+    return (
+        <UnifiedLayout>
+            <PressPage />
+        </UnifiedLayout>
+    )
 }

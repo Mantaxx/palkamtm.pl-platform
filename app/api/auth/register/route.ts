@@ -1,92 +1,86 @@
-import { createActivationEmail, generateActivationToken, sendEmail } from '@/lib/email'
+import { createActivationEmail, sendEmail } from '@/lib/email'
 import { prisma } from '@/lib/prisma'
-import { authRateLimit } from '@/lib/rate-limit'
+import { apiRateLimit } from '@/lib/rate-limit'
+import { userRegistrationSchema } from '@/lib/validations/schemas'
 import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
-import { z } from 'zod'
-
-const registerSchema = z.object({
-  email: z.string().email('Nieprawidłowy adres email'),
-  password: z.string().min(8, 'Hasło musi mieć co najmniej 8 znaków'),
-})
 
 export async function POST(request: NextRequest) {
   try {
-    // Apply rate limiting
-    const rateLimitResponse = authRateLimit(request)
+    // Rate limiting
+    const rateLimitResponse = apiRateLimit(request)
     if (rateLimitResponse) {
       return rateLimitResponse
     }
 
     const body = await request.json()
-    const { email, password } = registerSchema.parse(body)
 
-    // Check if user already exists
+    // Walidacja danych
+    const validatedData = userRegistrationSchema.parse(body)
+
+    // Sprawdź czy użytkownik już istnieje
     const existingUser = await prisma.user.findUnique({
-      where: { email }
+      where: { email: validatedData.email }
     })
 
     if (existingUser) {
       return NextResponse.json(
-        { message: 'Użytkownik z tym adresem email już istnieje' },
+        { error: 'Użytkownik z tym adresem email już istnieje' },
         { status: 400 }
       )
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12)
+    // Hashuj hasło
+    const hashedPassword = await bcrypt.hash(validatedData.password, 12)
 
-    // Generate activation token
-    const activationToken = generateActivationToken()
+    // Generuj token aktywacyjny
+    const activationToken = crypto.randomUUID()
 
-    // Create user with minimal data - profile will be completed later
+    // Utwórz użytkownika
     const user = await prisma.user.create({
       data: {
-        email,
+        email: validatedData.email,
         password: hashedPassword,
-        role: 'BUYER',
-        isActive: true, // Temporarily set to true for development
-        activationToken,
+        firstName: validatedData.firstName,
+        lastName: validatedData.lastName,
+        phoneNumber: validatedData.phoneNumber,
+        role: 'BUYER', // Domyślnie kupujący
+        isActive: false, // Wymaga aktywacji
+        activationToken
       },
       select: {
         id: true,
         email: true,
+        firstName: true,
+        lastName: true,
         role: true,
-        createdAt: true,
+        isActive: true,
+        activationToken: true
       }
     })
 
-    // Send activation email
-    const emailData = createActivationEmail(email, activationToken)
-    const emailSent = await sendEmail(emailData)
+    // Przygotuj i wyślij email aktywacyjny
+    const emailData = createActivationEmail(user.email, activationToken)
+    await sendEmail(emailData)
 
-    if (!emailSent) {
-      // Jeśli email się nie wysłał, usuń użytkownika
-      await prisma.user.delete({ where: { id: user.id } })
-      return NextResponse.json(
-        { message: 'Błąd wysyłania emaila aktywacyjnego' },
-        { status: 500 }
-      )
-    }
+    return NextResponse.json({
+      message: 'Konto zostało utworzone. Sprawdź email w celu aktywacji.',
+      user
+    }, { status: 201 })
 
-    return NextResponse.json(
-      {
-        message: 'Konto zostało utworzone. Sprawdź email i kliknij w link aktywacyjny.',
-        userId: user.id
-      },
-      { status: 201 }
-    )
   } catch (error) {
-    if (error instanceof z.ZodError) {
+    console.error('Błąd podczas rejestracji:', error)
+
+    if (error instanceof Error && error.name === 'ZodError') {
       return NextResponse.json(
-        { message: error.errors[0].message },
+        { error: 'Nieprawidłowe dane', details: error.message },
         { status: 400 }
       )
     }
 
-    console.error('Registration error:', error)
     return NextResponse.json(
-      { message: 'Wystąpił błąd podczas tworzenia konta' },
+      { error: 'Wystąpił błąd podczas rejestracji' },
       { status: 500 }
     )
   }

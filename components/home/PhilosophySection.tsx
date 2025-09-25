@@ -3,17 +3,17 @@
 import { motion } from 'framer-motion'
 import { ArrowRight, Heart, Quote, Target, Users } from 'lucide-react'
 import Link from 'next/link'
-
+import React from 'react'
 const philosophyValues = [
   {
     icon: Heart,
     title: 'Strategia 80/20',
-    description: '80% gołębi spokrewnionych + 20% "świeżej krwi" z najlepszych hodowli europejskich',
+    description: '80% gołębi spokrewnionych + 20% &quot;świeżej krwi&quot; z najlepszych hodowli europejskich',
   },
   {
     icon: Target,
-    title: 'Selekcja "w Ręku"',
-    description: 'Intuicyjna ocena budowy, skrzydła i "leżenia w ręku" - dekady doświadczeń',
+    title: 'Selekcja &quot;w Ręku&quot;',
+    description: 'Intuicyjna ocena budowy, skrzydła i &quot;leżenia w ręku&quot; - dekady doświadczeń',
   },
   {
     icon: Users,
@@ -24,43 +24,39 @@ const philosophyValues = [
 
 export function PhilosophySection() {
   return (
-    <section className="py-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+    <section className="py-16 sm:py-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-white">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Column - Philosophy Text */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, amount: 0.3 }}
           >
-            <div className="mb-8">
-              <Quote className="w-16 h-16 text-slate-600 mb-6" />
-              <blockquote className="text-2xl sm:text-3xl font-display font-medium text-white leading-relaxed mb-6">
-                „Dla gołębia trzeba być weterynarzem, dietetykiem, trenerem i opiekunem w jednym przez 365 dni w roku.
-                Mistrzostwo to suma tysięcy drobiazgowych, codziennych czynności."
-              </blockquote>
-              <cite className="text-lg text-slate-200 font-medium">
-                — Tadeusz Pałka, MTM Pałka
-              </cite>
+            <div className="glass-container p-8 rounded-2xl">
+              <div className="mb-10">
+                <Quote className="w-12 h-12 text-primary-400 mb-6" />
+                <blockquote className="text-xl sm:text-2xl font-display font-medium text-white leading-relaxed border-l-4 border-primary-400 pl-6 mb-8">
+                  &quot;Dla gołębia trzeba być weterynarzem, dietetykiem, trenerem i opiekunem w jednym. Mistrzostwo to suma tysięcy drobiazgowych, codziennych czynności.&quot;
+                </blockquote>
+                <cite className="block text-right text-secondary-200 mt-4 text-base">
+                  — Tadeusz Pałka, MTM Pałka
+                </cite>
+              </div>
+              <div>
+                <p className="text-secondary-200 leading-relaxed mt-8 text-base">
+                  Nasza historia to dekady pasji i dążenia do perfekcji. Od skromnych początków w latach 70., przez budowę profesjonalnego gołębnika w 2000 roku, po dzisiejsze sukcesy – zawsze kierowaliśmy się miłością do gołębi i chęcią osiągania najlepszych wyników.
+                </p>
+              </div>
+              <Link
+                href="/heritage"
+                className="inline-flex items-center bg-primary-600 hover:bg-primary-700 text-white font-semibold px-8 py-3 rounded-lg transition-all duration-300 mt-8 shadow-lg hover:shadow-primary-500/50"
+              >
+                <span>Poznaj Naszą Historię</span>
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Link>
             </div>
-
-            <p className="text-lg text-slate-200 leading-relaxed mb-8">
-              Historia hodowli MTM Pałka sięga lat 70., kiedy Tadeusz Pałka rozpoczął swoją przygodę z gołębiami
-              pocztowymi na strychu kamienicy w Lubaniu. W 2000 roku, po zakupie działki, postawił profesjonalny
-              gołębnik, do którego dołączyli synowie Mariusz i Marcin, tworząc rodzinny tandem hodowlany.
-              Pierwsze sukcesy przyszły już w 2001 roku.
-              Przez ponad dwie dekady systematycznie rozbudowywali stado, które obecnie liczy około 120 ptaków.
-              Regularnie osiągają sukcesy w konkursach.
-            </p>
-
-            <Link
-              href="/heritage"
-              className="inline-flex items-center glass-morphism hover:glass-morphism-strong text-white font-semibold px-8 py-4 rounded-lg transition-all duration-500"
-            >
-              <span>Poznaj Naszą Historię</span>
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Link>
           </motion.div>
 
           {/* Right Column - Values */}
@@ -78,21 +74,17 @@ export function PhilosophySection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="flex items-start space-x-4"
+                className="glass-container p-6 rounded-2xl flex items-start space-x-6 hover:bg-white/20 transition-colors duration-300"
               >
-                <div className="flex-shrink-0 w-12 h-12 glass-morphism rounded-lg flex items-center justify-center border-2 border-white" style={{
-                  boxShadow: '0 8px 32px rgba(255, 255, 255, 0.4), 0 16px 64px rgba(255, 255, 255, 0.2), 0 24px 96px rgba(255, 255, 255, 0.1)'
-                }}>
-                  <value.icon className="w-6 h-6 text-white" />
+                <div className="flex-shrink-0 w-14 h-14 bg-white/10 rounded-lg flex items-center justify-center ring-1 ring-white/20">
+                  <value.icon className="w-7 h-7 text-primary-400 animate-glow3D" />
                 </div>
-                <div>
-                  <h3 className="font-display font-bold text-xl text-white mb-2">
-                    {value.title}
-                  </h3>
-                  <p className="text-slate-100 leading-relaxed">
-                    {value.description}
-                  </p>
-                </div>
+                <React.Fragment>
+                  <div>
+                    <h3 className="font-display font-bold text-xl text-white">{value.title}</h3>
+                    <p className="text-secondary-200 leading-relaxed mt-1 text-base">{value.description}</p>
+                  </div>
+                </React.Fragment>
               </motion.div>
             ))}
           </motion.div>

@@ -103,7 +103,7 @@ export function EnhancedHomePage() {
 
         {/* Features Grid with 3D Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-8 xl:gap-12 2xl:gap-16 mb-20 xl:mb-24 2xl:mb-32">
-          {features.map((feature, index) => (
+          {features.map((feature) => (
             <FloatingCard
               key={feature.title}
               delay={feature.delay}

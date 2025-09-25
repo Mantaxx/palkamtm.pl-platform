@@ -1,4 +1,5 @@
 import { ReferencesPage } from '@/components/references/ReferencesPage'
+import { UnifiedLayout } from '@/components/layout/UnifiedLayout'
 
 export const metadata = {
   title: 'Referencje - Gołębie Pocztowe',
@@ -6,5 +7,9 @@ export const metadata = {
 }
 
 export default function References() {
-  return <ReferencesPage />
+  return (
+    <UnifiedLayout>
+      <ReferencesPage />
+    </UnifiedLayout>
+  )
 }
