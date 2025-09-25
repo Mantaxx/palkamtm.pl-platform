@@ -11,7 +11,7 @@ import {
   Star,
   Users
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 interface SearchFilters {
   query: string
@@ -176,18 +176,18 @@ export default function AdvancedSearch() {
   const [isLoading, setIsLoading] = useState(false)
   const [isClient, setIsClient] = useState(false)
 
-  const handleFilterChange = (key: keyof SearchFilters, value: any) => {
+  const handleFilterChange = (key: keyof SearchFilters, value: unknown) => {
     setFilters(prev => ({ ...prev, [key]: value }))
   }
 
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     setIsLoading(true)
 
     // Symulacja wyszukiwania
     await new Promise(resolve => setTimeout(resolve, 1000))
 
     // Filtrowanie wyników
-    let filteredResults = mockResults.filter(result => {
+    const filteredResults = mockResults.filter(result => {
       // Wyszukiwanie tekstowe
       if (filters.query && !result.title.toLowerCase().includes(filters.query.toLowerCase()) &&
         !result.description.toLowerCase().includes(filters.query.toLowerCase())) {
@@ -234,7 +234,7 @@ export default function AdvancedSearch() {
 
     // Sortowanie
     filteredResults.sort((a, b) => {
-      let aValue: any, bValue: any
+      let aValue: unknown, bValue: unknown
 
       switch (filters.sortBy) {
         case 'currentPrice':
@@ -259,15 +259,15 @@ export default function AdvancedSearch() {
       }
 
       if (filters.sortOrder === 'asc') {
-        return aValue - bValue
+        return Number(aValue) - Number(bValue)
       } else {
-        return bValue - aValue
+        return Number(bValue) - Number(aValue)
       }
     })
 
     setResults(filteredResults)
     setIsLoading(false)
-  }
+  }, [filters])
 
   const clearFilters = () => {
     setFilters({
@@ -318,7 +318,7 @@ export default function AdvancedSearch() {
 
   useEffect(() => {
     handleSearch()
-  }, [filters])
+  }, [filters, handleSearch])
 
   return (
     <div className="min-h-screen bg-gray-50">

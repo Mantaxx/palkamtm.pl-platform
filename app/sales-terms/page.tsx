@@ -93,7 +93,7 @@ export default function SalesTermsPage() {
 
                             <h2 className="text-2xl font-bold text-white mb-4">§ 5. Odpowiedzialność, Rękojmia i Reklamacje</h2>
                             <ul className="space-y-3 mb-4 text-white/90">
-                                <li>Przedmiot sprzedaży (gołąb) jest sprzedawany w stanie "tak jak jest" (ang. as is).</li>
+                                <li>Przedmiot sprzedaży (gołąb) jest sprzedawany w stanie &quot;tak jak jest&quot; (ang. as is).</li>
                                 <li>Wyłączną odpowiedzialność za wady fizyczne i prawne sprzedawanego gołębia ponosi Sprzedający na zasadach określonych w Kodeksie Cywilnym (rękojmia), o ile nie została ona przez niego skutecznie ograniczona lub wyłączona w treści oferty (dotyczy to w szczególności transakcji między osobami fizycznymi).</li>
                                 <li>Wszelkie roszczenia i reklamacje dotyczące przedmiotu sprzedaży, w tym jego stanu zdrowia po odbiorze, niezgodności z opisem, autentyczności rodowodu itp., muszą być kierowane przez Kupującego bezpośrednio i wyłącznie do Sprzedającego.</li>
                             </ul>
@@ -111,7 +111,7 @@ export default function SalesTermsPage() {
 
                             <div className="mt-12 p-6 glass-morphism rounded-lg">
                                 <p className="text-sm text-white/80 text-center">
-                                    <strong>Ostatnia aktualizacja:</strong> {new Date().toLocaleDateString('pl-PL')}
+                                    <strong>Ostatnia aktualizacja:</strong> 29.07.2024
                                 </p>
                             </div>
                         </div>

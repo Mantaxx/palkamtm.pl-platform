@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { AlertCircle, CheckCircle, Loader2, Phone, Shield } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface PhoneVerificationProps {
     user: {
@@ -21,6 +21,8 @@ export function PhoneVerification({ user, onVerificationComplete }: PhoneVerific
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
+    const [resendSeconds, setResendSeconds] = useState(0)
+    const [isResending, setIsResending] = useState(false)
 
     const handleSendSMS = async () => {
         if (!phoneNumber) {
@@ -32,7 +34,7 @@ export function PhoneVerification({ user, onVerificationComplete }: PhoneVerific
         setError('')
 
         try {
-            const response = await fetch('/api/auth/send-sms', {
+            const response = await fetch('/api/phone/send-verification', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -45,6 +47,7 @@ export function PhoneVerification({ user, onVerificationComplete }: PhoneVerific
             if (data.success) {
                 setStep('verify')
                 setSuccess('Kod weryfikacyjny został wysłany na podany numer telefonu')
+                setResendSeconds(60)
             } else {
                 setError(data.error || 'Błąd wysyłania SMS')
             }
@@ -65,12 +68,12 @@ export function PhoneVerification({ user, onVerificationComplete }: PhoneVerific
         setError('')
 
         try {
-            const response = await fetch('/api/auth/verify-sms', {
+            const response = await fetch('/api/phone/check-verification', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ verificationCode }),
+                body: JSON.stringify({ code: verificationCode }),
             })
 
             const data = await response.json()
@@ -89,12 +92,39 @@ export function PhoneVerification({ user, onVerificationComplete }: PhoneVerific
         }
     }
 
-    const handleResendCode = () => {
-        setStep('phone')
-        setVerificationCode('')
+    const handleResendCode = async () => {
+        if (!phoneNumber || resendSeconds > 0 || isResending) return
+        setIsResending(true)
         setError('')
         setSuccess('')
+        try {
+            const response = await fetch('/api/phone/send-verification', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phoneNumber })
+            })
+            const data = await response.json()
+            if (data.success) {
+                setStep('verify')
+                setSuccess('Nowy kod został wysłany na podany numer telefonu')
+                setResendSeconds(60)
+            } else {
+                setError(data.error || 'Błąd wysyłania SMS')
+            }
+        } catch (e) {
+            setError('Wystąpił błąd podczas wysyłania SMS')
+        } finally {
+            setIsResending(false)
+        }
     }
+
+    useEffect(() => {
+        if (resendSeconds <= 0) return
+        const interval = setInterval(() => {
+            setResendSeconds((s) => (s > 0 ? s - 1 : 0))
+        }, 1000)
+        return () => clearInterval(interval)
+    }, [resendSeconds])
 
     if (step === 'success') {
         return (
@@ -245,10 +275,19 @@ export function PhoneVerification({ user, onVerificationComplete }: PhoneVerific
 
                         <button
                             onClick={handleResendCode}
-                            disabled={isLoading}
-                            className="px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={isLoading || isResending || resendSeconds > 0 || !phoneNumber}
+                            className="px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                         >
-                            Wyślij ponownie
+                            {isResending ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    <span>Wysyłanie...</span>
+                                </>
+                            ) : resendSeconds > 0 ? (
+                                <>Wyślij ponownie ({resendSeconds}s)</>
+                            ) : (
+                                <>Wyślij ponownie</>
+                            )}
                         </button>
                     </div>
                 </div>

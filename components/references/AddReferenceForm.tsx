@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Calendar, MapPin, MessageSquare, Plus, Star, Trophy, User, X } from 'lucide-react'
+import { Calendar, MapPin, MessageSquare, Plus, Star, Trophy, User, X, Camera } from 'lucide-react'
 import { useState } from 'react'
 
 interface Achievement {
@@ -38,6 +38,7 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [image, setImage] = useState<File | null>(null)
 
   const handleInputChange = (field: string, value: string | number) => {
     setFormData(prev => ({
@@ -105,18 +106,21 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
     setError('')
 
     try {
+      const body = new FormData()
+      if (image) {
+        body.append('image', image as Blob)
+      }
+      body.append('data', JSON.stringify({
+        ...formData,
+        achievements: achievements.filter(achievement =>
+          achievement.pigeon && achievement.ringNumber &&
+          achievement.results.some(result => result.competition && result.date)
+        )
+      }))
+
       const response = await fetch('/api/references', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          ...formData,
-          achievements: achievements.filter(achievement =>
-            achievement.pigeon && achievement.ringNumber &&
-            achievement.results.some(result => result.competition && result.date)
-          )
-        })
+        body
       })
 
       if (!response.ok) {
@@ -245,6 +249,20 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
             placeholder="Opisz swoje doświadczenia z gołębiami z naszej hodowli..."
             required
           />
+        </div>
+        
+        {/* File Upload */}
+        <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <Camera className="w-4 h-4 inline mr-2" />
+              Zdjęcie gołębia (opcjonalnie)
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => e.target.files && setImage(e.target.files[0])}
+              className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-slate-50 file:text-slate-700 hover:file:bg-slate-100"
+            />
         </div>
 
         {/* Osiągnięcia */}

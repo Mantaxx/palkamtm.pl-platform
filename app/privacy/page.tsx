@@ -29,7 +29,7 @@ export default function PrivacyPage() {
                                 Niniejsza Polityka Prywatności określa zasady przetwarzania i ochrony danych osobowych Użytkowników Serwisu internetowego Gołębie Pocztowe, dostępnego pod adresem gołębiepocztowe.pl.
                             </p>
                             <p className="mb-4">
-                                Administratorem Danych Osobowych (dalej: "Administrator") w rozumieniu Rozporządzenia Parlamentu Europejskiego i Rady (UE) 2016/679 z dnia 27 kwietnia 2016 r. w sprawie ochrony osób fizycznych w związku z przetwarzaniem danych osobowych i w sprawie swobodnego przepływu takich danych oraz uchylenia dyrektywy 95/46/WE (RODO) jest Pałka MTM, z siedzibą w Lubaniu, adres: ul. Stawowa 6, 59-800 Lubań, e-mail: kontakt@golebiepocztowe.pl.
+                                Administratorem Danych Osobowych (dalej: &quot;Administrator&quot;) w rozumieniu Rozporządzenia Parlamentu Europejskiego i Rady (UE) 2016/679 z dnia 27 kwietnia 2016 r. w sprawie ochrony osób fizycznych w związku z przetwarzaniem danych osobowych i w sprawie swobodnego przepływu takich danych oraz uchylenia dyrektywy 95/46/WE (RODO) jest Pałka MTM, z siedzibą w Lubaniu, adres: ul. Stawowa 6, 59-800 Lubań, e-mail: kontakt@golebiepocztowe.pl.
                             </p>
                             <p className="mb-8">
                                 Dbamy o prywatność naszych Użytkowników i bezpieczeństwo ich danych. Dane przetwarzane są z zachowaniem wymogów bezpieczeństwa określonych w obowiązujących przepisach prawa.
@@ -124,7 +124,7 @@ export default function PrivacyPage() {
                             <ul className="space-y-2 mb-4">
                                 <li><strong>Prawo dostępu do danych</strong> – możliwość uzyskania informacji o przetwarzanych danych oraz kopii tych danych.</li>
                                 <li><strong>Prawo do sprostowania (poprawiania) danych</strong> – możliwość żądania poprawienia nieprawidłowych danych.</li>
-                                <li><strong>Prawo do usunięcia danych ("prawo do bycia zapomnianym")</strong> – możliwość żądania usunięcia danych, o ile nie istnieją nadrzędne podstawy prawne do ich dalszego przetwarzania.</li>
+                                <li><strong>Prawo do usunięcia danych (&quot;prawo do bycia zapomnianym&quot;)</strong> – możliwość żądania usunięcia danych, o ile nie istnieją nadrzędne podstawy prawne do ich dalszego przetwarzania.</li>
                                 <li><strong>Prawo do ograniczenia przetwarzania danych.</strong></li>
                                 <li><strong>Prawo do wniesienia sprzeciwu</strong> wobec przetwarzania danych na podstawie prawnie uzasadnionego interesu Administratora.</li>
                                 <li><strong>Prawo do przenoszenia danych.</strong></li>
@@ -162,6 +162,6 @@ export default function PrivacyPage() {
                         </div>
                     </div>
                 </div>
-        </UnifiedLayout>
-    )
+            </div>
+        </UnifiedLayout>)
 }

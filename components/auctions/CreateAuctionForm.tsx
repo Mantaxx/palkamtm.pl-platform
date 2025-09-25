@@ -5,10 +5,14 @@ import { AnimatePresence, motion } from 'framer-motion'
 import {
   ArrowLeft,
   ArrowRight,
+  ShieldAlert,
   Upload,
   Video,
   X
 } from 'lucide-react'
+import { useSession } from 'next-auth/react'
+import Image from 'next/image'
+import Link from 'next/link'
 import { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useForm } from 'react-hook-form'
@@ -27,6 +31,31 @@ const createAuctionSchema = z.object({
   sex: z.enum(['male', 'female']).optional(),
   birthDate: z.string().optional(),
   pedigreeFile: z.any().optional(),
+  eyeColor: z.string().optional(),
+  featherColor: z.string().optional(),
+  disciplines: z.array(z.string()).optional(),
+  dnaCertificate: z.string().optional(),
+
+  // PPQC - ogólny opis
+  ppqcSize: z.string().optional(),
+  ppqcBody: z.string().optional(),
+  ppqcVitality: z.string().optional(),
+  ppqcColorDensity: z.string().optional(),
+  ppqcLength: z.string().optional(),
+  ppqcEndurance: z.string().optional(),
+  ppqcForkStrength: z.string().optional(),
+  ppqcForkLayout: z.string().optional(),
+  ppqcMuscles: z.string().optional(),
+  ppqcBalance: z.string().optional(),
+  ppqcBack: z.string().optional(),
+
+  // PPQC - skrzydło
+  ppqcBreedingFeathers: z.string().optional(),
+  ppqcPrimaries: z.string().optional(),
+  ppqcPlumage: z.string().optional(),
+  ppqcFeatherQuality: z.string().optional(),
+  ppqcSecondaries: z.string().optional(),
+  ppqcElasticity: z.string().optional(),
 
   // Cena i format sprzedaży
   startingPrice: z.number().min(1, 'Cena wywoławcza musi być większa od 0'),
@@ -62,7 +91,8 @@ const steps = [
   { id: 5, title: 'Podsumowanie', description: 'Sprawdź i opublikuj' }
 ]
 
-export default function CreateAuctionForm({ onSuccess, onCancel }: CreateAuctionFormProps) {
+export default function CreateAuctionForm({ onSuccess }: CreateAuctionFormProps) {
+  const { data: session, status } = useSession()
   const [currentStep, setCurrentStep] = useState(1)
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -71,8 +101,7 @@ export default function CreateAuctionForm({ onSuccess, onCancel }: CreateAuction
     register,
     handleSubmit,
     watch,
-    setValue,
-    formState: { errors, isValid }
+    formState: { errors }
   } = useForm<CreateAuctionFormData>({
     resolver: zodResolver(createAuctionSchema),
     mode: 'onChange'
@@ -177,6 +206,47 @@ export default function CreateAuctionForm({ onSuccess, onCancel }: CreateAuction
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  if (status === 'loading') {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <p>Ładowanie sesji...</p>
+      </div>
+    )
+  }
+
+  if (status === 'unauthenticated' || !session?.user) {
+    return (
+      <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-md">
+        <p className="text-sm text-red-700">
+          Musisz być zalogowany, aby utworzyć aukcję.
+          <Link href="/auth/signin" className="font-medium underline text-red-800 hover:text-red-900 ml-2">
+            Zaloguj się
+          </Link>
+        </p>
+      </div>
+    )
+  }
+
+  if (!session.user.isPhoneVerified) {
+    return (
+      <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md">
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <ShieldAlert className="h-5 w-5 text-yellow-400" aria-hidden="true" />
+          </div>
+          <div className="ml-3">
+            <p className="text-sm text-yellow-700">
+              Weryfikacja numeru telefonu jest wymagana.
+              <Link href="/settings/profile" className="font-medium underline text-yellow-800 hover:text-yellow-900 ml-2">
+                Przejdź do ustawień, aby zweryfikować swój numer i uzyskać pełen dostęp.
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   const renderStepContent = () => {
@@ -301,6 +371,53 @@ export default function CreateAuctionForm({ onSuccess, onCancel }: CreateAuction
                       type="date"
                       {...register('birthDate')}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Kolor oka (opcjonalnie)
+                    </label>
+                    <input
+                      type="text"
+                      {...register('eyeColor')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                      placeholder="np. żółty"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Barwa gołębia (opcjonalnie)
+                    </label>
+                    <input
+                      type="text"
+                      {...register('featherColor')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                      placeholder="np. szpak"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Dyscypliny (opcjonalnie)
+                    </label>
+                    <input
+                      type="text"
+                      {...register('disciplines')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                      placeholder="np. krótki dystans, średni dystans"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Certyfikat DNA (opcjonalnie)
+                    </label>
+                    <input
+                      type="text"
+                      {...register('dnaCertificate')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
+                      placeholder="np. Oboje rodziców"
                     />
                   </div>
                 </div>
@@ -442,9 +559,11 @@ export default function CreateAuctionForm({ onSuccess, onCancel }: CreateAuction
                   <div key={file.id} className="relative group">
                     <div className="aspect-square relative rounded-lg overflow-hidden bg-gray-100">
                       {file.type === 'image' ? (
-                        <img
+                        <Image
                           src={file.preview}
                           alt="Preview"
+                          width={200}
+                          height={200}
                           className="w-full h-full object-cover"
                         />
                       ) : (
@@ -465,6 +584,83 @@ export default function CreateAuctionForm({ onSuccess, onCancel }: CreateAuction
                 ))}
               </div>
             )}
+            {/* PPQC i Charakterystyka - opcjonalne */}
+            <div className="mt-8">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Charakterystyka i PPQC (opcjonalnie)</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Wielkość</label>
+                  <input type="text" {...register('ppqcSize')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="średni" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Budowa korpusu</label>
+                  <input type="text" {...register('ppqcBody')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="normalny" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Witalność</label>
+                  <input type="text" {...register('ppqcVitality')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="silny" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Gęstość barwy</label>
+                  <input type="text" {...register('ppqcColorDensity')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="bardzo silny" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Długość</label>
+                  <input type="text" {...register('ppqcLength')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="średni" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Wytrzymałość</label>
+                  <input type="text" {...register('ppqcEndurance')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="silny" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Siła widełek</label>
+                  <input type="text" {...register('ppqcForkStrength')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="silny" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Układ widełek</label>
+                  <input type="text" {...register('ppqcForkLayout')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="lekko otwarty" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Mięśnie</label>
+                  <input type="text" {...register('ppqcMuscles')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="giętki" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Balans</label>
+                  <input type="text" {...register('ppqcBalance')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="zbalansowany" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Plecy</label>
+                  <input type="text" {...register('ppqcBack')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="przeciętny" />
+                </div>
+
+                <div className="md:col-span-2 h-px bg-gray-200" />
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Pióra rozpłodowe</label>
+                  <input type="text" {...register('ppqcBreedingFeathers')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="za młody" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Lotki</label>
+                  <input type="text" {...register('ppqcPrimaries')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="długi, normalny" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Upierzenie</label>
+                  <input type="text" {...register('ppqcPlumage')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="normalne upierzenie" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Jakość piór</label>
+                  <input type="text" {...register('ppqcFeatherQuality')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="miękki" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Lotki II-go rzędu</label>
+                  <input type="text" {...register('ppqcSecondaries')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="normalny" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Elastyczność</label>
+                  <input type="text" {...register('ppqcElasticity')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="bardzo giętki" />
+                </div>
+              </div>
+            </div>
           </div>
         )
 
@@ -499,6 +695,12 @@ export default function CreateAuctionForm({ onSuccess, onCancel }: CreateAuction
               <div>
                 <h3 className="font-medium text-gray-900">Pliki multimedialne</h3>
                 <p className="text-gray-600">{mediaFiles.length} plików</p>
+              </div>
+
+              {/* PPQC summary (optional) */}
+              <div>
+                <h3 className="font-medium text-gray-900">PPQC (opcjonalnie)</h3>
+                <p className="text-gray-600 text-sm">Możesz uzupełnić po opublikowaniu w edycji aukcji.</p>
               </div>
             </div>
           </div>

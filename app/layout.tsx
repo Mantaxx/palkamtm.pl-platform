@@ -1,4 +1,5 @@
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { ErrorHandlers } from '@/components/ErrorHandlers'
 import { Footer } from '@/components/layout/Footer'
 import { Providers } from '@/components/providers/Providers'
 import type { Metadata, Viewport } from 'next'
@@ -53,8 +54,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
+  userScalable: true,
 }
 
 export default function RootLayout({
@@ -63,63 +64,20 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="pl" className={`${inter.variable} ${poppins.variable}`}>
-      <head>
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-          integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
-          crossOrigin="anonymous"
-          referrerPolicy="no-referrer"
-        />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              // Tłumienie błędów z zewnętrznych skryptów
-              window.addEventListener('error', function(e) {
-                if (e.filename && (
-                  e.filename.includes('share-modal.js') ||
-                  e.filename.includes('runtime.lastError') ||
-                  e.filename.includes('chrome-extension://') ||
-                  e.filename.includes('moz-extension://') ||
-                  e.filename.includes('tui-image-editor')
-                )) {
-                  e.preventDefault();
-                  return false;
-                }
-              });
-              
-              // Tłumienie błędów z Promise
-              window.addEventListener('unhandledrejection', function(e) {
-                if (e.reason && e.reason.message && (
-                  e.reason.message.includes('share-modal') ||
-                  e.reason.message.includes('runtime.lastError') ||
-                  e.reason.message.includes('Could not establish connection') ||
-                  e.reason.message.includes('tui-image-editor')
-                )) {
-                  e.preventDefault();
-                  return false;
-                }
-              });
-              
-              // Tłumienie błędów z TUI Image Editor
-              const originalQuerySelector = document.querySelector;
-              document.querySelector = function(selector) {
-                if (selector && (
-                  selector.includes('tui-image-editor-main-container') ||
-                  selector.includes('tui-image-editor-download-btn')
-                )) {
-                  return null;
-                }
-                return originalQuerySelector.call(this, selector);
-              };
-            `,
-          }}
-        />
-      </head>
-      <body className={`${inter.className} min-h-screen flex flex-col`}>
+    <html lang="pl" className={`${inter.variable} ${poppins.variable}`} data-scroll-behavior="smooth">
+      {/*
+        Dodajemy tutaj link do Font Awesome.
+        W Next.js App Router nie powinno się dodawać własnego tagu <head> do RootLayout,
+        ale można dodawać tagi <link> i <script> bezpośrednio w <html>.
+      */}
+      <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      />
+      <body className={`${inter.className} min-h-screen flex flex-col`}> {/* Usunięto tag <head> i <link> - Next.js zarządza tym automatycznie */}
         <Providers>
           <ErrorBoundary>
+            <ErrorHandlers />
             <main className="flex-1">
               {children}
             </main>

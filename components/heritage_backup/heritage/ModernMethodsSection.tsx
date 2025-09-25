@@ -1,5 +1,6 @@
 'use client'
 
+import { UnifiedCard } from '@/components/ui/UnifiedCard'
 import { motion } from 'framer-motion'
 import { Activity, Database, Dna, Microscope, Smartphone, Utensils } from 'lucide-react'
 
@@ -80,54 +81,49 @@ const modernMethods = [
 
 export function ModernMethodsSection() {
   return (
-    <section className="py-20 bg-gradient-to-br from-slate-100 via-slate-200/30 to-slate-300/50 relative overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 right-20 w-72 h-72 bg-slate-200/20 rounded-full blur-2xl"></div>
-        <div className="absolute bottom-20 left-20 w-96 h-96 bg-slate-200/20 rounded-full blur-2xl"></div>
-      </div>
+    <section className="py-20 relative overflow-hidden">
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-20">
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gradient mb-6">
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
             Nowoczesne Metody
           </h2>
-          <p className="text-xl sm:text-2xl text-slate-600 max-w-4xl mx-auto leading-relaxed">
+          <p className="text-xl sm:text-2xl text-white/80 max-w-4xl mx-auto leading-relaxed">
             Łączymy wieloletnie tradycje hodowli z najnowszymi osiągnięciami nauki i technologii,
             aby zapewnić naszym gołębiom najlepsze warunki rozwoju
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {modernMethods.map((method, index) => (
-            <div key={method.title} className="group">
-              <div className="card-gradient h-full border-2 border-white shadow-xl">
+          {modernMethods.map((method) => (
+            <UnifiedCard key={method.title} variant="glass" glow={true} className="group h-full">
+              <div className="h-full">
                 <div className="flex items-start space-x-6">
-                  <div className={`flex-shrink-0 w-20 h-20 rounded-2xl bg-gradient-to-r from-slate-500 to-slate-600 flex items-center justify-center shadow-lg`}>
+                  <div className={`flex-shrink-0 w-20 h-20 rounded-2xl bg-gradient-to-r from-blue-500/50 to-cyan-500/50 flex items-center justify-center shadow-lg`}>
                     <method.icon className="w-10 h-10 text-white" />
                   </div>
 
                   <div className="flex-1">
-                    <h3 className="font-display font-bold text-2xl text-slate-800 mb-4 group-hover:text-slate-600 transition-colors duration-300">
+                    <h3 className="font-display font-bold text-2xl text-white mb-4 group-hover:text-cyan-300 transition-colors duration-300">
                       {method.title}
                     </h3>
 
-                    <p className="text-slate-600 leading-relaxed mb-6 text-lg">
+                    <p className="text-white/70 leading-relaxed mb-6 text-lg">
                       {method.description}
                     </p>
 
                     <ul className="space-y-3">
                       {method.features.map((feature, idx) => (
-                        <motion.li key={idx} className="flex items-start">
-                          <span className="text-slate-500 mr-3 mt-1 text-lg" aria-hidden="true">•</span>
-                          <span className="text-base text-slate-600">{feature}</span>
-                        </motion.li>
+                        <li key={idx} className="flex items-start">
+                          <span className="text-cyan-400 mr-3 mt-1 text-lg" aria-hidden="true">•</span>
+                          <span className="text-base text-white/80">{feature}</span>
+                        </li>
                       ))}
                     </ul>
                   </div>
                 </div>
               </div>
-            </div>
+            </UnifiedCard>
           ))}
         </div>
 
@@ -139,13 +135,13 @@ export function ModernMethodsSection() {
           viewport={{ once: true }}
           className="mt-20"
         >
-          <div className="glass-morphism-strong rounded-3xl p-12 text-white border-2 border-white shadow-xl">
+          <UnifiedCard variant="glass" glow={true} className="p-12">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
                 <h3 className="font-display font-bold text-3xl mb-6">
                   Technologia w Służbie Hodowli
                 </h3>
-                <p className="text-xl leading-relaxed mb-8 text-slate-200">
+                <p className="text-xl leading-relaxed mb-8 text-white/80">
                   Nasze podejście opiera się na holistycznym traktowaniu każdego gołębia jako profesjonalnego sportowca.
                   Każdy aspekt hodowli jest precyzyjnie kontrolowany i dostosowany do indywidualnych potrzeb ptaka.
                 </p>
@@ -170,13 +166,13 @@ export function ModernMethodsSection() {
               </div>
 
               <div className="relative">
-                <div className="bg-gradient-to-br from-slate-500 to-slate-700 rounded-2xl p-8">
+                <div className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-2xl p-8">
                   <div className="text-center">
                     <div className="w-24 h-24 bg-white/20 rounded-full mx-auto mb-4 flex items-center justify-center">
                       <Database className="w-12 h-12 text-white" />
                     </div>
                     <h4 className="font-semibold text-xl mb-2">Genetyczne Dziedzictwo</h4>
-                    <p className="text-primary-100 text-sm">
+                    <p className="text-white/70 text-sm">
                       Setki gołębi w hodowlach w całej Polsce niosących geny MTM Pałka.
                       Nasze gołębie stały się fundamentem sukcesu dla wielu innych czołowych hodowli.
                     </p>
@@ -184,7 +180,7 @@ export function ModernMethodsSection() {
                 </div>
               </div>
             </div>
-          </div>
+          </UnifiedCard>
         </motion.div>
       </div>
     </section>

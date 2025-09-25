@@ -1,8 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import ReactDOM from 'react-dom';
 import { X, ZoomIn, ZoomOut } from 'lucide-react';
-import { MouseEventHandler, useEffect, useState } from 'react';
+import { MouseEventHandler, useEffect, useState, useRef } from 'react';
 
 interface ImageItem {
   id: string;
@@ -26,10 +27,11 @@ export default function ImageModal({ image, onClose, onPrevious, onNext, hasPrev
   const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [isBrowser, setIsBrowser] = useState(false);
 
   useEffect(() => {
     // Sprawdź czy jesteśmy w przeglądarce
-    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+    setIsBrowser(true);
 
     // Blokuj scroll
     const scrollY = window.scrollY;
@@ -126,9 +128,11 @@ export default function ImageModal({ image, onClose, onPrevious, onNext, hasPrev
     }
   };
 
-  return (
+  if (!isBrowser) return null;
+
+  return ReactDOM.createPortal(
     <motion.div
-      className="fixed inset-0 z-[999999] flex items-center justify-center bg-black/95 p-4"
+      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/95 p-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -255,5 +259,6 @@ export default function ImageModal({ image, onClose, onPrevious, onNext, hasPrev
         </div>
       </motion.div>
     </motion.div>
+    , document.body
   );
 }

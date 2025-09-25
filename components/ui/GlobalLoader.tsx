@@ -1,9 +1,9 @@
 'use client'
 
+import { Text3D } from '@/components/ui/Text3D'
+import { UnifiedCard } from '@/components/ui/UnifiedCard'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useState } from 'react'
-import { Text3D } from './Text3D'
-import { UnifiedCard } from './UnifiedCard'
 
 interface GlobalLoaderProps {
     isVisible: boolean

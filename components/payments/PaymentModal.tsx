@@ -246,7 +246,6 @@ const PaymentForm = ({
 export default function PaymentModal({
   isOpen,
   onClose,
-  auctionId,
   amount,
   auctionTitle,
   sellerName,

@@ -1,12 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { apiRateLimit } from '@/lib/rate-limit'
 import { stripe } from '@/lib/stripe'
+import { getServerSession } from 'next-auth'
+import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
   try {
+    // Apply rate limiting
+    const rateLimitResponse = apiRateLimit(request)
+    if (rateLimitResponse) {
+      return rateLimitResponse
+    }
+
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user) {
       return NextResponse.json({ error: 'Nieautoryzowany dostęp' }, { status: 401 })
     }
@@ -35,7 +42,7 @@ export async function POST(request: NextRequest) {
     if (confirmedPayment.status === 'succeeded') {
       // Tutaj można dodać logikę powiadamiania sprzedawcy
       // i aktualizacji statusu w bazie danych
-      
+
       return NextResponse.json({
         success: true,
         message: 'Płatność została potwierdzona. Środki zostały przekazane sprzedawcy.'

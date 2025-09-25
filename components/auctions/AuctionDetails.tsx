@@ -1,10 +1,19 @@
 'use client'
 
 import PaymentModal from '@/components/payments/PaymentModal'
+import { AUCTIONS_DATA } from '@/lib/data/auctions'
+import { useAppStore } from '@/store/useAppStore'
 import { format } from 'date-fns'
 import { pl } from 'date-fns/locale'
 import { motion } from 'framer-motion'
-import { AlertCircle, Calendar, Clock, Eye, Heart, MapPin, Share2, Users } from 'lucide-react'
+import {
+  AlertCircle,
+  Calendar,
+  Eye,
+  MapPin,
+  Users
+} from 'lucide-react'
+import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 
@@ -52,11 +61,13 @@ interface Auction {
   viewsCount: number
 }
 
-// Funkcja do pobierania aukcji z localStorage
+// Funkcja do pobierania aukcji z localStorage lub z przykładowych danych
 const getAuctionById = (id: string): Auction | null => {
   if (typeof window !== 'undefined') {
     const auctions = JSON.parse(localStorage.getItem('auctions') || '[]')
-    const auction = auctions.find((a: any) => a.id === id)
+    const auction = auctions.find((a: unknown) =>
+      a && typeof a === 'object' && 'id' in a && a.id === id
+    )
 
     if (!auction) return null
 
@@ -92,7 +103,46 @@ const getAuctionById = (id: string): Auction | null => {
   return null
 }
 
+// Fallback do przykładowych danych (serwer i klient)
+const getSampleAuction = (id: string): Auction | null => {
+  const sample = AUCTIONS_DATA.find(a => a.id === id) || AUCTIONS_DATA[0]
+  if (!sample) return null
+  const now = new Date()
+  const end = new Date(sample.endTime)
+  return {
+    id: sample.id,
+    title: sample.title,
+    description: sample.description,
+    startingPrice: sample.startingPrice,
+    currentPrice: sample.currentPrice,
+    buyNowPrice: sample.buyNowPrice,
+    endTime: end,
+    status: 'active',
+    category: sample.category,
+    bloodline: '',
+    age: 2,
+    sex: 'male',
+    location: 'Polska',
+    seller: {
+      id: sample.sellerId,
+      name: sample.sellerId,
+      rating: 5,
+      salesCount: 100
+    },
+    images: sample.images?.length ? sample.images : ['/api/placeholder/800/600'],
+    videos: [],
+    bids: [
+      { id: 'b1', amount: sample.currentPrice, bidder: { id: 'u1', name: 'Campeon' }, timestamp: now, isWinning: true },
+      { id: 'b0', amount: sample.currentPrice - 100, bidder: { id: 'u2', name: 'Crunch' }, timestamp: new Date(now.getTime() - 86400000), isWinning: false }
+    ],
+    watchersCount: 12,
+    viewsCount: 256
+  }
+}
+
 export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
+  const { data: session, status: sessionStatus } = useSession()
+  const currencyStore = useAppStore()
   const [auction, setAuction] = useState<Auction | null>(null)
   const [bidAmount, setBidAmount] = useState('')
   const [isWatching, setIsWatching] = useState(false)
@@ -102,26 +152,13 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
 
   // Ładowanie aukcji
   useEffect(() => {
-    const loadedAuction = getAuctionById(auctionId)
+    const loadedAuction = getAuctionById(auctionId) || getSampleAuction(auctionId)
     setAuction(loadedAuction)
   }, [auctionId])
 
-  if (!auction) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Aukcja nie została znaleziona</h1>
-          <p className="text-gray-600 mb-6">Aukcja o podanym ID nie istnieje lub została usunięta.</p>
-          <a href="/auctions" className="btn-primary">
-            Powrót do aukcji
-          </a>
-        </div>
-      </div>
-    )
-  }
-
+  // Timer effect
   useEffect(() => {
-    // Symulacja aktualizacji czasu w czasie rzeczywistym
+    if (!auction) return
     const interval = setInterval(() => {
       const now = new Date()
       const endTime = auction.endTime
@@ -152,7 +189,21 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [auction.endTime])
+  }, [auction?.endTime, auction])
+
+  if (!auction) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Aukcja nie została znaleziona</h1>
+          <p className="text-gray-600 mb-6">Aukcja o podanym ID nie istnieje lub została usunięta.</p>
+          <a href="/auctions" className="btn-primary">
+            Powrót do aukcji
+          </a>
+        </div>
+      </div>
+    )
+  }
 
   const handleBid = async () => {
     if (!bidAmount || parseFloat(bidAmount) <= auction.currentPrice) {
@@ -161,15 +212,14 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
 
     setIsBidding(true)
 
-    // Symulacja wysłania oferty
     await new Promise(resolve => setTimeout(resolve, 1000))
 
     const newBid: Bid = {
       id: Date.now().toString(),
       amount: parseFloat(bidAmount),
       bidder: {
-        id: 'current-user',
-        name: 'Ty'
+        id: session?.user?.id || 'guest',
+        name: session?.user?.name || 'Ty'
       },
       timestamp: new Date(),
       isWinning: true
@@ -192,10 +242,84 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
   const handlePaymentSuccess = (paymentIntentId: string) => {
     console.log('Płatność zakończona pomyślnie:', paymentIntentId)
     setIsPaymentModalOpen(false)
-    // Tutaj można dodać przekierowanie lub powiadomienie
   }
 
   const minBidAmount = auction.currentPrice + 100
+  const formatEur = (value: number) => `${value.toLocaleString('pl-PL')} EUR`
+  const formatPrice = (value: number) => {
+    if (currencyStore.currency === 'EUR') {
+      const eur = Math.round(value / currencyStore.ratePLNperEUR)
+      return `${eur.toLocaleString('pl-PL')} EUR`
+    }
+    return `${value.toLocaleString('pl-PL')} PLN`
+  }
+
+  const renderBiddingPanel = () => {
+    if (sessionStatus === 'loading') {
+      return <div className="text-center p-4">Ładowanie...</div>
+    }
+
+    if (sessionStatus === 'unauthenticated' || !session?.user.isPhoneVerified) {
+      return (
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <ShieldAlert className="h-5 w-5 text-yellow-400" aria-hidden="true" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-yellow-700">
+                {sessionStatus === 'unauthenticated'
+                  ? 'Musisz być zalogowany, aby licytować.'
+                  : 'Wymagana jest weryfikacja numeru telefonu.'}
+                <Link
+                  href={sessionStatus === 'unauthenticated' ? '/auth/signin' : '/settings/profile'}
+                  className="font-medium underline text-yellow-800 hover:text-yellow-900 ml-2"
+                >
+                  {sessionStatus === 'unauthenticated' ? 'Zaloguj się' : 'Zweryfikuj numer'}
+                </Link>
+              </p>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Twoja oferta (min. {formatPrice(minBidAmount)})
+          </label>
+          <input
+            type="number"
+            value={bidAmount}
+            onChange={(e) => setBidAmount(e.target.value)}
+            min={minBidAmount}
+            step="50"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent"
+            placeholder="Wprowadź kwotę"
+          />
+        </div>
+
+        <button
+          onClick={handleBid}
+          disabled={!bidAmount || parseFloat(bidAmount) < minBidAmount || isBidding}
+          className="w-full bg-slate-600 text-white py-3 px-4 rounded-md font-medium hover:bg-slate-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+        >
+          {isBidding ? 'Licytuję...' : 'Złóż ofertę'}
+        </button>
+
+        {auction.buyNowPrice && (
+          <button
+            onClick={handleBuyNow}
+            className="w-full bg-green-600 text-white py-3 px-4 rounded-md font-medium hover:bg-green-700 transition-colors"
+          >
+            Kup teraz za {formatPrice(auction.buyNowPrice)}
+          </button>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -209,12 +333,12 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
               animate={{ opacity: 1, y: 0 }}
               className="bg-white rounded-lg shadow-sm overflow-hidden"
             >
-              <div className="aspect-video relative">
+              <div className="relative bg-white h-[420px] sm:h-[500px] md:h-[560px] lg:h-[640px] xl:h-[720px]">
                 <Image
                   src={auction.images[0]}
                   alt={auction.title}
                   fill
-                  className="object-cover"
+                  className="object-contain p-4 md:p-6"
                 />
                 {auction.status === 'ending' && (
                   <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2">
@@ -273,6 +397,19 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
               </div>
             </motion.div>
 
+            {/* Rodowód */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="bg-white rounded-lg shadow-sm p-6"
+            >
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Rodowód</h2>
+              <div className="relative w-full border rounded-md overflow-hidden bg-gray-100">
+                <Image src={auction.images[0]} alt={`${auction.title} pedigree`} width={1600} height={900} className="w-full h-auto object-contain" />
+              </div>
+            </motion.div>
+
             {/* Historia licytacji */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -312,125 +449,143 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
             </motion.div>
           </div>
 
-          {/* Panel licytacji */}
+          {/* Prawa kolumna */}
           <div className="space-y-6">
+            {/* Odliczanie + Oferty */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               className="bg-white rounded-lg shadow-sm p-6 sticky top-6"
             >
+              {/* Countdown */}
               <div className="text-center mb-6">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <Clock className="w-5 h-5 text-gray-500" />
-                  <span className="text-sm text-gray-600">Pozostało czasu</span>
-                </div>
-                <p className={`text-2xl font-bold ${auction.status === 'ending' ? 'text-red-600' : 'text-gray-900'
-                  }`}>
-                  {timeLeft}
-                </p>
+                <div className="text-sm text-gray-600">Pozostało czasu</div>
+                <div className={`text-2xl font-bold ${auction.status === 'ending' ? 'text-red-600' : 'text-gray-900'}`}>{timeLeft || '—'}</div>
               </div>
 
-              <div className="space-y-4 mb-6">
-                <div className="text-center">
-                  <p className="text-sm text-gray-600 mb-1">Aktualna cena</p>
-                  <p className="text-3xl font-bold text-gray-900">
-                    {auction.currentPrice.toLocaleString()} zł
-                  </p>
-                </div>
-
-                {auction.buyNowPrice && (
-                  <div className="text-center">
-                    <p className="text-sm text-gray-600 mb-1">Kup teraz</p>
-                    <p className="text-xl font-semibold text-slate-600">
-                      {auction.buyNowPrice.toLocaleString()} zł
-                    </p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Oferty</h3>
+              <div className="space-y-4">
+                {auction.bids.slice(0, 5).map((bid) => (
+                  <div key={bid.id} className="flex items-start gap-3">
+                    <span className="mt-1 h-2 w-2 rounded-full bg-blue-500"></span>
+                    <div className="flex-1">
+                      <div className="text-xs text-gray-500">
+                        {format(bid.timestamp, 'dd MMM • HH:mm', { locale: pl })}
+                      </div>
+                      <div className="text-sm">
+                        <span className="font-semibold">{formatPrice(bid.amount)}</span>
+                        <span className="text-gray-500"> od {bid.bidder.name}</span>
+                      </div>
+                    </div>
                   </div>
-                )}
+                ))}
               </div>
-
-              {auction.status === 'active' && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Twoja oferta (min. {minBidAmount.toLocaleString()} zł)
-                    </label>
-                    <input
-                      type="number"
-                      value={bidAmount}
-                      onChange={(e) => setBidAmount(e.target.value)}
-                      min={minBidAmount}
-                      step="50"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent"
-                      placeholder="Wprowadź kwotę"
-                    />
-                  </div>
-
-                  <button
-                    onClick={handleBid}
-                    disabled={!bidAmount || parseFloat(bidAmount) < minBidAmount || isBidding}
-                    className="w-full bg-slate-600 text-white py-3 px-4 rounded-md font-medium hover:bg-slate-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-                  >
-                    {isBidding ? 'Licytuję...' : 'Złóż ofertę'}
-                  </button>
-
-                  {auction.buyNowPrice && (
-                    <button
-                      onClick={handleBuyNow}
-                      className="w-full bg-green-600 text-white py-3 px-4 rounded-md font-medium hover:bg-green-700 transition-colors"
-                    >
-                      Kup teraz za {auction.buyNowPrice.toLocaleString()} zł
-                    </button>
-                  )}
-                </div>
-              )}
-
-              <div className="flex gap-2 mt-6">
-                <button
-                  onClick={() => setIsWatching(!isWatching)}
-                  className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-md font-medium transition-colors ${isWatching
-                    ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                >
-                  <Heart className={`w-4 h-4 ${isWatching ? 'fill-current' : ''}`} />
-                  {isWatching ? 'Obserwujesz' : 'Obserwuj'}
-                </button>
-                <button className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-gray-100 text-gray-700 rounded-md font-medium hover:bg-gray-200 transition-colors">
-                  <Share2 className="w-4 h-4" />
-                  Udostępnij
-                </button>
-              </div>
+              <button className="mt-4 w-full bg-gray-100 text-gray-700 py-2 px-4 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors">
+                Pokaż wszystkie oferty
+              </button>
             </motion.div>
 
-            {/* Informacje o sprzedawcy */}
+            {/* Breeder/Supplier */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.05 }}
+              className="bg-white rounded-lg shadow-sm p-6"
+            >
+              <h4 className="text-sm font-semibold text-gray-900">Breeder(s)</h4>
+              <p className="text-sm text-gray-600 mt-1">{auction.seller.name}</p>
+              <div className="h-px bg-gray-200 my-4" />
+              <h4 className="text-sm font-semibold text-gray-900">Supplier(s)</h4>
+              <p className="text-sm text-gray-600 mt-1">{auction.seller.name}</p>
+            </motion.div>
+
+            {/* Wyłącznie na PIPA */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
               className="bg-white rounded-lg shadow-sm p-6"
             >
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Sprzedawca</h3>
+              <h4 className="text-sm font-semibold text-gray-900 mb-2">Wyłącznie na PIPA</h4>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                Gołębie oferowane na tej aukcji pochodzą bezpośrednio od sprzedawcy i nie są oferowane przez niego na innych portalach.
+              </p>
+            </motion.div>
 
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
-                  <span className="text-lg font-medium text-gray-600">
-                    {auction.seller.name.charAt(0)}
-                  </span>
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">{auction.seller.name}</p>
-                  <div className="flex items-center gap-1">
-                    <span className="text-yellow-400">★</span>
-                    <span className="text-sm text-gray-600">
-                      {auction.seller.rating} ({auction.seller.salesCount} sprzedaży)
-                    </span>
+            {/* Charakterystyka */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.15 }}
+              className="bg-white rounded-lg shadow-sm p-6"
+            >
+              <h4 className="text-sm font-semibold text-gray-900 mb-3">Charakterystyka</h4>
+              <dl className="grid grid-cols-2 gap-y-2 text-sm">
+                <dt className="text-gray-500">Płeć</dt><dd className="text-gray-900">{auction.sex === 'male' ? 'Samiec' : 'Samica'}</dd>
+                <dt className="text-gray-500">Kolor oka</dt><dd className="text-gray-900">żółty</dd>
+                <dt className="text-gray-500">Barwa gołębia</dt><dd className="text-gray-900">szpak</dd>
+                <dt className="text-gray-500">Dyscypliny</dt><dd className="text-gray-900">krótki dystans, średni dystans</dd>
+                <dt className="text-gray-500">Certyfikat DNA</dt><dd className="text-gray-900">Oboje rodziców</dd>
+              </dl>
+            </motion.div>
+
+            {/* PPQC */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-white rounded-lg shadow-sm p-6"
+            >
+              <h4 className="text-sm font-semibold text-gray-900 mb-3">PPQC</h4>
+              <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Ogólny opis</h5>
+              <div className="text-sm divide-y">
+                {[
+                  ['Wielkość', 'średni'],
+                  ['Budowa korpusu', 'normalny'],
+                  ['Witalność', 'silny'],
+                  ['Gęstość barwy', 'bardzo silny'],
+                  ['Długość', 'średni'],
+                  ['Wytrzymałość', 'silny'],
+                  ['Siła widełek', 'silny'],
+                  ['Układ widełek', 'lekko otwarty'],
+                  ['Mięśnie', 'giętki'],
+                  ['Balans', 'zbalansowany'],
+                  ['Plecy', 'przeciętny']
+                ].map(([label, value]) => (
+                  <div key={label as string} className="flex items-center justify-between py-1.5">
+                    <span className="text-gray-600">{label as string}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-900 font-medium">{value as string}</span>
+                      <span className="h-3 w-3 rounded-full bg-sky-500" aria-hidden="true" />
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
 
-              <button className="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded-md font-medium hover:bg-gray-200 transition-colors">
-                Wyślij wiadomość
-              </button>
+              <h5 className="mt-4 text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Opis skrzydła</h5>
+              <div className="text-sm divide-y">
+                {[
+                  ['Pióra rozpłodowe', 'za młody'],
+                  ['Lotki', 'długi, normalny'],
+                  ['Upierzenie', 'normalne upierzenie'],
+                  ['Jakość piór', 'miękki'],
+                  ['Lotki II-go rzędu', 'normalny'],
+                  ['Elastyczność', 'bardzo giętki']
+                ].map(([label, value]) => (
+                  <div key={label as string} className="flex items-center justify-between py-1.5">
+                    <span className="text-gray-600">{label as string}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-900 font-medium">{value as string}</span>
+                      <span className="h-3 w-3 rounded-full bg-sky-500" aria-hidden="true" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-4 pt-3 border-t text-xs text-gray-600 flex items-center justify-between">
+                <span>Kontrola Jakości PIPA</span>
+                <span className="text-gray-900 font-medium">{format(new Date(), 'dd/MM/yyyy HH:mm', { locale: pl })}</span>
+              </div>
             </motion.div>
           </div>
         </div>
@@ -446,6 +601,16 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
         sellerName={auction.seller.name}
         onPaymentSuccess={handlePaymentSuccess}
       />
+
+      {/* Sticky bottom bar - latest bid */}
+      <div className="fixed inset-x-0 bottom-0 z-40">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-4 rounded-md bg-gray-900 text-white px-4 py-2 text-sm flex items-center justify-between">
+            <span className="opacity-80">Latest bid</span>
+            <span className="font-semibold">{formatEur(auction.currentPrice)}</span>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

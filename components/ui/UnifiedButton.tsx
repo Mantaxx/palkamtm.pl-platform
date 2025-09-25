@@ -1,12 +1,14 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import Link from 'next/link'
 import { ReactNode } from 'react'
 
 interface UnifiedButtonProps {
   children: ReactNode
   onClick?: () => void
   href?: string
+  type?: 'button' | 'submit' | 'reset'
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'glass'
   size?: 'sm' | 'md' | 'lg'
   className?: string
@@ -21,6 +23,7 @@ export function UnifiedButton({
   children,
   onClick,
   href,
+  type = 'button',
   variant = 'primary',
   size = 'md',
   className = '',
@@ -61,72 +64,50 @@ export function UnifiedButton({
     ${className}
   `
 
-  const buttonContent = (
+  const motionProps = {
+    whileHover: !disabled ? {
+      scale: currentIntensity.scale,
+      y: currentIntensity.y,
+      rotateX: 5,
+      rotateY: 5
+    } : {},
+    whileTap: !disabled ? {
+      scale: 0.98,
+      y: 0
+    } : {},
+    transition: {
+      type: "spring",
+      stiffness: 300,
+      damping: 20
+    }
+  }
+
+  if (href) {
+    return (
+      <motion.div {...motionProps}>
+        <Link
+          href={href}
+          title={title}
+          aria-label={ariaLabel}
+          className={buttonClasses}
+        >
+          <span className="relative z-10">{children}</span>
+        </Link>
+      </motion.div>
+    )
+  }
+
+  return (
     <motion.button
+      type={type}
       onClick={onClick}
       disabled={disabled}
       title={title}
       aria-label={ariaLabel}
-      whileHover={!disabled ? {
-        scale: currentIntensity.scale,
-        y: currentIntensity.y,
-        rotateX: 5,
-        rotateY: 5
-      } : {}}
-      whileTap={!disabled ? {
-        scale: 0.98,
-        y: 0
-      } : {}}
-      transition={{
-        type: "spring",
-        stiffness: 300,
-        damping: 20
-      }}
       className={buttonClasses}
+      {...motionProps}
     >
-      <motion.span
-        className="relative z-10"
-        whileHover={{ scale: 1.05 }}
-        transition={{ type: "spring", stiffness: 400 }}
-      >
-        {children}
-      </motion.span>
+      <span className="relative z-10">{children}</span>
     </motion.button>
   )
-
-  if (href) {
-    return (
-      <motion.a
-        href={href}
-        title={title}
-        aria-label={ariaLabel}
-        className={buttonClasses}
-        whileHover={{
-          scale: currentIntensity.scale,
-          y: currentIntensity.y,
-          rotateX: 5,
-          rotateY: 5
-        }}
-        whileTap={{
-          scale: 0.98,
-          y: 0
-        }}
-        transition={{
-          type: "spring",
-          stiffness: 300,
-          damping: 20
-        }}
-      >
-        <motion.span
-          className="relative z-10"
-          whileHover={{ scale: 1.05 }}
-          transition={{ type: "spring", stiffness: 400 }}
-        >
-          {children}
-        </motion.span>
-      </motion.a>
-    )
-  }
-
-  return buttonContent
 }

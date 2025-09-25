@@ -1,3 +1,4 @@
+import { AuctionData } from '@/lib/data/auctions'
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 
@@ -11,27 +12,7 @@ interface User {
     isActive: boolean
 }
 
-interface Auction {
-    id: string
-    title: string
-    description: string
-    category: string
-    startingPrice: number
-    currentPrice: number
-    buyNowPrice?: number
-    reservePrice?: number
-    startTime: string
-    endTime: string
-    status: 'ACTIVE' | 'ENDED' | 'CANCELLED' | 'PENDING'
-    isApproved: boolean
-    images: string[]
-    seller: {
-        id: string
-        firstName?: string
-        lastName?: string
-    }
-    createdAt: string
-}
+// Using AuctionData from auctions.ts instead of local Auction interface
 
 interface Champion {
     id: string
@@ -42,20 +23,48 @@ interface Champion {
     pedigree: string
 }
 
+interface Reference {
+    id: string
+    breederName: string
+    location: string
+    experience: string
+    testimonial: string
+    rating: number
+    achievements: string // JSON array of achievements
+    isApproved: boolean
+    date: string
+}
+
+interface BreederMeeting {
+    id: string
+    title: string
+    description?: string
+    location: string
+    date: Date | string
+    images: string // JSON array of image URLs
+    userId: string
+    createdAt: Date | string
+    updatedAt: Date | string
+}
+
 interface AppState {
     // User state
     user: User | null
     isAuthenticated: boolean
 
     // Data state
-    auctions: Auction[]
+    auctions: AuctionData[]
     champions: Champion[]
-    references: any[]
-    breederMeetings: any[]
+    references: Reference[]
+    breederMeetings: BreederMeeting[]
 
     // UI state
     isLoading: boolean
     error: string | null
+
+    // Currency settings
+    currency: 'PLN' | 'EUR'
+    ratePLNperEUR: number // how many PLN for 1 EUR
 
     // Filters and search
     searchTerm: string
@@ -65,19 +74,21 @@ interface AppState {
     // Actions
     setUser: (user: User | null) => void
     setAuthenticated: (isAuthenticated: boolean) => void
-    setAuctions: (auctions: Auction[]) => void
+    setAuctions: (auctions: AuctionData[]) => void
     setChampions: (champions: Champion[]) => void
-    setReferences: (references: any[]) => void
-    setBreederMeetings: (meetings: any[]) => void
+    setReferences: (references: Reference[]) => void
+    setBreederMeetings: (meetings: BreederMeeting[]) => void
     setLoading: (isLoading: boolean) => void
     setError: (error: string | null) => void
     setSearchTerm: (term: string) => void
     setSelectedCategory: (category: string) => void
     setSortBy: (sortBy: string) => void
+    setCurrency: (currency: 'PLN' | 'EUR') => void
+    setRatePLNperEUR: (rate: number) => void
 
     // Computed values
-    filteredAuctions: Auction[]
-    filteredChampions: Champion[]
+    getFilteredAuctions: () => AuctionData[]
+    getFilteredChampions: () => Champion[]
 }
 
 export const useAppStore = create<AppState>()(
@@ -96,11 +107,16 @@ export const useAppStore = create<AppState>()(
                 searchTerm: '',
                 selectedCategory: '',
                 sortBy: 'newest',
+                currency: 'EUR',
+                ratePLNperEUR: 4.3,
 
                 // Actions
                 setUser: (user) => set({ user }),
                 setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
-                setAuctions: (auctions) => set({ auctions }),
+                setAuctions: (auctions) => {
+                    console.log('Store: Setting auctions:', auctions.length)
+                    set({ auctions })
+                },
                 setChampions: (champions) => set({ champions }),
                 setReferences: (references) => set({ references }),
                 setBreederMeetings: (breederMeetings) => set({ breederMeetings }),
@@ -109,10 +125,12 @@ export const useAppStore = create<AppState>()(
                 setSearchTerm: (searchTerm) => set({ searchTerm }),
                 setSelectedCategory: (selectedCategory) => set({ selectedCategory }),
                 setSortBy: (sortBy) => set({ sortBy }),
+                setCurrency: (currency) => set({ currency }),
+                setRatePLNperEUR: (rate) => set({ ratePLNperEUR: rate }),
 
-                // Computed values
-                get filteredAuctions() {
+                getFilteredAuctions: () => {
                     const { auctions, searchTerm, selectedCategory, sortBy } = get()
+                    console.log('Store: getFilteredAuctions called with:', { auctions: auctions.length, searchTerm, selectedCategory, sortBy })
 
                     let filtered = auctions.filter(auction => {
                         const matchesSearch = auction.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -143,7 +161,7 @@ export const useAppStore = create<AppState>()(
                     return filtered
                 },
 
-                get filteredChampions() {
+                getFilteredChampions: () => {
                     const { champions, searchTerm } = get()
 
                     return champions.filter(champion =>
@@ -161,6 +179,8 @@ export const useAppStore = create<AppState>()(
                     searchTerm: state.searchTerm,
                     selectedCategory: state.selectedCategory,
                     sortBy: state.sortBy,
+                    currency: state.currency,
+                    ratePLNperEUR: state.ratePLNperEUR,
                 }),
             }
         ),
@@ -175,7 +195,9 @@ export const useUser = () => useAppStore((state) => state.user)
 export const useIsAuthenticated = () => useAppStore((state) => state.isAuthenticated)
 export const useAuctions = () => useAppStore((state) => state.auctions)
 export const useChampions = () => useAppStore((state) => state.champions)
-export const useFilteredAuctions = () => useAppStore((state) => state.filteredAuctions)
-export const useFilteredChampions = () => useAppStore((state) => state.filteredChampions)
 export const useLoading = () => useAppStore((state) => state.isLoading)
 export const useError = () => useAppStore((state) => state.error)
+
+// Computed selectors
+export const useFilteredAuctions = () => useAppStore((state) => state.getFilteredAuctions())
+export const useFilteredChampions = () => useAppStore((state) => state.getFilteredChampions())

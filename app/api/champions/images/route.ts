@@ -1,106 +1,72 @@
-import { readdir } from 'fs/promises'
-import { NextResponse } from 'next/server'
-import { join } from 'path'
+import { apiRateLimit } from '@/lib/rate-limit'
+import { scanChampionFolders } from '@/utils/getChampionImages'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const championsFolder = join(process.cwd(), 'public', 'champions')
-
-    // Skanuj foldery championów
-    const championFolders = await readdir(championsFolder, { withFileTypes: true })
-    const champions = []
-
-    for (const folder of championFolders) {
-      // Pomiń foldery systemowe i pliki
-      if (folder.isDirectory() &&
-        folder.name !== 'gallery' &&
-        folder.name !== 'pedigree' &&
-        folder.name !== 'offspring' &&
-        folder.name !== 'videos' &&
-        folder.name !== 'thunder-storm' &&
-        !folder.name.includes('README')) {
-
-        const championId = folder.name
-        const championPath = join(championsFolder, championId)
-
-        // Skanuj galerię
-        const galleryPath = join(championPath, 'gallery')
-        let galleryImages: string[] = []
-
-        try {
-          const galleryFiles = await readdir(galleryPath)
-          galleryImages = galleryFiles
-            .filter(file => /\.(jpg|jpeg|png|gif|webp)$/i.test(file))
-            .map(file => `/champions/${championId}/gallery/${file}`)
-        } catch (error) {
-          // Folder gallery może nie istnieć
-          console.log(`Brak folderu gallery dla ${championId}`)
-        }
-
-        // Skanuj rodowód
-        const pedigreePath = join(championPath, 'pedigree')
-        let pedigreeImages: string[] = []
-
-        try {
-          const pedigreeFiles = await readdir(pedigreePath)
-          pedigreeImages = pedigreeFiles
-            .filter(file => /\.(jpg|jpeg|png|gif|webp)$/i.test(file))
-            .map(file => `/champions/${championId}/pedigree/${file}`)
-        } catch (error) {
-          // Folder pedigree może nie istnieć
-          console.log(`Brak folderu pedigree dla ${championId}`)
-        }
-
-        // Skanuj potomstwo
-        const offspringPath = join(championPath, 'offspring')
-        let offspringImages: string[] = []
-
-        try {
-          const offspringFiles = await readdir(offspringPath)
-          offspringImages = offspringFiles
-            .filter(file => /\.(jpg|jpeg|png|gif|webp)$/i.test(file))
-            .map(file => `/champions/${championId}/offspring/${file}`)
-        } catch (error) {
-          // Folder offspring może nie istnieć
-          console.log(`Brak folderu offspring dla ${championId}`)
-        }
-
-        // Skanuj filmy
-        const videosPath = join(championPath, 'videos')
-        let videoThumbnails: string[] = []
-
-        try {
-          const videoFiles = await readdir(videosPath)
-          videoThumbnails = videoFiles
-            .filter(file => /\.(jpg|jpeg|png|gif|webp)$/i.test(file))
-            .map(file => `/champions/${championId}/videos/${file}`)
-        } catch (error) {
-          // Folder videos może nie istnieć
-          console.log(`Brak folderu videos dla ${championId}`)
-        }
-
-        // Tylko dodaj championa jeśli ma zdjęcia
-        if (galleryImages.length > 0 || pedigreeImages.length > 0) {
-          champions.push({
-            id: championId,
-            gallery: galleryImages,
-            pedigree: pedigreeImages,
-            offspring: offspringImages,
-            videos: videoThumbnails
-          })
-        }
-      }
+    // Apply rate limiting
+    const rateLimitResponse = apiRateLimit(request)
+    if (rateLimitResponse) {
+      return rateLimitResponse
     }
 
-    // Sortuj championów według ID (numerycznie)
-    champions.sort((a, b) => parseInt(a.id) - parseInt(b.id))
+    // Walidacja parametrów zapytania
+    const { searchParams } = new URL(request.url)
+    const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100) // Max 100
+    const offset = Math.max(parseInt(searchParams.get('offset') || '0'), 0)
+    const search = searchParams.get('search')?.trim()
 
-    return NextResponse.json(champions)
+    // Buduj warunki filtrowania
+    const where: {
+      isChampion: boolean
+      OR?: Array<{
+        name?: { contains: string; mode: 'insensitive' }
+        ringNumber?: { contains: string; mode: 'insensitive' }
+        bloodline?: { contains: string; mode: 'insensitive' }
+      }>
+    } = {
+      isChampion: true // Tylko championy
+    }
+
+    if (search && search.length > 0) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { ringNumber: { contains: search, mode: 'insensitive' } },
+        { bloodline: { contains: search, mode: 'insensitive' } }
+      ]
+    }
+
+    // Skanuj foldery championów w public/champions/
+    const folderChampions = await scanChampionFolders()
+
+    // Zastosuj paginację do folderów
+    const paginatedChampions = folderChampions.slice(offset, offset + limit)
+    const total = folderChampions.length
+
+    // Zwracaj pełne dane championów
+    const transformedChampions = paginatedChampions.map(champion => ({
+      id: champion.id,
+      name: champion.name,
+      ringNumber: champion.ringNumber,
+      bloodline: champion.bloodline,
+      images: champion.images,
+      pedigree: champion.pedigree
+    }))
+
+    return NextResponse.json({
+      champions: transformedChampions,
+      pagination: {
+        total,
+        limit,
+        offset,
+        hasMore: offset + limit < total
+      }
+    })
 
   } catch (error) {
-    console.error('Błąd podczas skanowania zdjęć championów:', error)
+    console.error('Błąd podczas pobierania danych championów:', error)
     return NextResponse.json(
-      { error: 'Wystąpił błąd podczas pobierania zdjęć championów' },
+      { error: 'Wystąpił błąd podczas pobierania danych championów' },
       { status: 500 }
     )
   }

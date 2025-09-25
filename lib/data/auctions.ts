@@ -9,6 +9,7 @@ export interface AuctionData {
     startingPrice: number
     currentPrice: number
     buyNowPrice?: number
+    saleFormat?: 'auction' | 'auction_with_buy_now' | 'buy_now_only'
     reservePrice?: number
     startTime: string
     endTime: string
@@ -34,11 +35,12 @@ export const AUCTIONS_DATA: AuctionData[] = [
         currentPrice: 7500,
         buyNowPrice: 10000,
         reservePrice: 6000,
+        saleFormat: 'auction',
         startTime: '2024-01-01T00:00:00Z',
         endTime: '2024-01-15T23:59:59Z',
         status: 'ACTIVE',
         isApproved: true,
-        images: ['/champions/thunder-storm/gallery/1.jpg', '/champions/thunder-storm/gallery/2.jpg'],
+        images: ['/champions/1/gallery/DV-02906-11-98t_OLIMP (1).jpg', '/champions/2/gallery/dv-0987-11-396_c.jpg'],
         videos: ['/champions/thunder-storm/videos/1.mp4'],
         documents: ['/champions/thunder-storm/pedigree.pdf'],
         createdAt: '2024-01-01T00:00:00Z',
@@ -53,15 +55,99 @@ export const AUCTIONS_DATA: AuctionData[] = [
         startingPrice: 1500,
         currentPrice: 2200,
         buyNowPrice: 3000,
+        saleFormat: 'buy_now_only',
         startTime: '2024-01-05T00:00:00Z',
         endTime: '2024-01-20T23:59:59Z',
         status: 'ACTIVE',
         isApproved: true,
-        images: ['/auctions/young-birds/1.jpg'],
+        images: ['/champions/1/gallery/DV-02906-11-98t_OLIMP (1).jpg'],
         videos: [],
         documents: [],
         createdAt: '2024-01-05T00:00:00Z',
         updatedAt: '2024-01-05T00:00:00Z'
+    },
+    {
+        id: 'auction-3',
+        title: 'Inbred Son Goed Grijs 998 – linia Sangers',
+        description: 'Potomek “Goed Grijs 998” z doskonałym rodowodem. Idealny do rozpłodu.',
+        category: 'Champions',
+        sellerId: 'seller-3',
+        startingPrice: 900,
+        currentPrice: 1200,
+        // licytacja
+        saleFormat: 'auction',
+        startTime: new Date().toISOString(),
+        endTime: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+        status: 'ACTIVE',
+        isApproved: true,
+        images: ['/champions/1/gallery/DV-02906-11-98t_OLIMP (1).jpg'],
+        videos: [],
+        documents: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    },
+    {
+        id: 'auction-4',
+        title: 'Grizzle Girl – wybitna samica',
+        description: 'Córka i wnuczka championów. Świetny materiał hodowlany.',
+        category: 'Young Birds',
+        sellerId: 'seller-4',
+        startingPrice: 700,
+        currentPrice: 950,
+        buyNowPrice: 1400,
+        saleFormat: 'buy_now_only',
+        startTime: new Date().toISOString(),
+        endTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+        status: 'ACTIVE',
+        isApproved: true,
+        images: ['/champions/2/gallery/dv-0987-11-396_c.jpg'],
+        videos: [],
+        documents: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    },
+    {
+        id: 'auction-5',
+        title: 'Masterpeace – linia junior x córka Angelino',
+        description: 'Zwycięzca w konkursach, wybitny potencjał lotowy i hodowlany.',
+        category: 'Champions',
+        sellerId: 'seller-5',
+        startingPrice: 800,
+        currentPrice: 1100,
+        buyNowPrice: 1600,
+        saleFormat: 'auction_with_buy_now',
+        startTime: new Date().toISOString(),
+        endTime: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString(),
+        status: 'ACTIVE',
+        isApproved: true,
+        images: ['/champions/1/gallery/DV-02906-11-98t_OLIMP (1).jpg'],
+        videos: [],
+        documents: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    },
+    {
+        id: 'auction-6',
+        title: 'Cocco – inbred Gold Dust x Katu',
+        description: 'Świetnie zapowiadający się gołąb z pewnym pochodzeniem.',
+        category: 'Champions',
+        sellerId: 'seller-6',
+        startingPrice: 600,
+        currentPrice: 850,
+        // licytacja + kup teraz
+        buyNowPrice: 1300,
+        saleFormat: 'auction_with_buy_now',
+        startingPrice: 700,
+        currentPrice: 850,
+        startTime: new Date().toISOString(),
+        endTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+        status: 'ACTIVE',
+        isApproved: true,
+        images: ['/champions/2/gallery/dv-0987-11-396_c.jpg'],
+        videos: [],
+        documents: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
     }
 ]
 

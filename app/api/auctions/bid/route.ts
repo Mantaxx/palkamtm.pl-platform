@@ -1,12 +1,18 @@
 import { authOptions } from '@/lib/auth'
 import { requirePhoneVerification } from '@/lib/phone-verification'
 import { prisma } from '@/lib/prisma'
+import { apiRateLimit } from '@/lib/rate-limit'
 import { getServerSession } from 'next-auth'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
     // Sprawdź weryfikację telefonu
-    const phoneVerificationError = await requirePhoneVerification(request)
+    const rateLimitResponse = apiRateLimit(request)
+    if (rateLimitResponse) {
+        return rateLimitResponse
+    }
+
+    const phoneVerificationError = await requirePhoneVerification()
     if (phoneVerificationError) {
         return phoneVerificationError
     }
@@ -81,30 +87,30 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Utwórz nową ofertę
-        const bid = await prisma.bid.create({
-            data: {
-                auctionId,
-                bidderId: session.user.id,
-                amount,
-                isWinning: true
-            }
-        })
-
-        // Zaktualizuj poprzednie oferty jako nie wygrywające
-        await prisma.bid.updateMany({
-            where: {
-                auctionId,
-                id: { not: bid.id }
-            },
-            data: { isWinning: false }
-        })
-
-        // Zaktualizuj aktualną cenę aukcji
-        await prisma.auction.update({
-            where: { id: auctionId },
-            data: { currentPrice: amount }
-        })
+        // Użyj transakcji, aby zapewnić atomowość operacji
+        const [bid] = await prisma.$transaction([
+            // 1. Utwórz nową ofertę
+            prisma.bid.create({
+                data: {
+                    auctionId,
+                    bidderId: session.user.id,
+                    amount,
+                    isWinning: true
+                }
+            }),
+            // 2. Zaktualizuj poprzednie oferty jako nie wygrywające
+            prisma.bid.updateMany({
+                where: {
+                    auctionId,
+                },
+                data: { isWinning: false }
+            }),
+            // 3. Zaktualizuj aktualną cenę aukcji
+            prisma.auction.update({
+                where: { id: auctionId },
+                data: { currentPrice: amount }
+            })
+        ])
 
         return NextResponse.json({
             success: true,

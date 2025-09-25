@@ -12,7 +12,7 @@ interface LogEntry {
   level: LogLevel
   message: string
   timestamp: string
-  context?: Record<string, any>
+  context?: Record<string, unknown>
   error?: Error
 }
 
@@ -20,7 +20,7 @@ class Logger {
   private isDevelopment = process.env.NODE_ENV === 'development'
   private isProduction = process.env.NODE_ENV === 'production'
 
-  private formatMessage(level: LogLevel, message: string, context?: Record<string, any>, error?: Error): LogEntry {
+  private formatMessage(level: LogLevel, message: string, context?: Record<string, unknown>, error?: Error): LogEntry {
     return {
       level,
       message,
@@ -34,7 +34,7 @@ class Logger {
     }
   }
 
-  private log(level: LogLevel, message: string, context?: Record<string, any>, error?: Error): void {
+  private log(level: LogLevel, message: string, context?: Record<string, unknown>, error?: Error): void {
     const logEntry = this.formatMessage(level, message, context, error)
 
     // Console output for development
@@ -86,24 +86,24 @@ class Logger {
     }
   }
 
-  error(message: string, context?: Record<string, any>, error?: Error): void {
+  error(message: string, context?: Record<string, unknown>, error?: Error): void {
     this.log(LogLevel.ERROR, message, context, error)
   }
 
-  warn(message: string, context?: Record<string, any>): void {
+  warn(message: string, context?: Record<string, unknown>): void {
     this.log(LogLevel.WARN, message, context)
   }
 
-  info(message: string, context?: Record<string, any>): void {
+  info(message: string, context?: Record<string, unknown>): void {
     this.log(LogLevel.INFO, message, context)
   }
 
-  debug(message: string, context?: Record<string, any>): void {
+  debug(message: string, context?: Record<string, unknown>): void {
     this.log(LogLevel.DEBUG, message, context)
   }
 
   // Specialized logging methods
-  apiRequest(method: string, url: string, statusCode: number, duration: number, context?: Record<string, any>): void {
+  apiRequest(method: string, url: string, statusCode: number, duration: number, context?: Record<string, unknown>): void {
     this.info(`API ${method} ${url} - ${statusCode} (${duration}ms)`, {
       method,
       url,
@@ -113,7 +113,7 @@ class Logger {
     })
   }
 
-  userAction(userId: string, action: string, context?: Record<string, any>): void {
+  userAction(userId: string, action: string, context?: Record<string, unknown>): void {
     this.info(`User action: ${action}`, {
       userId,
       action,
@@ -121,7 +121,7 @@ class Logger {
     })
   }
 
-  databaseQuery(query: string, duration: number, context?: Record<string, any>): void {
+  databaseQuery(query: string, duration: number, context?: Record<string, unknown>): void {
     this.debug(`Database query executed in ${duration}ms`, {
       query: query.substring(0, 100) + '...', // Truncate long queries
       duration,
@@ -129,7 +129,7 @@ class Logger {
     })
   }
 
-  authenticationEvent(event: string, userId?: string, context?: Record<string, any>): void {
+  authenticationEvent(event: string, userId?: string, context?: Record<string, unknown>): void {
     this.info(`Authentication: ${event}`, {
       userId,
       event,
@@ -137,7 +137,7 @@ class Logger {
     })
   }
 
-  businessEvent(event: string, context?: Record<string, any>): void {
+  businessEvent(event: string, context?: Record<string, unknown>): void {
     this.info(`Business event: ${event}`, context)
   }
 }
@@ -146,26 +146,26 @@ class Logger {
 export const logger = new Logger()
 
 // Helper functions for common logging patterns
-export const logError = (message: string, error?: Error, context?: Record<string, any>) => {
+export const logError = (message: string, error?: Error, context?: Record<string, unknown>) => {
   logger.error(message, context, error)
 }
 
-export const logApiRequest = (method: string, url: string, statusCode: number, duration: number, context?: Record<string, any>) => {
+export const logApiRequest = (method: string, url: string, statusCode: number, duration: number, context?: Record<string, unknown>) => {
   logger.apiRequest(method, url, statusCode, duration, context)
 }
 
-export const logUserAction = (userId: string, action: string, context?: Record<string, any>) => {
+export const logUserAction = (userId: string, action: string, context?: Record<string, unknown>) => {
   logger.userAction(userId, action, context)
 }
 
-export const logDatabaseQuery = (query: string, duration: number, context?: Record<string, any>) => {
+export const logDatabaseQuery = (query: string, duration: number, context?: Record<string, unknown>) => {
   logger.databaseQuery(query, duration, context)
 }
 
-export const logAuthenticationEvent = (event: string, userId?: string, context?: Record<string, any>) => {
+export const logAuthenticationEvent = (event: string, userId?: string, context?: Record<string, unknown>) => {
   logger.authenticationEvent(event, userId, context)
 }
 
-export const logBusinessEvent = (event: string, context?: Record<string, any>) => {
+export const logBusinessEvent = (event: string, context?: Record<string, unknown>) => {
   logger.businessEvent(event, context)
 }
