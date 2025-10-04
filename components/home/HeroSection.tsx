@@ -31,7 +31,7 @@ export function HeroSection() {
         </div>
 
         {/* Główny gołąb - wyśrodkowany pod tekstem z oświetleniem scenicznym */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.8, y: 50 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 1.5, delay: 0.9 }}
@@ -40,12 +40,12 @@ export function HeroSection() {
           <Image
             src="/1360bez tla.png"
             alt="Piękny gołąb pocztowy - symbol hodowli Pałka MTM"
-            width={800}
-            height={800}
+            width={600}
+            height={600}
             priority
             style={{
-              width: '800px',
-              height: '800px',
+              width: '600px',
+              height: '600px',
               objectFit: 'contain',
               filter: 'drop-shadow(0 20px 13px rgb(0 0 0 / 0.3))'
             }}
