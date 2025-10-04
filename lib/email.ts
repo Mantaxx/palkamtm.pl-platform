@@ -1,5 +1,5 @@
-import crypto from 'crypto'
 import sgMail from '@sendgrid/mail'
+import crypto from 'crypto'
 
 // Konfiguracja SendGrid
 if (process.env.SENDGRID_API_KEY) {
@@ -7,23 +7,23 @@ if (process.env.SENDGRID_API_KEY) {
 }
 
 export interface EmailData {
-    to: string
-    subject: string
-    html: string
-    text?: string
+  to: string
+  subject: string
+  html: string
+  text?: string
 }
 
 export function generateActivationToken(): string {
-    return crypto.randomBytes(32).toString('hex')
+  return crypto.randomBytes(32).toString('hex')
 }
 
 export function createActivationEmail(email: string, activationToken: string): EmailData {
-    const activationUrl = `${process.env.NEXTAUTH_URL}/auth/activate?token=${activationToken}`
+  const activationUrl = `${process.env.NEXTAUTH_URL}/auth/activate?token=${activationToken}`
 
-    return {
-        to: email,
-        subject: 'Aktywacja konta - Gołębie Pocztowe',
-        html: `
+  return {
+    to: email,
+    subject: 'Aktywacja konta - Gołębie Pocztowe',
+    html: `
       <!DOCTYPE html>
       <html>
         <head>
@@ -69,7 +69,7 @@ export function createActivationEmail(email: string, activationToken: string): E
         </body>
       </html>
     `,
-        text: `
+    text: `
       Witamy w Gołębie Pocztowe!
       
       Dziękujemy za rejestrację w naszej platformie aukcyjnej gołębi pocztowych.
@@ -81,36 +81,36 @@ export function createActivationEmail(email: string, activationToken: string): E
       
       Jeśli nie rejestrowałeś się na naszej platformie, zignoruj ten email.
     `
-    }
+  }
 }
 
 export async function sendEmail(emailData: EmailData): Promise<boolean> {
-    try {
-        if (!process.env.SENDGRID_API_KEY) {
-            console.log('📧 SendGrid API Key nie jest ustawiony - symulacja wysyłania emaila:', {
-                to: emailData.to,
-                subject: emailData.subject,
-            })
-            return true
-        }
-
-        const msg = {
-            to: emailData.to,
-            from: process.env.SENDGRID_FROM_EMAIL || 'noreply@palkamtm.pl',
-            subject: emailData.subject,
-            text: emailData.text,
-            html: emailData.html,
-        }
-
-        await sgMail.send(msg)
-        console.log('📧 Email wysłany przez SendGrid:', {
-            to: emailData.to,
-            subject: emailData.subject,
-        })
-
-        return true
-    } catch (error) {
-        console.error('Błąd wysyłania emaila przez SendGrid:', error)
-        return false
+  try {
+    if (!process.env.SENDGRID_API_KEY) {
+      console.log('📧 SendGrid API Key nie jest ustawiony - symulacja wysyłania emaila:', {
+        to: emailData.to,
+        subject: emailData.subject,
+      })
+      return true
     }
+
+    const msg = {
+      to: emailData.to,
+      from: process.env.SENDGRID_FROM_EMAIL || 'noreply@palkamtm.pl',
+      subject: emailData.subject,
+      text: emailData.text,
+      html: emailData.html,
+    }
+
+    await sgMail.send(msg)
+    console.log('📧 Email wysłany przez SendGrid:', {
+      to: emailData.to,
+      subject: emailData.subject,
+    })
+
+    return true
+  } catch (error) {
+    console.error('Błąd wysyłania emaila przez SendGrid:', error)
+    return false
+  }
 }
