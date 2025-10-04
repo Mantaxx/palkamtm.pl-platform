@@ -25,14 +25,23 @@ export const auctionCreateSchema = z.object({
   title: z.string().min(5, 'Tytuł musi mieć co najmniej 5 znaków').max(200, 'Tytuł może mieć maksymalnie 200 znaków'),
   description: z.string().min(20, 'Opis musi mieć co najmniej 20 znaków').max(2000, 'Opis może mieć maksymalnie 2000 znaków'),
   category: z.string().min(1, 'Kategoria jest wymagana'),
-  startingPrice: z.number().min(0, 'Cena startowa nie może być ujemna'),
+  startingPrice: z.number().min(0, 'Cena startowa nie może być ujemna').optional(),
   buyNowPrice: z.number().min(0, 'Cena kup teraz nie może być ujemna').optional(),
   reservePrice: z.number().min(0, 'Cena rezerwowa nie może być ujemna').optional(),
   startTime: z.string().datetime('Nieprawidłowa data rozpoczęcia'),
   endTime: z.string().datetime('Nieprawidłowa data zakończenia'),
-  images: z.array(z.string().url('Nieprawidłowy URL obrazu')).min(1, 'Przynajmniej jeden obraz jest wymagany'),
-  videos: z.array(z.string().url('Nieprawidłowy URL wideo')).optional(),
-  documents: z.array(z.string().url('Nieprawidłowy URL dokumentu')).optional(),
+  images: z.array(z.string().min(1, 'URL obrazu nie może być pusty')).optional(),
+  videos: z.array(z.string().min(1, 'URL wideo nie może być pusty')).optional(),
+  documents: z.array(z.string().min(1, 'URL dokumentu nie może być pusty')).optional(),
+  location: z.string().optional(),
+  pigeon: z.object({
+    ringNumber: z.string().optional(),
+    bloodline: z.string().optional(),
+    sex: z.enum(['male', 'female']).optional(),
+    eyeColor: z.string().optional(),
+    featherColor: z.string().optional(),
+    purpose: z.array(z.string()).optional(),
+  }).optional(),
 }).refine((data) => {
   const startTime = new Date(data.startTime)
   const endTime = new Date(data.endTime)
@@ -42,11 +51,11 @@ export const auctionCreateSchema = z.object({
   path: ['endTime']
 }).refine((data) => {
   if (data.buyNowPrice && data.startingPrice) {
-    return data.buyNowPrice > data.startingPrice
+    return data.buyNowPrice >= data.startingPrice
   }
   return true
 }, {
-  message: 'Cena kup teraz musi być wyższa niż cena startowa',
+  message: 'Cena kup teraz musi być większa lub równa cenie startowej',
   path: ['buyNowPrice']
 })
 
@@ -55,14 +64,23 @@ const baseAuctionSchema = z.object({
   title: z.string().min(5, 'Tytuł musi mieć co najmniej 5 znaków').max(200, 'Tytuł może mieć maksymalnie 200 znaków'),
   description: z.string().min(20, 'Opis musi mieć co najmniej 20 znaków').max(2000, 'Opis może mieć maksymalnie 2000 znaków'),
   category: z.string().min(1, 'Kategoria jest wymagana'),
-  startingPrice: z.number().min(0, 'Cena startowa nie może być ujemna'),
+  startingPrice: z.number().min(0, 'Cena startowa nie może być ujemna').optional(),
   buyNowPrice: z.number().min(0, 'Cena kup teraz nie może być ujemna').optional(),
   reservePrice: z.number().min(0, 'Cena rezerwowa nie może być ujemna').optional(),
   startTime: z.string().datetime('Nieprawidłowa data rozpoczęcia'),
   endTime: z.string().datetime('Nieprawidłowa data zakończenia'),
-  images: z.array(z.string().url('Nieprawidłowy URL obrazu')).min(1, 'Przynajmniej jeden obraz jest wymagany'),
-  videos: z.array(z.string().url('Nieprawidłowy URL wideo')).optional(),
-  documents: z.array(z.string().url('Nieprawidłowy URL dokumentu')).optional(),
+  images: z.array(z.string().min(1, 'URL obrazu nie może być pusty')).optional(),
+  videos: z.array(z.string().min(1, 'URL wideo nie może być pusty')).optional(),
+  documents: z.array(z.string().min(1, 'URL dokumentu nie może być pusty')).optional(),
+  location: z.string().optional(),
+  pigeon: z.object({
+    ringNumber: z.string().optional(),
+    bloodline: z.string().optional(),
+    sex: z.enum(['male', 'female']).optional(),
+    eyeColor: z.string().optional(),
+    featherColor: z.string().optional(),
+    purpose: z.array(z.string()).optional(),
+  }).optional(),
 })
 
 export const auctionUpdateSchema = baseAuctionSchema.partial()

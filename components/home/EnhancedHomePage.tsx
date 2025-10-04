@@ -36,7 +36,7 @@ const features = [
 
 export function EnhancedHomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-800 via-slate-700 to-slate-600 relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden">
       {/* Enhanced 3D Background */}
       <div className="absolute inset-0">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 xl:w-[32rem] xl:h-[32rem] 2xl:w-[40rem] 2xl:h-[40rem] bg-slate-500/20 rounded-full blur-3xl xl:blur-[4rem] 2xl:blur-[6rem] animate-float3D"></div>
@@ -71,7 +71,7 @@ export function EnhancedHomePage() {
           <GlassContainer
             variant="ultra"
             className="max-w-6xl mx-auto p-8 xl:p-12 2xl:p-16 mb-12"
-            glow={true}
+            glow={false}
           >
             <p className="text-lg md:text-xl xl:text-2xl text-white/90 leading-relaxed">
               Pasja, tradycja i nowoczesność w hodowli gołębi pocztowych.
@@ -85,7 +85,7 @@ export function EnhancedHomePage() {
               variant="primary"
               size="lg"
               intensity="high"
-              glow={true}
+              glow={false}
               className="mr-4 xl:mr-6 2xl:mr-8 xl:text-lg 2xl:text-xl xl:px-8 2xl:px-12 xl:py-4 2xl:py-6"
             >
               Zobacz Championy
@@ -108,7 +108,7 @@ export function EnhancedHomePage() {
               key={feature.title}
               delay={feature.delay}
               intensity="medium"
-              glow={true}
+              glow={false}
               className="h-full"
             >
               <div className="text-center p-8 xl:p-10 2xl:p-12">
@@ -140,7 +140,7 @@ export function EnhancedHomePage() {
         <GlassContainer
           variant="gradient"
           className="max-w-6xl mx-auto p-12 xl:p-16 2xl:p-20 text-center"
-          glow={true}
+          glow={false}
         >
           <Text3D
             variant="neon"
@@ -159,7 +159,7 @@ export function EnhancedHomePage() {
               variant="primary"
               size="lg"
               intensity="high"
-              glow={true}
+              glow={false}
               className="xl:text-lg 2xl:text-xl xl:px-8 2xl:px-12 xl:py-4 2xl:py-6"
             >
               Rozpocznij Hodowlę
@@ -175,6 +175,7 @@ export function EnhancedHomePage() {
           </div>
         </GlassContainer>
       </div>
+
     </div>
   )
 }

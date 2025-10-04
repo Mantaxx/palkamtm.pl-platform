@@ -34,7 +34,7 @@ const gridItems: GridItemType[] = [
     title: 'Strategia 80/20',
     subtitle: 'Filozofia Hodowli',
     description: '80% gołębi spokrewnionych + 20% "świeżej krwi" z linii Jansen i Gaby Vanebele',
-    link: '/heritage',
+    link: '/achievements',
   },
 ]
 
@@ -76,6 +76,7 @@ export function BentoGrid() {
                       src={item.image}
                       alt={`Zdjęcie dla ${item.title}`}
                       fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="object-contain group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>

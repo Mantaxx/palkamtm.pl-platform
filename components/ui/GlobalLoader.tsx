@@ -49,7 +49,7 @@ export function GlobalLoader({
         >
             <UnifiedCard
                 variant="3d"
-                glow={true}
+                glow={false}
                 className="p-8 text-center border-2 border-white/20"
             >
                 <motion.div
@@ -89,7 +89,7 @@ export function GlobalLoader({
             >
                 <UnifiedCard
                     variant="3d"
-                    glow={true}
+                    glow={false}
                     className="p-12 text-center border-2 border-white/30 shadow-2xl"
                 >
                     {/* Animowany spinner */}

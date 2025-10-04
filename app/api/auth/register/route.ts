@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
         firstName: validatedData.firstName,
         lastName: validatedData.lastName,
         phoneNumber: validatedData.phoneNumber,
-        role: 'BUYER', // Domyślnie kupujący
+        role: 'USER', // Domyślnie użytkownik
         isActive: false, // Wymaga aktywacji
         activationToken
       },

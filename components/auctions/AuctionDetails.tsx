@@ -1,7 +1,6 @@
 'use client'
 
-import PaymentModal from '@/components/payments/PaymentModal'
-import { AUCTIONS_DATA } from '@/lib/data/auctions'
+import { FullscreenImageModal } from '@/components/ui/FullscreenImageModal'
 import { useAppStore } from '@/store/useAppStore'
 import { format } from 'date-fns'
 import { pl } from 'date-fns/locale'
@@ -49,29 +48,42 @@ interface Auction {
   location: string
   seller: {
     id: string
-    name: string
+    firstName: string
+    lastName: string
+    email: string
+    phoneNumber?: string
     avatar?: string
     rating: number
     salesCount: number
   }
   images: string[]
   videos?: string[]
+  documents?: string[]
   bids: Bid[]
   watchersCount: number
   viewsCount: number
 }
 
-// Funkcja do pobierania aukcji z localStorage lub z przykładowych danych
-const getAuctionById = (id: string): Auction | null => {
-  if (typeof window !== 'undefined') {
-    const auctions = JSON.parse(localStorage.getItem('auctions') || '[]')
-    const auction = auctions.find((a: unknown) =>
-      a && typeof a === 'object' && 'id' in a && a.id === id
-    )
+// Funkcja do pobierania aukcji z API
+const getAuctionById = async (id: string): Promise<Auction | null> => {
+  try {
+    const response = await fetch(`/api/auctions/${id}`)
+    if (!response.ok) {
+      if (response.status === 403) {
+        throw new Error('Aukcja nie jest jeszcze zatwierdzona przez administratora')
+      }
+      if (response.status === 404) {
+        throw new Error('Aukcja nie została znaleziona')
+      }
+      throw new Error('Błąd podczas pobierania aukcji')
+    }
 
+    const auction = await response.json()
     if (!auction) return null
 
-    // Konwersja do formatu Auction
+    // const now = new Date() // unused
+    const end = new Date(auction.endTime)
+
     return {
       id: auction.id,
       title: auction.title,
@@ -79,81 +91,90 @@ const getAuctionById = (id: string): Auction | null => {
       startingPrice: auction.startingPrice,
       currentPrice: auction.currentPrice,
       buyNowPrice: auction.buyNowPrice,
-      endTime: new Date(auction.endTime),
-      status: auction.status || 'active',
+      endTime: end,
+      status: auction.status.toLowerCase(),
       category: auction.category,
-      bloodline: auction.bloodline || '',
-      age: auction.age ? parseInt(auction.age) : 0,
-      sex: 'male', // domyślnie
-      location: auction.location,
+      bloodline: auction.pigeon?.bloodline || '',
+      age: auction.pigeon?.age || 0,
+      sex: auction.pigeon?.gender || 'male',
+      location: auction.location || '',
       seller: {
-        id: '1',
-        name: auction.seller || 'Pałka M.T.M.',
-        avatar: '/avatars/seller1.jpg',
-        rating: auction.sellerRating || 5.0,
-        salesCount: 127
+        id: auction.seller.id,
+        firstName: auction.seller.firstName,
+        lastName: auction.seller.lastName,
+        email: auction.seller.email,
+        phoneNumber: auction.seller.phoneNumber,
+        avatar: auction.seller.image || null,
+        rating: 0, // Brak systemu ocen
+        salesCount: 0 // Brak danych o sprzedaży
       },
-      images: auction.images || ['/api/placeholder/400/300'],
-      videos: [],
-      bids: [],
-      watchersCount: auction.watchers || 0,
-      viewsCount: 156
+      images: auction.assets?.filter((a: { type: string; url: string }) => a.type === 'IMAGE').map((a: { url: string }) => a.url) || [],
+      videos: auction.assets?.filter((a: { type: string; url: string }) => a.type === 'VIDEO').map((a: { url: string }) => a.url) || [],
+      documents: auction.assets?.filter((a: { type: string; url: string }) => a.type === 'DOCUMENT').map((a: { url: string }) => a.url) || [],
+      bids: auction.bids?.map((bid: {
+        id: string;
+        amount: number;
+        bidder: { id: string; firstName?: string; lastName?: string };
+        createdAt: string;
+      }, index: number) => ({
+        id: bid.id,
+        amount: bid.amount,
+        bidder: { id: bid.bidder.id, name: `${bid.bidder.firstName || ''} ${bid.bidder.lastName || ''}`.trim() || bid.bidder.id },
+        timestamp: new Date(bid.createdAt),
+        isWinning: index === 0
+      })) || [],
+      watchersCount: auction._count?.watchlist || 0,
+      viewsCount: 0
     }
+  } catch (error) {
+    console.error('Error fetching auction:', error)
+    return null
   }
-  return null
 }
 
-// Fallback do przykładowych danych (serwer i klient)
-const getSampleAuction = (id: string): Auction | null => {
-  const sample = AUCTIONS_DATA.find(a => a.id === id) || AUCTIONS_DATA[0]
-  if (!sample) return null
-  const now = new Date()
-  const end = new Date(sample.endTime)
-  return {
-    id: sample.id,
-    title: sample.title,
-    description: sample.description,
-    startingPrice: sample.startingPrice,
-    currentPrice: sample.currentPrice,
-    buyNowPrice: sample.buyNowPrice,
-    endTime: end,
-    status: 'active',
-    category: sample.category,
-    bloodline: '',
-    age: 2,
-    sex: 'male',
-    location: 'Polska',
-    seller: {
-      id: sample.sellerId,
-      name: sample.sellerId,
-      rating: 5,
-      salesCount: 100
-    },
-    images: sample.images?.length ? sample.images : ['/api/placeholder/800/600'],
-    videos: [],
-    bids: [
-      { id: 'b1', amount: sample.currentPrice, bidder: { id: 'u1', name: 'Campeon' }, timestamp: now, isWinning: true },
-      { id: 'b0', amount: sample.currentPrice - 100, bidder: { id: 'u2', name: 'Crunch' }, timestamp: new Date(now.getTime() - 86400000), isWinning: false }
-    ],
-    watchersCount: 12,
-    viewsCount: 256
-  }
-}
 
 export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
-  const { data: session, status: sessionStatus } = useSession()
+  const { data: session } = useSession()
   const currencyStore = useAppStore()
   const [auction, setAuction] = useState<Auction | null>(null)
   const [bidAmount, setBidAmount] = useState('')
-  const [isWatching, setIsWatching] = useState(false)
   const [timeLeft, setTimeLeft] = useState('')
   const [isBidding, setIsBidding] = useState(false)
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
+  const [isFullscreenOpen, setIsFullscreenOpen] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [fullscreenImageIndex, setFullscreenImageIndex] = useState(0)
+  const [isPedigreeFullscreen, setIsPedigreeFullscreen] = useState(false)
+
+  // Funkcje do obsługi pełnoekranowego widoku
+  const openFullscreen = (index: number) => {
+    setFullscreenImageIndex(index)
+    setIsFullscreenOpen(true)
+    setIsPedigreeFullscreen(false)
+  }
+
+  const openFullscreenPedigree = () => {
+    setIsPedigreeFullscreen(true)
+    setIsFullscreenOpen(true)
+  }
+
+  const closeFullscreen = () => {
+    setIsFullscreenOpen(false)
+    setIsPedigreeFullscreen(false)
+  }
 
   // Ładowanie aukcji
   useEffect(() => {
-    const loadedAuction = getAuctionById(auctionId) || getSampleAuction(auctionId)
-    setAuction(loadedAuction)
+    const loadAuction = async () => {
+      try {
+        const loadedAuction = await getAuctionById(auctionId)
+        setAuction(loadedAuction)
+        setError(null)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Błąd podczas ładowania aukcji')
+        setAuction(null)
+      }
+    }
+    loadAuction()
   }, [auctionId])
 
   // Timer effect
@@ -167,6 +188,33 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
       if (diff <= 0) {
         setTimeLeft('Aukcja zakończona')
         setAuction(prev => prev ? { ...prev, status: 'ended' } : null)
+
+        // Sprawdź czy użytkownik wygrał licytację
+        const winningBid = auction.bids.find(bid => bid.isWinning)
+        if (winningBid && session?.user?.name === winningBid.bidder.name) {
+          const successData = {
+            type: 'auction_won',
+            auctionId: auction.id,
+            auctionTitle: auction.title,
+            price: winningBid.amount,
+            seller: {
+              name: `${auction.seller.firstName} ${auction.seller.lastName}`,
+              id: auction.seller.id,
+              rating: 0, // Brak systemu ocen
+              salesCount: 0, // Brak danych o sprzedaży
+              avatar: null, // Brak awatara
+              location: auction.location || 'Brak lokalizacji',
+              phone: auction.seller.phoneNumber || 'Brak numeru telefonu',
+              email: auction.seller.email
+            },
+            timestamp: new Date().toISOString()
+          }
+          localStorage.setItem('auctionSuccess', JSON.stringify(successData))
+          setTimeout(() => {
+            window.location.href = '/auctions/success'
+          }, 2000)
+        }
+
         clearInterval(interval)
         return
       }
@@ -189,14 +237,14 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [auction?.endTime, auction])
+  }, [auction?.endTime, auction, session?.user?.name])
 
-  if (!auction) {
+  if (!auction && error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Aukcja nie została znaleziona</h1>
-          <p className="text-gray-600 mb-6">Aukcja o podanym ID nie istnieje lub została usunięta.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Aukcja niedostępna</h1>
+          <p className="text-gray-600 mb-6">{error}</p>
           <a href="/auctions" className="btn-primary">
             Powrót do aukcji
           </a>
@@ -205,47 +253,93 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
     )
   }
 
+  if (!auction) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Ładowanie...</h1>
+          <p className="text-gray-600 mb-6">Pobieranie danych aukcji...</p>
+        </div>
+      </div>
+    )
+  }
+
   const handleBid = async () => {
-    if (!bidAmount || parseFloat(bidAmount) <= auction.currentPrice) {
+    const bidValue = parseFloat(bidAmount)
+    if (!bidAmount || bidValue <= auction.currentPrice) {
+      alert(`Oferta musi być wyższa od aktualnej ceny ${formatPrice(auction.currentPrice)}`)
       return
     }
 
     setIsBidding(true)
 
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    try {
+      const response = await fetch(`/api/auctions/${auction.id}/bids`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          amount: bidValue
+        })
+      })
 
-    const newBid: Bid = {
-      id: Date.now().toString(),
-      amount: parseFloat(bidAmount),
-      bidder: {
-        id: session?.user?.id || 'guest',
-        name: session?.user?.name || 'Ty'
-      },
-      timestamp: new Date(),
-      isWinning: true
+      const data = await response.json()
+
+      if (response.ok) {
+        // Odśwież dane aukcji
+        const auctionResponse = await fetch(`/api/auctions/${auction.id}`)
+        if (auctionResponse.ok) {
+          const updatedAuctionData = await auctionResponse.json()
+          setAuction(updatedAuctionData)
+        }
+
+        setBidAmount('')
+        alert(`Licytacja ${formatPrice(bidValue)} została złożona!`)
+      } else {
+        // Obsługa błędów z serwera
+        if (data.missingFields) {
+          alert(`${data.message}\nBrakujące pola: ${data.missingFields.join(', ')}`)
+        } else {
+          alert(data.error || 'Błąd podczas składania licytacji')
+        }
+      }
+    } catch (error) {
+      console.error('Błąd podczas składania licytacji:', error)
+      alert('Wystąpił błąd podczas składania licytacji')
+    } finally {
+      setIsBidding(false)
     }
-
-    setAuction(prev => prev ? {
-      ...prev,
-      currentPrice: newBid.amount,
-      bids: [newBid, ...prev.bids.map(bid => ({ ...bid, isWinning: false }))]
-    } : null)
-
-    setBidAmount('')
-    setIsBidding(false)
   }
 
   const handleBuyNow = () => {
-    setIsPaymentModalOpen(true)
-  }
+    // Przekierowanie do strony podsumowującej zakup
+    const successData = {
+      type: 'buy_now',
+      auctionId: auction.id,
+      auctionTitle: auction.title,
+      price: auction.buyNowPrice,
+      seller: {
+        name: `${auction.seller.firstName} ${auction.seller.lastName}`,
+        id: auction.seller.id,
+        rating: 0, // Brak systemu ocen
+        salesCount: 0, // Brak danych o sprzedaży
+        avatar: null, // Brak awatara
+        location: auction.location || 'Brak lokalizacji',
+        phone: auction.seller.phoneNumber || 'Brak numeru telefonu',
+        email: auction.seller.email
+      },
+      timestamp: new Date().toISOString()
+    }
 
-  const handlePaymentSuccess = (paymentIntentId: string) => {
-    console.log('Płatność zakończona pomyślnie:', paymentIntentId)
-    setIsPaymentModalOpen(false)
+    // Zapisanie danych do localStorage dla strony sukcesu
+    localStorage.setItem('auctionSuccess', JSON.stringify(successData))
+
+    // Przekierowanie do strony sukcesu
+    window.location.href = '/auctions/success'
   }
 
   const minBidAmount = auction.currentPrice + 100
-  const formatEur = (value: number) => `${value.toLocaleString('pl-PL')} EUR`
   const formatPrice = (value: number) => {
     if (currencyStore.currency === 'EUR') {
       const eur = Math.round(value / currencyStore.ratePLNperEUR)
@@ -254,75 +348,9 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
     return `${value.toLocaleString('pl-PL')} PLN`
   }
 
-  const renderBiddingPanel = () => {
-    if (sessionStatus === 'loading') {
-      return <div className="text-center p-4">Ładowanie...</div>
-    }
-
-    if (sessionStatus === 'unauthenticated' || !session?.user.isPhoneVerified) {
-      return (
-        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <ShieldAlert className="h-5 w-5 text-yellow-400" aria-hidden="true" />
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-yellow-700">
-                {sessionStatus === 'unauthenticated'
-                  ? 'Musisz być zalogowany, aby licytować.'
-                  : 'Wymagana jest weryfikacja numeru telefonu.'}
-                <Link
-                  href={sessionStatus === 'unauthenticated' ? '/auth/signin' : '/settings/profile'}
-                  className="font-medium underline text-yellow-800 hover:text-yellow-900 ml-2"
-                >
-                  {sessionStatus === 'unauthenticated' ? 'Zaloguj się' : 'Zweryfikuj numer'}
-                </Link>
-              </p>
-            </div>
-          </div>
-        </div>
-      )
-    }
-
-    return (
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Twoja oferta (min. {formatPrice(minBidAmount)})
-          </label>
-          <input
-            type="number"
-            value={bidAmount}
-            onChange={(e) => setBidAmount(e.target.value)}
-            min={minBidAmount}
-            step="50"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent"
-            placeholder="Wprowadź kwotę"
-          />
-        </div>
-
-        <button
-          onClick={handleBid}
-          disabled={!bidAmount || parseFloat(bidAmount) < minBidAmount || isBidding}
-          className="w-full bg-slate-600 text-white py-3 px-4 rounded-md font-medium hover:bg-slate-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-        >
-          {isBidding ? 'Licytuję...' : 'Złóż ofertę'}
-        </button>
-
-        {auction.buyNowPrice && (
-          <button
-            onClick={handleBuyNow}
-            className="w-full bg-green-600 text-white py-3 px-4 rounded-md font-medium hover:bg-green-700 transition-colors"
-          >
-            Kup teraz za {formatPrice(auction.buyNowPrice)}
-          </button>
-        )}
-      </div>
-    )
-  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Główna zawartość */}
@@ -331,15 +359,43 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-lg shadow-sm overflow-hidden"
+              className="card hover:border-white/80 transition-colors"
             >
-              <div className="relative bg-white h-[420px] sm:h-[500px] md:h-[560px] lg:h-[640px] xl:h-[720px]">
-                <Image
-                  src={auction.images[0]}
-                  alt={auction.title}
-                  fill
-                  className="object-contain p-4 md:p-6"
-                />
+              <div
+                className="relative w-full aspect-[4/3] rounded-lg overflow-hidden bg-gray-900 cursor-pointer group"
+                onClick={() => auction.images && auction.images[0] && openFullscreen(0)}
+              >
+                {auction.images && auction.images[0] ? (
+                  <>
+                    <Image
+                      src={auction.images[0]}
+                      alt={auction.title}
+                      fill
+                      className="object-contain transition-transform group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      priority
+                      onError={(e) => {
+                        console.error('Image failed to load:', auction.images[0])
+                        e.currentTarget.style.display = 'none'
+                      }}
+                    />
+                    {/* Overlay z ikoną powiększenia */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded-full p-3">
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                        </svg>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-white">
+                    <div className="text-center">
+                      <div className="text-4xl mb-2">📷</div>
+                      <p>Brak zdjęcia</p>
+                    </div>
+                  </div>
+                )}
                 {auction.status === 'ending' && (
                   <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2">
                     <AlertCircle className="w-4 h-4" />
@@ -351,13 +407,26 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
               {auction.images.length > 1 && (
                 <div className="p-4 grid grid-cols-4 gap-2">
                   {auction.images.slice(1).map((image, index) => (
-                    <div key={index} className="aspect-square relative rounded-lg overflow-hidden">
+                    <div
+                      key={index}
+                      className="aspect-square relative rounded-lg overflow-hidden cursor-pointer group hover:ring-2 hover:ring-white/50 transition-all"
+                      onClick={() => openFullscreen(index + 1)}
+                    >
                       <Image
                         src={image}
                         alt={`${auction.title} ${index + 2}`}
                         fill
-                        className="object-cover"
+                        className="object-contain transition-transform group-hover:scale-110"
+                        sizes="200px"
                       />
+                      {/* Overlay z ikoną powiększenia */}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded-full p-2">
+                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                          </svg>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -369,31 +438,31 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-white rounded-lg shadow-sm p-6"
+              className="card hover:border-white/80 transition-colors"
             >
-              <h1 className="text-2xl font-bold text-gray-900 mb-4">{auction.title}</h1>
+              <h1 className="text-2xl font-bold text-white mb-4">{auction.title}</h1>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="flex items-center gap-2 text-sm text-white/80">
                   <MapPin className="w-4 h-4" />
                   {auction.location}
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="flex items-center gap-2 text-sm text-white/80">
                   <Calendar className="w-4 h-4" />
                   {auction.age} lat
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="flex items-center gap-2 text-sm text-white/80">
                   <Users className="w-4 h-4" />
                   {auction.sex === 'male' ? 'Samiec' : 'Samica'}
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="flex items-center gap-2 text-sm text-white/80">
                   <Eye className="w-4 h-4" />
                   {auction.viewsCount} wyświetleń
                 </div>
               </div>
 
               <div className="prose max-w-none">
-                <p className="text-gray-700 leading-relaxed">{auction.description}</p>
+                <p className="text-white/80 leading-relaxed">{auction.description}</p>
               </div>
             </motion.div>
 
@@ -402,11 +471,40 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
-              className="bg-white rounded-lg shadow-sm p-6"
+              className="card hover:border-white/80 transition-colors"
             >
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Rodowód</h2>
-              <div className="relative w-full border rounded-md overflow-hidden bg-gray-100">
-                <Image src={auction.images[0]} alt={`${auction.title} pedigree`} width={1600} height={900} className="w-full h-auto object-contain" />
+              <h2 className="text-xl font-semibold text-white mb-4">Rodowód</h2>
+              <div
+                className="relative w-full h-96 border border-white/30 rounded-md overflow-hidden bg-gray-900 cursor-pointer group"
+                onClick={() => auction.documents && auction.documents[0] && openFullscreenPedigree()}
+              >
+                {auction.documents && auction.documents.length > 0 ? (
+                  <>
+                    <Image
+                      src={auction.documents[0]}
+                      alt={`${auction.title} pedigree`}
+                      fill
+                      className="object-contain transition-transform group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, 800px"
+                    />
+                    {/* Overlay z ikoną powiększenia */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded-full p-3">
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                        </svg>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-white">
+                    <div className="text-center">
+                      <div className="text-4xl mb-2">📄</div>
+                      <p className="text-lg mb-2">Brak rodowodu</p>
+                      <p className="text-sm">Rodowód nie został jeszcze dodany</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </motion.div>
 
@@ -415,32 +513,32 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-white rounded-lg shadow-sm p-6"
+              className="card hover:border-white/80 transition-colors"
             >
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Historia licytacji</h2>
+              <h2 className="text-xl font-semibold text-white mb-4">Historia licytacji</h2>
 
               <div className="space-y-3">
                 {auction.bids.map((bid, index) => (
                   <div
                     key={bid.id}
-                    className={`flex items-center justify-between p-3 rounded-lg ${bid.isWinning ? 'bg-green-50 border border-green-200' : 'bg-gray-50'
+                    className={`flex items-center justify-between p-3 rounded-lg ${bid.isWinning ? 'bg-green-50 border border-green-200' : 'bg-white/10'
                       }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-sm font-medium">
+                      <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-sm font-medium text-white">
                         {index + 1}
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900">{bid.bidder.name}</p>
-                        <p className="text-sm text-gray-500">
+                        <p className="font-medium text-white">{bid.bidder.name}</p>
+                        <p className="text-sm text-white/60">
                           {format(bid.timestamp, 'dd.MM.yyyy HH:mm', { locale: pl })}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-gray-900">{bid.amount.toLocaleString()} zł</p>
+                      <p className="font-semibold text-white">{bid.amount.toLocaleString()} zł</p>
                       {bid.isWinning && (
-                        <p className="text-sm text-green-600 font-medium">Wygrywa</p>
+                        <p className="text-sm text-green-400 font-medium">Wygrywa</p>
                       )}
                     </div>
                   </div>
@@ -451,36 +549,85 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
 
           {/* Prawa kolumna */}
           <div className="space-y-6">
-            {/* Odliczanie + Oferty */}
+            {/* Panel licytacji + Odliczanie */}
+            {auction.status !== 'ended' && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0 }}
+                className="card hover:border-white/80 transition-colors"
+              >
+                {/* Countdown */}
+                <div className="text-center mb-6">
+                  <div className="text-sm text-white/80">Pozostało czasu</div>
+                  <div className={`text-2xl font-bold ${auction.status === 'ending' ? 'text-red-400' : 'text-white'}`}>{timeLeft || '—'}</div>
+                </div>
+
+                <h3 className="text-lg font-semibold text-white mb-4">Złóż ofertę</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="bid-amount-input" className="block text-sm font-medium text-white/80 mb-2">
+                      Twoja oferta (min. {formatPrice(minBidAmount)})
+                    </label>
+                    <input
+                      id="bid-amount-input"
+                      type="number"
+                      value={bidAmount}
+                      onChange={(e) => setBidAmount(e.target.value)}
+                      min={minBidAmount}
+                      step="50"
+                      className="w-full px-3 py-2 border border-white/30 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent bg-white/10 text-white placeholder-white/40"
+                      placeholder="Wprowadź kwotę oferty"
+                      title="Wprowadź kwotę swojej oferty"
+                      aria-describedby="bid-amount-help"
+                    />
+                  </div>
+
+                  <button
+                    onClick={handleBid}
+                    disabled={!bidAmount || parseFloat(bidAmount) < minBidAmount || isBidding}
+                    className="w-full bg-slate-600 text-white py-3 px-4 rounded-md font-medium hover:bg-slate-700 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {isBidding ? 'Licytuję...' : 'Złóż ofertę'}
+                  </button>
+
+                  {auction.buyNowPrice && (
+                    <button
+                      onClick={handleBuyNow}
+                      className="w-full bg-green-600 text-white py-3 px-4 rounded-md font-medium hover:bg-green-700 transition-colors"
+                    >
+                      Kup teraz za {formatPrice(auction.buyNowPrice)}
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Oferty */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="bg-white rounded-lg shadow-sm p-6 sticky top-6"
+              transition={{ delay: 0.05 }}
+              className="card hover:border-white/80 transition-colors"
             >
-              {/* Countdown */}
-              <div className="text-center mb-6">
-                <div className="text-sm text-gray-600">Pozostało czasu</div>
-                <div className={`text-2xl font-bold ${auction.status === 'ending' ? 'text-red-600' : 'text-gray-900'}`}>{timeLeft || '—'}</div>
-              </div>
-
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Oferty</h3>
+              <h3 className="text-lg font-semibold text-white mb-4">Oferty</h3>
               <div className="space-y-4">
                 {auction.bids.slice(0, 5).map((bid) => (
                   <div key={bid.id} className="flex items-start gap-3">
-                    <span className="mt-1 h-2 w-2 rounded-full bg-blue-500"></span>
+                    <span className="mt-1 h-2 w-2 rounded-full bg-blue-400"></span>
                     <div className="flex-1">
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-white/60">
                         {format(bid.timestamp, 'dd MMM • HH:mm', { locale: pl })}
                       </div>
                       <div className="text-sm">
-                        <span className="font-semibold">{formatPrice(bid.amount)}</span>
-                        <span className="text-gray-500"> od {bid.bidder.name}</span>
+                        <span className="font-semibold text-white">{formatPrice(bid.amount)}</span>
+                        <span className="text-white/60"> od {bid.bidder.name}</span>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
-              <button className="mt-4 w-full bg-gray-100 text-gray-700 py-2 px-4 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors">
+              <button className="mt-4 w-full bg-white/10 text-white/80 py-2 px-4 rounded-md text-sm font-medium hover:bg-white/20 transition-colors">
                 Pokaż wszystkie oferty
               </button>
             </motion.div>
@@ -489,57 +636,31 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.05 }}
-              className="bg-white rounded-lg shadow-sm p-6"
-            >
-              <h4 className="text-sm font-semibold text-gray-900">Breeder(s)</h4>
-              <p className="text-sm text-gray-600 mt-1">{auction.seller.name}</p>
-              <div className="h-px bg-gray-200 my-4" />
-              <h4 className="text-sm font-semibold text-gray-900">Supplier(s)</h4>
-              <p className="text-sm text-gray-600 mt-1">{auction.seller.name}</p>
-            </motion.div>
-
-            {/* Wyłącznie na PIPA */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-white rounded-lg shadow-sm p-6"
+              className="card hover:border-white/80 transition-colors"
             >
-              <h4 className="text-sm font-semibold text-gray-900 mb-2">Wyłącznie na PIPA</h4>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                Gołębie oferowane na tej aukcji pochodzą bezpośrednio od sprzedawcy i nie są oferowane przez niego na innych portalach.
-              </p>
+              <h4 className="text-sm font-semibold text-white">Breeder(s)</h4>
+              <p className="text-sm text-white/80 mt-1">{`${auction.seller.firstName} ${auction.seller.lastName}`}</p>
+              <div className="h-px bg-white/20 my-4" />
+              <h4 className="text-sm font-semibold text-white">Supplier(s)</h4>
+              <p className="text-sm text-white/80 mt-1">{`${auction.seller.firstName} ${auction.seller.lastName}`}</p>
             </motion.div>
 
-            {/* Charakterystyka */}
+            {/* Charakterystyka i Ocena jakości */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.15 }}
-              className="bg-white rounded-lg shadow-sm p-6"
+              className="card hover:border-white/80 transition-colors"
             >
-              <h4 className="text-sm font-semibold text-gray-900 mb-3">Charakterystyka</h4>
-              <dl className="grid grid-cols-2 gap-y-2 text-sm">
-                <dt className="text-gray-500">Płeć</dt><dd className="text-gray-900">{auction.sex === 'male' ? 'Samiec' : 'Samica'}</dd>
-                <dt className="text-gray-500">Kolor oka</dt><dd className="text-gray-900">żółty</dd>
-                <dt className="text-gray-500">Barwa gołębia</dt><dd className="text-gray-900">szpak</dd>
-                <dt className="text-gray-500">Dyscypliny</dt><dd className="text-gray-900">krótki dystans, średni dystans</dd>
-                <dt className="text-gray-500">Certyfikat DNA</dt><dd className="text-gray-900">Oboje rodziców</dd>
-              </dl>
-            </motion.div>
-
-            {/* PPQC */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-white rounded-lg shadow-sm p-6"
-            >
-              <h4 className="text-sm font-semibold text-gray-900 mb-3">PPQC</h4>
-              <h5 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Ogólny opis</h5>
-              <div className="text-sm divide-y">
+              <h4 className="text-sm font-semibold text-white mb-3">Charakterystyka</h4>
+              <div className="text-sm divide-y divide-white/20 mb-4">
                 {[
+                  ['Płeć', auction.sex === 'male' ? 'Samiec' : 'Samica'],
+                  ['Kolor oka', 'żółty'],
+                  ['Barwa gołębia', 'szpak'],
+                  ['Dyscypliny', 'krótki dystans, średni dystans'],
+                  ['Certyfikat DNA', 'Oboje rodziców'],
                   ['Wielkość', 'średni'],
                   ['Budowa korpusu', 'normalny'],
                   ['Witalność', 'silny'],
@@ -553,17 +674,17 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
                   ['Plecy', 'przeciętny']
                 ].map(([label, value]) => (
                   <div key={label as string} className="flex items-center justify-between py-1.5">
-                    <span className="text-gray-600">{label as string}</span>
+                    <span className="text-white/60">{label as string}</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-gray-900 font-medium">{value as string}</span>
-                      <span className="h-3 w-3 rounded-full bg-sky-500" aria-hidden="true" />
+                      <span className="text-white/80 font-medium">{value as string}</span>
+                      <span className="h-3 w-3 rounded-full bg-blue-400" aria-hidden="true" />
                     </div>
                   </div>
                 ))}
               </div>
 
-              <h5 className="mt-4 text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Opis skrzydła</h5>
-              <div className="text-sm divide-y">
+              <h5 className="text-xs font-semibold text-white/60 uppercase tracking-wide mb-2">Opis skrzydła</h5>
+              <div className="text-sm divide-y divide-white/20">
                 {[
                   ['Pióra rozpłodowe', 'za młody'],
                   ['Lotki', 'długi, normalny'],
@@ -573,44 +694,39 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
                   ['Elastyczność', 'bardzo giętki']
                 ].map(([label, value]) => (
                   <div key={label as string} className="flex items-center justify-between py-1.5">
-                    <span className="text-gray-600">{label as string}</span>
+                    <span className="text-white/60">{label as string}</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-gray-900 font-medium">{value as string}</span>
-                      <span className="h-3 w-3 rounded-full bg-sky-500" aria-hidden="true" />
+                      <span className="text-white/80 font-medium">{value as string}</span>
+                      <span className="h-3 w-3 rounded-full bg-blue-400" aria-hidden="true" />
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-4 pt-3 border-t text-xs text-gray-600 flex items-center justify-between">
-                <span>Kontrola Jakości PIPA</span>
-                <span className="text-gray-900 font-medium">{format(new Date(), 'dd/MM/yyyy HH:mm', { locale: pl })}</span>
+              <div className="mt-4 pt-3 border-t border-white/20 text-xs text-white/60 flex items-center justify-between">
+                <span>Data aukcji</span>
+                <span className="text-white/80 font-medium">{format(new Date(), 'dd/MM/yyyy HH:mm', { locale: pl })}</span>
               </div>
             </motion.div>
+
           </div>
         </div>
       </div>
 
-      {/* Modal płatności */}
-      <PaymentModal
-        isOpen={isPaymentModalOpen}
-        onClose={() => setIsPaymentModalOpen(false)}
-        auctionId={auction.id}
-        amount={auction.buyNowPrice || auction.currentPrice}
-        auctionTitle={auction.title}
-        sellerName={auction.seller.name}
-        onPaymentSuccess={handlePaymentSuccess}
-      />
+      {/* Dodatkowy odstęp na dole */}
+      <div className="h-20"></div>
 
-      {/* Sticky bottom bar - latest bid */}
-      <div className="fixed inset-x-0 bottom-0 z-40">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-4 rounded-md bg-gray-900 text-white px-4 py-2 text-sm flex items-center justify-between">
-            <span className="opacity-80">Latest bid</span>
-            <span className="font-semibold">{formatEur(auction.currentPrice)}</span>
-          </div>
-        </div>
-      </div>
+      {/* Modal pełnoekranowy */}
+      {auction && (
+        <FullscreenImageModal
+          isOpen={isFullscreenOpen}
+          onClose={closeFullscreen}
+          images={isPedigreeFullscreen ? auction.documents || [] : auction.images}
+          currentIndex={isPedigreeFullscreen ? 0 : fullscreenImageIndex}
+          title={isPedigreeFullscreen ? `${auction.title} - Rodowód` : auction.title}
+        />
+      )}
+
     </div>
   )
 }

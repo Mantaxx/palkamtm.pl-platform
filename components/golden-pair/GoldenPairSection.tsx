@@ -1,9 +1,10 @@
 'use client'
 
+import { SmartImage } from '@/components/ui/SmartImage'
+import { usePerformanceOptimization } from '@/hooks/usePerformanceOptimization'
 import { getImagesFromFolder } from '@/utils/getImagesFromFolder'
 import { motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight, Download, Eye, X } from 'lucide-react'
-import Image from 'next/image'
 import { useEffect, useState } from 'react'
 
 interface Photo {
@@ -42,11 +43,20 @@ export default function GoldenPairSection() {
     const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null)
     const [selectedPedigree, setSelectedPedigree] = useState<Pedigree | null>(null)
 
-    // Load photos on component mount
+    // Optymalizacja wydajności
+    const { trackAction, trackEvent } = usePerformanceOptimization('GoldenPairSection', {
+        enableTracking: true,
+        trackRenderTime: true,
+    })
+
+    // Load photos on component mount z optymalizacją
     useEffect(() => {
         async function loadPhotos() {
+            const startTime = Date.now()
             try {
+                trackAction('loadPhotos_start')
                 const goldenPairImages = await getImagesFromFolder('/golden-pair/photos')
+
                 const photoData: Photo[] = goldenPairImages.map((src, index) => {
                     const filename = src.split('/').pop() || ''
                     let title = 'Złota Para'
@@ -70,16 +80,21 @@ export default function GoldenPairSection() {
                         title
                     }
                 })
+
                 setPhotos(photoData)
+                trackEvent('photos_loaded', photoData.length)
             } catch (error) {
                 console.error('Error loading photos:', error)
+                trackEvent('photos_load_error', 1)
             } finally {
                 setIsLoading(false)
+                const duration = Date.now() - startTime
+                trackAction('loadPhotos_complete', duration)
             }
         }
 
         loadPhotos()
-    }, [])
+    }, [trackAction, trackEvent])
 
     const openPhotoModal = (photo: Photo, index: number) => {
         setSelectedPhoto(photo)
@@ -125,7 +140,7 @@ export default function GoldenPairSection() {
     }
 
     return (
-        <div id="golden-pair" className="pt-2 pb-20 bg-gradient-to-br from-slate-100 to-slate-200">
+        <div id="golden-pair" className="pt-2 pb-20 bg-transparent">
             <div className="w-full pl-4 sm:pl-6 lg:pl-8">
                 {/* Header */}
                 <motion.div
@@ -175,12 +190,14 @@ export default function GoldenPairSection() {
                                     <div className="relative overflow-hidden rounded-lg shadow-lg bg-white hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
                                         <div className="relative h-[36rem]">
                                             {photos[index] ? (
-                                                <Image
+                                                <SmartImage
                                                     src={photos[index].src}
                                                     alt={photos[index].alt}
                                                     width={400}
                                                     height={576}
-                                                    className="w-full h-full object-cover"
+                                                    fitMode="contain"
+                                                    aspectRatio="auto"
+                                                    className="w-full h-full"
                                                 />
                                             ) : null}
                                             <div className="hidden w-full h-full bg-gray-200 items-center justify-center">
@@ -204,12 +221,14 @@ export default function GoldenPairSection() {
                                 >
                                     <div className="relative overflow-hidden rounded-lg shadow-lg bg-white hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
                                         <div className="relative h-[36rem]">
-                                            <Image
+                                            <SmartImage
                                                 src={photos[2].src}
                                                 alt={photos[2].alt}
                                                 width={832}
                                                 height={576}
-                                                className="w-full h-full object-cover"
+                                                fitMode="contain"
+                                                aspectRatio="auto"
+                                                className="w-full h-full"
                                             />
                                             <div className="hidden w-full h-full bg-gray-200 items-center justify-center">
                                                 <span className="text-gray-500">Brak zdjęcia</span>
@@ -310,12 +329,14 @@ export default function GoldenPairSection() {
                             )}
 
                             <div className="bg-white rounded-xl overflow-hidden">
-                                <Image
+                                <SmartImage
                                     src={selectedPhoto.src}
                                     alt={selectedPhoto.alt}
                                     width={800}
                                     height={600}
-                                    className="w-full h-full object-contain max-h-[80vh]"
+                                    fitMode="contain"
+                                    aspectRatio="auto"
+                                    className="w-full h-full max-h-[80vh]"
                                 />
                             </div>
 

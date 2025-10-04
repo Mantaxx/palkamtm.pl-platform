@@ -150,7 +150,7 @@ export function LoadingScreen({
     >
       <UnifiedCard
         variant="3d"
-        glow={true}
+        glow={false}
         className="p-8 text-center border-2 border-white shadow-2xl"
       >
         <motion.div
@@ -216,7 +216,7 @@ export function SequentialLoadingScreen({
     >
       <UnifiedCard
         variant="3d"
-        glow={true}
+        glow={false}
         className="p-8 text-center border-2 border-white shadow-2xl"
       >
         <motion.div

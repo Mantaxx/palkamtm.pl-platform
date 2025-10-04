@@ -1,19 +1,22 @@
 'use client'
 
 import CreateAuctionForm from '@/components/auctions/CreateAuctionForm'
+import { FullscreenImageModal } from '@/components/ui/FullscreenImageModal'
 import { UnifiedButton } from '@/components/ui/UnifiedButton'
 import { UnifiedCard } from '@/components/ui/UnifiedCard'
-import { AUCTIONS_DATA } from '@/lib/data/auctions'
 import { useAppStore, useError, useFilteredAuctions, useLoading } from '@/store/useAppStore'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Calendar, Gavel, Plus, Search } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 export function AuctionsPage() {
     const { data: session } = useSession()
+    const router = useRouter()
+
     const { setAuctions, setSearchTerm, setLoading, setError, searchTerm } = useAppStore()
     const filteredAuctions = useFilteredAuctions()
     const isLoading = useLoading()
@@ -21,17 +24,39 @@ export function AuctionsPage() {
     const [filterStatus, setFilterStatus] = useState<'all' | 'ACTIVE' | 'ENDED' | 'CANCELLED' | 'PENDING'>('all')
     const [showCreateForm, setShowCreateForm] = useState(false)
     const [nowTs, setNowTs] = useState<number>(Date.now())
+    // const [bidAmounts, setBidAmounts] = useState<Record<string, string>>({}) // unused
+    const [isFullscreen, setIsFullscreen] = useState(false)
+    const [fullscreenImages, setFullscreenImages] = useState<string[]>([])
+    const [fullscreenIndex, setFullscreenIndex] = useState(0)
+    const [fullscreenTitle, setFullscreenTitle] = useState('')
+
 
     useEffect(() => {
-        // Load auctions data
-        setLoading(true)
-        try {
-            setAuctions(AUCTIONS_DATA)
-        } catch (err) {
-            setError('Błąd podczas ładowania aukcji')
-        } finally {
-            setLoading(false)
+        // Load auctions data from API
+        const fetchAuctions = async () => {
+            setLoading(true)
+            try {
+                const response = await fetch('/api/auctions')
+                if (response.ok) {
+                    const data = await response.json()
+                    // Mapuj assets na images dla kompatybilności
+                    const auctionsWithImages = (data.auctions || []).map((auction: { assets?: Array<{ type: string, url: string }>, [key: string]: unknown }) => ({
+                        ...auction,
+                        images: auction.assets?.filter((asset: { type: string, url: string }) => asset.type === 'IMAGE').map((asset: { type: string, url: string }) => asset.url) || [],
+                        documents: auction.assets?.filter((asset: { type: string, url: string }) => asset.type === 'DOCUMENT').map((asset: { type: string, url: string }) => asset.url) || []
+                    }))
+                    setAuctions(auctionsWithImages)
+                } else {
+                    setError('Błąd podczas ładowania aukcji')
+                }
+            } catch (err) {
+                setError('Błąd podczas ładowania aukcji')
+            } finally {
+                setLoading(false)
+            }
         }
+
+        fetchAuctions()
     }, [setAuctions, setLoading, setError])
 
     // Live ticking for countdowns
@@ -41,7 +66,8 @@ export function AuctionsPage() {
     }, [])
 
     const formatTimeLeft = (endTimeStr: string) => {
-        const diff = new Date(endTimeStr).getTime() - nowTs
+        const endTime = new Date(endTimeStr)
+        const diff = endTime.getTime() - nowTs
         if (diff <= 0) return 'Zakończona'
         const days = Math.floor(diff / 86400000)
         const hours = Math.floor((diff % 86400000) / 3600000)
@@ -53,8 +79,48 @@ export function AuctionsPage() {
     }
 
     const isEndingSoon = (endTimeStr: string) => {
-        const diff = new Date(endTimeStr).getTime() - nowTs
+        const endTime = new Date(endTimeStr)
+        const diff = endTime.getTime() - nowTs
         return diff > 0 && diff <= 3600000 // < 1h
+    }
+
+    // const formatPrice = (price: number) => {
+    //     return `${price.toLocaleString()} zł`
+    // } // unused
+
+    const openFullscreen = (auction: { images?: string[], title: string }) => {
+        if (auction.images && auction.images.length > 0) {
+            setFullscreenImages(auction.images)
+            setFullscreenIndex(0)
+            setFullscreenTitle(auction.title)
+            setIsFullscreen(true)
+        }
+    }
+
+
+    const handleBuyNow = (auctionId: string) => {
+        const auction = filteredAuctions.find(a => a.id === auctionId)
+        if (!auction || !auction.buyNowPrice) return
+
+        const successData = {
+            type: 'buy_now',
+            auctionId: auction.id,
+            auctionTitle: auction.title,
+            price: auction.buyNowPrice,
+            seller: {
+                name: auction.sellerId, // Używamy sellerId jako nazwy
+                id: auction.sellerId,
+                rating: 0, // Brak systemu ocen
+                salesCount: 0, // Brak danych o sprzedaży
+                avatar: null, // Brak awatara
+                location: 'Brak lokalizacji',
+                phone: 'Brak numeru telefonu',
+                email: 'Brak email'
+            },
+            timestamp: new Date().toISOString()
+        }
+        localStorage.setItem('auctionSuccess', JSON.stringify(successData))
+        window.location.href = '/auctions/success'
     }
 
     // Filter by status
@@ -67,13 +133,13 @@ export function AuctionsPage() {
             <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 flex items-center justify-center relative overflow-hidden">
                 {/* Tło z animowanymi elementami */}
                 <div className="absolute inset-0">
-                    <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-pulse" />
-                    <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
+                    <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
+                    <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl" />
                 </div>
 
                 <UnifiedCard
                     variant="3d"
-                    glow={true}
+                    glow={false}
                     className="p-12 text-center border-2 border-white/20 backdrop-blur-xl relative z-10 shadow-2xl"
                 >
                     <div className="w-20 h-20 border-4 border-white/30 border-t-white rounded-full mx-auto animate-spin mb-8" />
@@ -113,6 +179,27 @@ export function AuctionsPage() {
                     <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto">
                         Licytuj ekskluzywne gołębie pocztowe z rodowodami championów
                     </p>
+
+                    <div className="mb-8">
+                        <button
+                            onClick={() => {
+                                if (session) {
+                                    setShowCreateForm(true)
+                                } else {
+                                    router.push('/auth/signin')
+                                }
+                            }}
+                            className="bg-white/10 backdrop-blur-md rounded-2xl px-12 py-6 text-2xl font-bold text-white border border-white/20 hover:bg-white/20 hover:shadow-xl transition-all duration-300 flex items-center justify-center mx-auto"
+                        >
+                            <Plus className="w-10 h-10 mr-4" />
+                            Dodaj aukcję
+                        </button>
+                        {session && (
+                            <div className="text-center text-sm text-white/60 mt-2">
+                                Debug: Przycisk widoczny dla użytkownika {session.user.email}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Content */}
@@ -129,33 +216,22 @@ export function AuctionsPage() {
                             <UnifiedCard variant="glass" className="p-6 border-2 border-white shadow-xl">
                                 <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
                                     {/* Search */}
-                                    <motion.div
-                                        className="relative flex-1 max-w-md group"
-                                        whileHover={{ scale: 1.02 }}
-                                        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                                    >
-                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-5 h-5 z-10" />
+                                    <div className="relative flex-1 max-w-md group">
+                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-5 h-5 z-10" />
                                         <input
                                             type="text"
-                                            placeholder="Szukaj gołębi..."
+                                            placeholder=""
                                             aria-label="Szukaj gołębi"
                                             value={searchTerm}
                                             onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="w-full pl-10 pr-4 py-3 solid-morphism rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 transition-all duration-300 relative overflow-hidden group-hover:glass-morphism-strong border-2 border-white"
+                                            className="w-full pl-10 pr-4 py-3 solid-morphism rounded-full text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 border-2 border-white bg-white/90"
                                         />
-                                        {/* Shimmer effect */}
-                                        <div className="absolute inset-0 -skew-x-12 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out rounded-2xl"></div>
-                                    </motion.div>
+                                    </div>
 
                                     {/* Status Filter */}
                                     <div className="flex gap-2">
                                         {['all', 'ACTIVE', 'PENDING', 'CANCELLED', 'ENDED'].map((status) => (
-                                            <motion.div
-                                                key={status}
-                                                whileHover={{ scale: 1.05 }}
-                                                whileTap={{ scale: 0.95 }}
-                                                transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                            >
+                                            <div key={status}>
                                                 <button
                                                     onClick={() => setFilterStatus(status as typeof filterStatus)}
                                                     className={`px-4 py-2 rounded-xl transition-all duration-300 ${filterStatus === status
@@ -168,35 +244,32 @@ export function AuctionsPage() {
                                                     {status === 'PENDING' && 'Oczekujące'}
                                                     {status === 'CANCELLED' && 'Anulowane'}
                                                     {status === 'ENDED' && 'Zakończone'}
-                                                    {filterStatus === status && (
-                                                        <motion.div
-                                                            layoutId="statusFilter"
-                                                            className="absolute inset-0 -z-10 rounded-xl"
-                                                            transition={{ duration: 0.3, type: "spring", stiffness: 500, damping: 30 }}
-                                                        />
-                                                    )}
                                                 </button>
-                                            </motion.div>
+                                            </div>
                                         ))}
                                     </div>
 
                                     {/* Create Auction Button */}
-                                    {session?.user?.role === 'SELLER' && (
-                                        <Link
-                                            href="/seller/create-auction"
-                                            className="flex items-center gap-2 btn-primary"
-                                            aria-label="Dodaj nową aukcję"
-                                        >
-                                            <Plus className="w-5 h-5" />
-                                            <span>Dodaj aukcję</span>
-                                        </Link>
-                                    )}
+                                    <button
+                                        onClick={() => {
+                                            if (session) {
+                                                setShowCreateForm(true)
+                                            } else {
+                                                router.push('/auth/signin')
+                                            }
+                                        }}
+                                        className="flex items-center gap-2 btn-primary"
+                                        aria-label="Dodaj nową aukcję"
+                                    >
+                                        <Plus className="w-5 h-5" />
+                                        <span>Dodaj aukcję</span>
+                                    </button>
                                 </div>
                             </UnifiedCard>
                         </motion.section>
 
                         {/* Auctions Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-6 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
                             {statusFilteredAuctions.length > 0 ? (
                                 statusFilteredAuctions.map((auction, index) => (
                                     <motion.div
@@ -207,72 +280,150 @@ export function AuctionsPage() {
                                         viewport={{ once: true, margin: '-100px' }}
                                         className="group"
                                     >
-                                        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm transition-all duration-200 hover:shadow-md h-full flex flex-col">
-                                            {/* Image */}
-                                            <div className="relative w-full h-48 bg-gray-100">
-                                                {auction.images?.[0] && (
-                                                    <Image src={auction.images[0]} alt={auction.title} fill className="object-contain p-4" />
-                                                )}
-                                                {/* Status Badge */}
-                                                <div className="absolute top-3 left-3">
-                                                    <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium text-white
+                                        <Link href={`/auctions/${auction.id}`} className="block h-full">
+                                            <UnifiedCard
+                                                variant="glass"
+                                                glow={false}
+                                                className="overflow-hidden h-full flex flex-col hover:scale-[1.02] transition-transform cursor-pointer"
+                                            >
+                                                {/* Image - Większe zdjęcie z możliwością fullscreen */}
+                                                <div
+                                                    className="relative w-full h-64 bg-gray-100 overflow-hidden rounded-t-lg cursor-pointer group"
+                                                    onClick={(e) => {
+                                                        e.preventDefault()
+                                                        e.stopPropagation()
+                                                        openFullscreen(auction)
+                                                    }}
+                                                >
+                                                    {auction.images?.[0] ? (
+                                                        <>
+                                                            <Image
+                                                                src={auction.images[0]}
+                                                                alt={auction.title}
+                                                                fill
+                                                                className="object-cover transition-transform group-hover:scale-105"
+                                                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                                                onError={() => {
+                                                                    console.error('Auction image failed to load:', auction.images[0])
+                                                                }}
+                                                            />
+                                                            {/* Hover overlay z ikoną powiększenia */}
+                                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                                                <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded-full p-3">
+                                                                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                                                    </svg>
+                                                                </div>
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center text-gray-500">
+                                                            <div className="text-center">
+                                                                <div className="text-4xl mb-2">📷</div>
+                                                                <p className="text-sm">Brak zdjęcia</p>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    {/* Status Badge */}
+                                                    <div className="absolute top-4 left-4">
+                                                        <span className={`inline-block px-3 py-1.5 rounded-full text-sm font-medium text-white shadow-lg
                                                         ${auction.status === 'ACTIVE' ? 'bg-emerald-600' : ''}
                                                         ${auction.status === 'PENDING' ? 'bg-amber-600' : ''}
                                                         ${auction.status === 'CANCELLED' ? 'bg-gray-500' : ''}
                                                         ${auction.status === 'ENDED' ? 'bg-rose-600' : ''}
                                                     `}>
-                                                        {auction.status === 'ACTIVE' && 'Aktywna'}
-                                                        {auction.status === 'PENDING' && 'Oczekuje'}
-                                                        {auction.status === 'CANCELLED' && 'Anulowana'}
-                                                        {auction.status === 'ENDED' && 'Zakończona'}
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            {/* Content */}
-                                            <div className="p-4 flex flex-col grow">
-                                                <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-2">{auction.title}</h3>
-                                                <p className="text-xs text-gray-600 line-clamp-3 mb-3">{auction.description}</p>
-
-                                                <div className="text-xs text-gray-600 space-y-1 mb-4">
-                                                    <div>
-                                                        <span className="font-medium">Hodowca: </span>
-                                                        <span>—</span>
-                                                    </div>
-                                                    <div>
-                                                        <span className="font-medium">Sprzedający: </span>
-                                                        <span>{auction.sellerId}</span>
+                                                            {auction.status === 'ACTIVE' && 'Aktywna'}
+                                                            {auction.status === 'PENDING' && 'Oczekuje'}
+                                                            {auction.status === 'CANCELLED' && 'Anulowana'}
+                                                            {auction.status === 'ENDED' && 'Zakończona'}
+                                                        </span>
                                                     </div>
                                                 </div>
 
-                                                <div className="flex items-center justify-between">
-                                                    <div className="text-gray-900 font-semibold">
-                                                        {`${Math.round(auction.currentPrice / useAppStore.getState().ratePLNperEUR)} EUR`}
-                                                    </div>
-                                                    <div className={`text-xs flex items-center gap-2 ${isEndingSoon(auction.endTime) ? 'text-red-600 font-semibold' : 'text-gray-500'}`}>
-                                                        <Calendar className={`w-3.5 h-3.5 ${isEndingSoon(auction.endTime) ? 'text-red-600' : ''}`} />
-                                                        <span>{formatTimeLeft(auction.endTime)}</span>
+                                                {/* Content - Uproszczony */}
+                                                <div className="p-6 flex flex-col grow">
+                                                    {/* Tytuł */}
+                                                    <h3 className="text-lg font-bold text-white line-clamp-2 mb-4">{auction.title}</h3>
+
+                                                    {/* Kwota i czas */}
+                                                    <div className="space-y-3 mb-4">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-sm text-white/70">Aktualna cena:</span>
+                                                            <span className="text-xl font-bold text-white">
+                                                                {`${Math.round(auction.currentPrice / useAppStore.getState().ratePLNperEUR)} EUR`}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-sm text-white/70">Czas do końca:</span>
+                                                            <span className={`text-sm font-semibold flex items-center gap-2 ${isEndingSoon(auction.endTime) ? 'text-red-400' : 'text-white'}`}>
+                                                                <Calendar className={`w-4 h-4 ${isEndingSoon(auction.endTime) ? 'text-red-400' : 'text-white/70'}`} />
+                                                                {formatTimeLeft(auction.endTime)}
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                 </div>
 
-                                                <div className="mt-auto pt-3">
+                                                {/* Action Buttons - Większe i bardziej widoczne */}
+                                                <div className="p-6 pt-0" onClick={(e) => e.stopPropagation()}>
                                                     {auction.status === 'ENDED' ? (
-                                                        <Link href={`/auctions/${auction.id}`} className="inline-flex items-center justify-center w-full h-10 rounded-md bg-gray-700 text-white text-sm font-medium">
-                                                            Zobacz aukcję
-                                                        </Link>
+                                                        <div className="text-center text-white/70 py-4">
+                                                            Aukcja zakończona
+                                                        </div>
                                                     ) : (
-                                                        <div className="flex gap-2">
-                                                            <Link href={`/auctions/${auction.id}`} className="inline-flex items-center justify-center flex-1 h-10 rounded-md bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 transition-colors">
-                                                                Licytuj
-                                                            </Link>
-                                                            <Link href={`/auctions/${auction.id}`} className="inline-flex items-center justify-center flex-1 h-10 rounded-md bg-green-600 text-white text-sm font-medium hover:bg-green-700 transition-colors">
-                                                                Kup teraz
-                                                            </Link>
+                                                        <div className="space-y-3">
+                                                            {/* Przyciski funkcjonalne pokazujące i obsługujące typ aukcji */}
+                                                            {auction.startingPrice > 0 && auction.buyNowPrice ? (
+                                                                // Aukcja z obiema opcjami: licytacja + kup teraz
+                                                                <div className="flex gap-2">
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation()
+                                                                            // Przekieruj do strony aukcji dla licytacji
+                                                                            router.push(`/auctions/${auction.id}`)
+                                                                        }}
+                                                                        className="inline-flex items-center justify-center flex-1 h-10 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
+                                                                    >
+                                                                        Licytuj
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation()
+                                                                            handleBuyNow(auction.id)
+                                                                        }}
+                                                                        className="inline-flex items-center justify-center flex-1 h-10 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 transition-colors"
+                                                                    >
+                                                                        Kup teraz
+                                                                    </button>
+                                                                </div>
+                                                            ) : auction.startingPrice > 0 ? (
+                                                                // Aukcja tylko z licytacją
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation()
+                                                                        // Przekieruj do strony aukcji dla licytacji
+                                                                        router.push(`/auctions/${auction.id}`)
+                                                                    }}
+                                                                    className="inline-flex items-center justify-center w-full h-10 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
+                                                                >
+                                                                    Licytuj
+                                                                </button>
+                                                            ) : auction.buyNowPrice ? (
+                                                                // Aukcja tylko z kup teraz
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation()
+                                                                        handleBuyNow(auction.id)
+                                                                    }}
+                                                                    className="inline-flex items-center justify-center w-full h-10 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 transition-colors"
+                                                                >
+                                                                    Kup teraz
+                                                                </button>
+                                                            ) : null}
                                                         </div>
                                                     )}
                                                 </div>
-                                            </div>
-                                        </div>
+                                            </UnifiedCard>
+                                        </Link>
                                     </motion.div>
                                 ))
                             ) : (
@@ -308,31 +459,35 @@ export function AuctionsPage() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[99999] flex items-center justify-center p-4"
-                        onClick={() => setShowCreateForm(false)}
+                        className="fixed inset-0 bg-transparent backdrop-blur-sm z-[99999] flex items-center justify-center p-4"
                     >
                         <motion.div
                             initial={{ scale: 0.9, y: 20 }}
                             animate={{ scale: 1, y: 0 }}
                             exit={{ scale: 0.9, y: 20 }}
-                            className="w-full max-w-2xl max-h-[90vh] overflow-auto"
+                            className="w-full max-w-7xl h-[95vh] overflow-hidden"
                             onClick={e => e.stopPropagation()}
                         >
-                            <UnifiedCard variant="glass" className="p-6 border-2 border-white shadow-2xl relative">
-                                <button
-                                    onClick={() => setShowCreateForm(false)}
-                                    className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full glass-morphism text-white/70 hover:text-white hover:glass-morphism-strong"
-                                    aria-label="Zamknij"
-                                >
-                                    ✕
-                                </button>
-                                <h2 className="text-2xl font-bold mb-6">Dodaj nową aukcję</h2>
-                                <CreateAuctionForm onSuccess={() => setShowCreateForm(false)} />
-                            </UnifiedCard>
+                            <div className="relative h-full overflow-auto">
+                                <CreateAuctionForm
+                                    onSuccess={() => setShowCreateForm(false)}
+                                    onCancel={() => setShowCreateForm(false)}
+                                />
+                            </div>
                         </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Fullscreen Image Modal */}
+            <FullscreenImageModal
+                isOpen={isFullscreen}
+                onClose={() => setIsFullscreen(false)}
+                images={fullscreenImages}
+                currentIndex={fullscreenIndex}
+                title={fullscreenTitle}
+            />
+
         </>
     )
 }

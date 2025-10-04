@@ -1,11 +1,10 @@
 'use client'
 
+import { SmartImage } from '@/components/ui/SmartImage'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { motion } from 'framer-motion'
 import { ShieldAlert, Upload, X } from 'lucide-react'
-import Image from 'next/image'
-import Link from 'next/link'
 import { useSession } from 'next-auth/react'
+import Link from 'next/link'
 import { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useForm } from 'react-hook-form'
@@ -112,7 +111,15 @@ export function AddReferencePhotoForm() {
 
       {mediaFile && (
         <div className="relative w-32 h-32 group">
-          <Image src={mediaFile.preview} alt="Podgląd" layout="fill" className="rounded-lg object-cover" />
+          <SmartImage
+            src={mediaFile.preview}
+            alt="Podgląd"
+            width={150}
+            height={150}
+            fitMode="contain"
+            aspectRatio="square"
+            className="rounded-lg"
+          />
           <button onClick={removeMediaFile} className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" title="Usuń plik">
             <X className="w-4 h-4" />
           </button>

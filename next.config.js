@@ -7,63 +7,40 @@ const nextConfig = {
   generateEtags: false,
   poweredByHeader: false,
 
-  // Uproszczona konfiguracja webpack
+  // Wyłącz wszystkie eksperymentalne funkcje
+  experimental: {},
+
+  // Ustawienia dla stabilności na Windows
+  ...(process.env.NODE_ENV === 'development' && {
+    // Stabilny build ID
+    generateBuildId: () => 'dev-build-stable',
+  }),
+
+  // Stabilna konfiguracja webpack
   webpack: (config, { isServer, dev }) => {
     if (!isServer) {
       config.resolve.fallback = {
-        ...config.resolve.fallback,
         fs: false,
         net: false,
         tls: false,
       }
     }
 
-    // Wyłącz cache tylko w trybie dev
-    if (dev) {
-      config.cache = false
-    } else {
-      // Włącz cache w produkcji dla lepszej wydajności
-      config.cache = {
-        type: 'filesystem',
-        buildDependencies: {
-          config: [__filename]
-        }
-      }
-    }
-
-    // Ignoruj problematyczne pliki
-    config.watchOptions = {
-      ignored: [
-        '**/node_modules/**',
-        '**/.git/**',
-        '**/.next/**',
-        '**/react-loadable-manifest.json',
-        '**/routes.d.ts',
-        '**/pagefile.sys',
-        '**/swapfile.sys',
-        '**/hiberfil.sys',
-      ],
-    }
-
-    // Ignoruj błędy z zewnętrznych skryptów
-    config.ignoreWarnings = [
-      /Failed to parse source map/,
-    ]
-
     return config
   },
 
-  // Optymalizacja cache
-  onDemandEntries: {
-    maxInactiveAge: 25 * 1000,
-    pagesBufferLength: 2,
-  },
+  // Optymalizacja cache - wyłącz w dev
+  ...(process.env.NODE_ENV === 'production' && {
+    onDemandEntries: {
+      maxInactiveAge: 25 * 1000,
+      pagesBufferLength: 2,
+    },
+  }),
 
-  // Włącz kompresję
-  compress: true,
+  // Włącz kompresję tylko w production
+  compress: process.env.NODE_ENV === 'production',
 
   // Zezwól na cross-origin requests w dev
-  allowedDevOrigins: ['192.168.177.1'],
 
   // Optymalizacja obrazów - Next.js 15 format
   images: {

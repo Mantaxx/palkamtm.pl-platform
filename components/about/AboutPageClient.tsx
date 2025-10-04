@@ -15,13 +15,9 @@ export default function AboutPageClient() {
                 className="relative z-10 pt-8 pb-20 px-4 sm:px-6 lg:px-8"
             >
                 <div className="w-full mx-auto text-center">
-                    <Text3D
-                        variant="neon"
-                        intensity="high"
-                        className="text-5xl md:text-6xl font-bold mb-6"
-                    >
+                    <h1 className="text-5xl md:text-6xl font-bold mb-6 text-white">
                         O nas
-                    </Text3D>
+                    </h1>
                     <motion.p
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -44,11 +40,11 @@ export default function AboutPageClient() {
                         viewport={{ once: true }}
                         className="mb-20"
                     >
-                        <div className="relative rounded-3xl p-12 border-2 border-white" style={{
-                            background: 'rgba(255, 255, 255, 0.1)',
-                            backdropFilter: 'blur(2px)',
-                            boxShadow: '0 8px 32px rgba(255, 255, 255, 0.4), 0 16px 64px rgba(255, 255, 255, 0.2), 0 24px 96px rgba(255, 255, 255, 0.1)'
-                        }}>
+                        <UnifiedCard
+                            variant="glass"
+                            glow={false}
+                            className="p-12"
+                        >
                             <Text3D
                                 variant="gradient"
                                 intensity="medium"
@@ -101,12 +97,13 @@ export default function AboutPageClient() {
                                     Zapraszamy do poznania naszej historii i naszych skrzydlatych atletów. MTM Pałka to więcej niż hodowla – to dowód, że największe sukcesy rodzą się z serca, wytrwałości i rodzinnych więzi.
                                 </p>
                             </div>
-                        </div>
+                        </UnifiedCard>
                     </motion.section>
 
-                    
+
                 </div>
             </div>
+
         </>
     )
 }

@@ -1,8 +1,8 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { useEffect, useRef, useState } from 'react';
 
 interface LazyImageProps {
     src: string
@@ -85,7 +85,7 @@ export function LazyImage({
                         alt=""
                         width={width || 400}
                         height={height || 300}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                     />
                 </motion.div>
             )}
@@ -115,7 +115,7 @@ export function LazyImage({
                         alt={alt}
                         width={width || 400}
                         height={height || 300}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                         onLoad={handleLoad}
                         onError={handleError}
                         loading={priority ? 'eager' : 'lazy'}

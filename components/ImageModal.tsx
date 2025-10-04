@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import ReactDOM from 'react-dom';
 import { X, ZoomIn, ZoomOut } from 'lucide-react';
-import { MouseEventHandler, useEffect, useState, useRef } from 'react';
+import { MouseEventHandler, useEffect, useState } from 'react';
 
 interface ImageItem {
   id: string;

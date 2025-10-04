@@ -1,34 +1,91 @@
-import { HeroSection } from '@/components/home/HeroSection'
+'use client'
+
 import { UnifiedLayout } from '@/components/layout/UnifiedLayout'
-import dynamic from 'next/dynamic'
-
-// Lazy loading dla komponentów - OPTYMALIZACJA WYDAJNOŚCI
-const BentoGrid = dynamic(() => import('@/components/home/BentoGrid').then(mod => ({ default: mod.BentoGrid })), {
-  loading: () => <div className="h-96 bg-gradient-to-r from-gray-800 to-gray-700 rounded-2xl animate-pulse" />
-})
-
-const FeaturedChampions = dynamic(() => import('@/components/home/FeaturedChampions').then(mod => ({ default: mod.FeaturedChampions })), {
-  loading: () => <div className="h-96 bg-gradient-to-r from-gray-800 to-gray-700 rounded-2xl animate-pulse" />
-})
-
-const UpcomingAuctions = dynamic(() => import('@/components/home/UpcomingAuctions').then(mod => ({ default: mod.UpcomingAuctions })), {
-  loading: () => <div className="h-96 bg-gradient-to-r from-gray-800 to-gray-700 rounded-2xl animate-pulse" />
-})
-
-const PhilosophySection = dynamic(() => import('@/components/home/PhilosophySection').then(mod => ({ default: mod.PhilosophySection })), {
-  loading: () => <div className="h-96 bg-gradient-to-r from-gray-800 to-gray-700 rounded-2xl animate-pulse" />
-})
+import { motion } from 'framer-motion'
+import Image from 'next/image'
+import { useEffect, useState } from 'react'
 
 export default function HomePage() {
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    setIsVisible(true)
+
+    // Wyłącz scroll na stronie głównej
+    document.body.style.overflow = 'hidden'
+
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth - 0.5) * 2,
+        y: (e.clientY / window.innerHeight - 0.5) * 2
+      })
+    }
+
+    window.addEventListener('mousemove', handleMouseMove)
+
+    // Cleanup - przywróć scroll gdy komponent się odmontuje
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      document.body.style.overflow = 'unset'
+    }
+  }, [])
+
   return (
-    <UnifiedLayout>
-      <div className="mt-24">
-        <HeroSection />
-        <BentoGrid />
-        <FeaturedChampions />
-        <UpcomingAuctions />
-        <PhilosophySection />
-      </div>
-    </UnifiedLayout>
+    <div className="h-screen overflow-hidden">
+      <UnifiedLayout showFooter={false}>
+        <div className="light-floor-fixed"></div>
+
+        <div className="pigeon-stage-lighting h-screen overflow-hidden">
+          {/* Sekcja tekstu - pozycjonowana pod nawigacją */}
+          <motion.section
+            className="absolute top-0 left-1/2 transform -translate-x-1/2 text-center px-4 z-10"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: isVisible ? 0.4 : 0 }}
+            transition={{ duration: 1 }}
+          >
+            <motion.div
+              className="max-w-6xl mx-auto"
+              style={{
+                rotateX: mousePosition.y * 2,
+                rotateY: mousePosition.x * 2,
+              }}
+            >
+              <div className="focus-in-contract-bck text-shadow-pop-tr">
+                <h1 className="font-display font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-white/90 leading-tight mb-6 drop-shadow-2xl shadow-black/80 shadow-2xl">
+                  Pałka MTM
+                  <span className="block text-primary-400 mt-2 text-xl sm:text-2xl md:text-3xl lg:text-4xl">
+                    Mistrzowie Sprintu
+                  </span>
+                </h1>
+
+                <p className="mt-8 max-w-4xl mx-auto text-lg sm:text-xl md:text-2xl text-white/70 leading-relaxed">
+                  Pasja, tradycja i nowoczesność w hodowli gołębi pocztowych. Tworzymy historię polskiego sportu gołębiarskiego.
+                </p>
+              </div>
+            </motion.div>
+          </motion.section>
+
+          {/* Sekcja zdjęcia gołębia - pozycjonowana absolutnie */}
+          <motion.section
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: isVisible ? 1 : 0 }}
+            transition={{ duration: 3, delay: 2 }}
+          >
+            <div className="flex items-center justify-center">
+              <Image
+                src="/1360bez tla.png"
+                alt="Gołąb Pałka MTM"
+                width={800}
+                height={960}
+                className={`rounded-lg shadow-lg brightness-110 ${isVisible ? 'puff-in-bottom' : ''}`}
+                priority
+              />
+            </div>
+          </motion.section>
+        </div>
+      </UnifiedLayout>
+    </div>
   )
 }

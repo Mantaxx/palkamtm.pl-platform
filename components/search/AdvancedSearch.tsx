@@ -54,97 +54,20 @@ interface SearchResult {
   views: number
 }
 
-const mockResults: SearchResult[] = [
-  {
-    id: '1',
-    title: 'Champion "Thunder Storm" - Linia Janssen',
-    description: 'Wybitny gołąb pocztowy z doskonałymi wynikami w zawodach.',
-    currentPrice: 8750,
-    startingPrice: 5000,
-    buyNowPrice: 15000,
-    endTime: new Date(Date.now() + 2 * 60 * 60 * 1000),
-    status: 'active',
-    category: 'Pigeon',
-    bloodline: 'Janssen',
-    age: 3,
-    sex: 'male',
-    location: 'Kraków, Polska',
-    seller: {
-      id: '1',
-      name: 'Jan Kowalski',
-      rating: 4.9,
-      salesCount: 127
-    },
-    images: ['/pigeons/champion1-1.jpg'],
-    bids: 8,
-    watchers: 23,
-    views: 156
-  },
-  {
-    id: '2',
-    title: 'Para hodowlana - Linia Sion',
-    description: 'Para doświadczonych gołębi hodowlanych.',
-    currentPrice: 12000,
-    startingPrice: 8000,
-    endTime: new Date(Date.now() + 30 * 60 * 1000),
-    status: 'ending',
-    category: 'Pigeon',
-    bloodline: 'Sion',
-    age: 4,
-    sex: 'male',
-    location: 'Warszawa, Polska',
-    seller: {
-      id: '2',
-      name: 'Anna Nowak',
-      rating: 4.7,
-      salesCount: 89
-    },
-    images: ['/pigeons/champion2-1.jpg'],
-    bids: 12,
-    watchers: 15,
-    views: 89
-  },
-  {
-    id: '3',
-    title: 'Suplementy witaminowe Premium',
-    description: 'Kompleks witamin dla gołębi pocztowych.',
-    currentPrice: 250,
-    startingPrice: 200,
-    buyNowPrice: 300,
-    endTime: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-    status: 'active',
-    category: 'Supplements',
-    bloodline: '',
-    age: 0,
-    sex: 'male',
-    location: 'Gdańsk, Polska',
-    seller: {
-      id: '3',
-      name: 'Piotr Wiśniewski',
-      rating: 4.5,
-      salesCount: 45
-    },
-    images: ['/supplements/vitamins.jpg'],
-    bids: 5,
-    watchers: 8,
-    views: 45
-  }
-]
-
 const categories = [
   { value: '', label: 'Wszystkie kategorie' },
-  { value: 'Pigeon', label: 'Gołębie Pocztowe' },
+  { value: 'Champions', label: 'Championy' },
+  { value: 'Young Birds', label: 'Młode gołębie' },
   { value: 'Supplements', label: 'Suplementy' },
   { value: 'Accessories', label: 'Akcesoria' }
 ]
 
 const bloodlines = [
-  { value: '', label: 'Wszystkie linie' },
+  { value: '', label: 'Wszystkie linie krwi' },
   { value: 'Janssen', label: 'Janssen' },
   { value: 'Sion', label: 'Sion' },
   { value: 'Bricoux', label: 'Bricoux' },
-  { value: 'Van Loon', label: 'Van Loon' },
-  { value: 'Heremans', label: 'Heremans' }
+  { value: 'Van Loon', label: 'Van Loon' }
 ]
 
 const sortOptions = [
@@ -171,7 +94,7 @@ export default function AdvancedSearch() {
     sortOrder: 'asc'
   })
 
-  const [results, setResults] = useState<SearchResult[]>(mockResults)
+  const [results, setResults] = useState<SearchResult[]>([])
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isClient, setIsClient] = useState(false)
@@ -183,90 +106,82 @@ export default function AdvancedSearch() {
   const handleSearch = useCallback(async () => {
     setIsLoading(true)
 
-    // Symulacja wyszukiwania
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    try {
+      // Buduj parametry zapytania
+      const params = new URLSearchParams()
+      
+      if (filters.query) params.append('search', filters.query)
+      if (filters.category) params.append('category', filters.category)
+      if (filters.bloodline) params.append('bloodline', filters.bloodline)
+      if (filters.priceMin) params.append('minPrice', filters.priceMin.toString())
+      if (filters.priceMax) params.append('maxPrice', filters.priceMax.toString())
+      if (filters.location) params.append('location', filters.location)
+      if (filters.sortBy) params.append('sortBy', filters.sortBy)
+      if (filters.sortOrder) params.append('sortOrder', filters.sortOrder)
 
-    // Filtrowanie wyników
-    const filteredResults = mockResults.filter(result => {
-      // Wyszukiwanie tekstowe
-      if (filters.query && !result.title.toLowerCase().includes(filters.query.toLowerCase()) &&
-        !result.description.toLowerCase().includes(filters.query.toLowerCase())) {
-        return false
-      }
-
-      // Kategoria
-      if (filters.category && result.category !== filters.category) {
-        return false
-      }
-
-      // Linia krwi
-      if (filters.bloodline && result.bloodline !== filters.bloodline) {
-        return false
-      }
-
-      // Cena
-      if (result.currentPrice < filters.priceMin || result.currentPrice > filters.priceMax) {
-        return false
-      }
-
-      // Wiek
-      if (result.age < filters.ageMin || result.age > filters.ageMax) {
-        return false
-      }
-
-      // Płeć
-      if (filters.sex && result.sex !== filters.sex) {
-        return false
-      }
-
-      // Lokalizacja
-      if (filters.location && !result.location.toLowerCase().includes(filters.location.toLowerCase())) {
-        return false
-      }
-
-      // Ocena sprzedawcy
-      if (result.seller.rating < filters.sellerRating) {
-        return false
-      }
-
-      return true
-    })
-
-    // Sortowanie
-    filteredResults.sort((a, b) => {
-      let aValue: unknown, bValue: unknown
-
-      switch (filters.sortBy) {
-        case 'currentPrice':
-          aValue = a.currentPrice
-          bValue = b.currentPrice
-          break
-        case 'bids':
-          aValue = a.bids
-          bValue = b.bids
-          break
-        case 'views':
-          aValue = a.views
-          bValue = b.views
-          break
-        case 'endTime':
-          aValue = a.endTime.getTime()
-          bValue = b.endTime.getTime()
-          break
-        default:
-          aValue = a.currentPrice
-          bValue = b.currentPrice
-      }
-
-      if (filters.sortOrder === 'asc') {
-        return Number(aValue) - Number(bValue)
+      // Wyślij zapytanie do API
+      const response = await fetch(`/api/auctions?${params.toString()}`)
+      
+      if (response.ok) {
+        const data = await response.json()
+        
+        // Przekształć dane z API na format SearchResult
+        const transformedResults: SearchResult[] = data.auctions.map((auction: {
+          id: string;
+          title: string;
+          description: string;
+          currentPrice: number;
+          startingPrice: number;
+          buyNowPrice?: number;
+          endTime: string;
+          status: string;
+          category: string;
+          pigeon?: { 
+            bloodline?: string;
+            age?: number;
+            gender?: string;
+          };
+          seller: { id: string; firstName?: string; lastName?: string };
+          images?: string[];
+          assets?: Array<{ type: string; url: string }>;
+          _count?: { bids?: number; watchlist?: number };
+        }) => ({
+          id: auction.id,
+          title: auction.title,
+          description: auction.description,
+          currentPrice: auction.currentPrice,
+          startingPrice: auction.startingPrice,
+          buyNowPrice: auction.buyNowPrice,
+          endTime: new Date(auction.endTime),
+          status: auction.status.toLowerCase(),
+          category: auction.category,
+          bloodline: auction.pigeon?.bloodline || '',
+          age: auction.pigeon?.age || 0,
+          sex: auction.pigeon?.gender || 'male',
+          location: '',
+          seller: {
+            id: auction.seller.id,
+            name: `${auction.seller.firstName || ''} ${auction.seller.lastName || ''}`.trim() || auction.seller.id,
+            rating: 0, // Brak systemu ocen
+            salesCount: 0 // Brak danych o sprzedaży
+          },
+          images: auction.assets?.filter((a: { type: string; url: string }) => a.type === 'IMAGE').map((a) => a.url) || [],
+          bids: auction._count?.bids || 0,
+          watchers: auction._count?.watchlist || 0,
+          views: 0
+        }))
+        
+        setResults(transformedResults)
       } else {
-        return Number(bValue) - Number(aValue)
+        console.error('Error fetching search results')
+        setResults([])
       }
-    })
-
-    setResults(filteredResults)
-    setIsLoading(false)
+    } catch (error) {
+      console.error('Error during search:', error)
+      setResults([])
+    } finally {
+      setIsLoading(false)
+    }
   }, [filters])
 
   const clearFilters = () => {

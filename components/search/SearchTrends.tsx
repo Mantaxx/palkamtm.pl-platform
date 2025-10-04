@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { Clock, Search, Star, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 interface Trend {
   id: string
@@ -20,97 +20,31 @@ interface PopularSearch {
   type: 'bloodline' | 'category' | 'seller' | 'general'
 }
 
-const mockTrends: Trend[] = [
-  {
-    id: '1',
-    term: 'Janssen',
-    type: 'bloodline',
-    popularity: 95,
-    change: 12
-  },
-  {
-    id: '2',
-    term: 'Sion',
-    type: 'bloodline',
-    popularity: 87,
-    change: 8
-  },
-  {
-    id: '3',
-    term: 'Champion',
-    type: 'general',
-    popularity: 78,
-    change: -3
-  },
-  {
-    id: '4',
-    term: 'Para hodowlana',
-    type: 'category',
-    popularity: 72,
-    change: 15
-  },
-  {
-    id: '5',
-    term: 'Jan Kowalski',
-    type: 'seller',
-    popularity: 68,
-    change: 5
-  }
-]
-
-const mockPopularSearches: PopularSearch[] = [
-  {
-    id: '1',
-    term: 'Janssen',
-    count: 1247,
-    type: 'bloodline'
-  },
-  {
-    id: '2',
-    term: 'Champion gołębie',
-    count: 892,
-    type: 'general'
-  },
-  {
-    id: '3',
-    term: 'Sion',
-    count: 756,
-    type: 'bloodline'
-  },
-  {
-    id: '4',
-    term: 'Para hodowlana',
-    count: 634,
-    type: 'category'
-  },
-  {
-    id: '5',
-    term: 'Suplementy',
-    count: 521,
-    type: 'category'
-  },
-  {
-    id: '6',
-    term: 'Bricoux',
-    count: 487,
-    type: 'bloodline'
-  },
-  {
-    id: '7',
-    term: 'Anna Nowak',
-    count: 423,
-    type: 'seller'
-  },
-  {
-    id: '8',
-    term: 'Van Loon',
-    count: 398,
-    type: 'bloodline'
-  }
-]
-
 export default function SearchTrends() {
   const [activeTab, setActiveTab] = useState<'trending' | 'popular'>('trending')
+  const [trends, setTrends] = useState<Trend[]>([])
+  const [popularSearches, setPopularSearches] = useState<PopularSearch[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchTrendsData = async () => {
+      setIsLoading(true)
+      try {
+        const response = await fetch('/api/search/trends')
+        if (response.ok) {
+          const data = await response.json()
+          setTrends(data.trends || [])
+          setPopularSearches(data.popularSearches || [])
+        }
+      } catch (error) {
+        console.error('Error fetching trends data:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchTrendsData()
+  }, [])
 
   const getTrendIcon = (type: string) => {
     switch (type) {
@@ -152,8 +86,8 @@ export default function SearchTrends() {
           <button
             onClick={() => setActiveTab('trending')}
             className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${activeTab === 'trending'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
               }`}
           >
             Trendy
@@ -161,8 +95,8 @@ export default function SearchTrends() {
           <button
             onClick={() => setActiveTab('popular')}
             className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${activeTab === 'popular'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
               }`}
           >
             Popularne
@@ -172,81 +106,108 @@ export default function SearchTrends() {
 
       {activeTab === 'trending' && (
         <div className="space-y-4">
-          {mockTrends.map((trend, index) => (
-            <motion.div
-              key={trend.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex-shrink-0 text-gray-400">
-                  {getTrendIcon(trend.type)}
+          {isLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+              <p className="mt-2 text-gray-500">Ładowanie trendów...</p>
+            </div>
+          ) : trends.length > 0 ? (
+            trends.map((trend, index) => (
+              <motion.div
+                key={trend.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 text-gray-400">
+                    {getTrendIcon(trend.type)}
+                  </div>
+                  <div>
+                    <Link
+                      href={`/search?q=${encodeURIComponent(trend.term)}`}
+                      className="font-medium text-gray-900 hover:text-slate-600 transition-colors"
+                    >
+                      {trend.term}
+                    </Link>
+                    <p className="text-xs text-gray-500">{getTrendLabel(trend.type)}</p>
+                  </div>
                 </div>
-                <div>
-                  <Link
-                    href={`/search?q=${encodeURIComponent(trend.term)}`}
-                    className="font-medium text-gray-900 hover:text-slate-600 transition-colors"
-                  >
-                    {trend.term}
-                  </Link>
-                  <p className="text-xs text-gray-500">{getTrendLabel(trend.type)}</p>
+                <div className="text-right">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-gray-900">
+                      {trend.popularity}%
+                    </span>
+                    <span className={`text-xs font-medium ${getTrendColor(trend.change)}`}>
+                      {trend.change > 0 ? '+' : ''}{trend.change}%
+                    </span>
+                  </div>
+                  <div className="w-16 h-1 bg-gray-200 rounded-full mt-1">
+                    <div
+                      className="h-1 bg-slate-500 rounded-full transition-all duration-300 progress-bar"
+                      data-width={`${trend.popularity}%`}
+                      ref={(el) => {
+                        if (el) {
+                          el.style.setProperty('--progress-width', `${trend.popularity}%`);
+                        }
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="text-right">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-900">
-                    {trend.popularity}%
-                  </span>
-                  <span className={`text-xs font-medium ${getTrendColor(trend.change)}`}>
-                    {trend.change > 0 ? '+' : ''}{trend.change}%
-                  </span>
-                </div>
-                <div className="w-16 h-1 bg-gray-200 rounded-full mt-1">
-                  <div
-                    className="h-1 bg-slate-500 rounded-full"
-                    style={{ width: `${trend.popularity}%` }}
-                  />
-                </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500">Brak dostępnych trendów</p>
+            </div>
+          )}
         </div>
       )}
 
       {activeTab === 'popular' && (
         <div className="space-y-3">
-          {mockPopularSearches.map((search, index) => (
-            <motion.div
-              key={search.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05 }}
-              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <div className="flex-shrink-0 text-gray-400">
-                  {getTrendIcon(search.type)}
+          {isLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+              <p className="mt-2 text-gray-500">Ładowanie popularnych wyszukiwań...</p>
+            </div>
+          ) : popularSearches.length > 0 ? (
+            popularSearches.map((search, index) => (
+              <motion.div
+                key={search.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 text-gray-400">
+                    {getTrendIcon(search.type)}
+                  </div>
+                  <div>
+                    <Link
+                      href={`/search?q=${encodeURIComponent(search.term)}`}
+                      className="font-medium text-gray-900 hover:text-slate-600 transition-colors"
+                    >
+                      {search.term}
+                    </Link>
+                    <p className="text-xs text-gray-500">{getTrendLabel(search.type)}</p>
+                  </div>
                 </div>
-                <div>
-                  <Link
-                    href={`/search?q=${encodeURIComponent(search.term)}`}
-                    className="font-medium text-gray-900 hover:text-slate-600 transition-colors"
-                  >
-                    {search.term}
-                  </Link>
-                  <p className="text-xs text-gray-500">{getTrendLabel(search.type)}</p>
+                <div className="text-right">
+                  <span className="text-sm font-medium text-gray-900">
+                    {search.count.toLocaleString()}
+                  </span>
+                  <p className="text-xs text-gray-500">wyszukiwań</p>
                 </div>
-              </div>
-              <div className="text-right">
-                <span className="text-sm font-medium text-gray-900">
-                  {search.count.toLocaleString()}
-                </span>
-                <p className="text-xs text-gray-500">wyszukiwań</p>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500">Brak dostępnych popularnych wyszukiwań</p>
+            </div>
+          )}
         </div>
       )}
 

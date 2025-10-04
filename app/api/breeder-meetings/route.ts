@@ -95,13 +95,14 @@ export async function POST(request: NextRequest) {
         location,
         date: new Date(date),
         images: JSON.stringify(imagePaths),
-        userId: session.user.id
+        userId: session.user.id,
+        isApproved: false // Nowe spotkania wymagają zatwierdzenia
       }
     });
 
     return NextResponse.json({
       success: true,
-      message: 'Spotkanie zostało dodane pomyślnie',
+      message: 'Spotkanie zostało dodane i oczekuje na zatwierdzenie przez administratora',
       meeting: {
         id: meeting.id,
         title: meeting.title,
@@ -123,6 +124,9 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   try {
     const meetings = await prisma.breederMeeting.findMany({
+      where: {
+        isApproved: true // Pokazuj tylko zatwierdzone spotkania
+      },
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,

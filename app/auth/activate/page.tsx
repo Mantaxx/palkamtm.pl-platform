@@ -227,10 +227,10 @@ export default function ActivatePage() {
     return (
         <Suspense fallback={
             <UnifiedLayout>
-                <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 flex items-center justify-center relative overflow-hidden">
+                <div className="flex items-center justify-center relative overflow-hidden min-h-screen">
                     <div className="absolute inset-0">
-                        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-pulse" />
-                        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
+                        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
+                        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl" />
                     </div>
                     <UnifiedCard
                         variant="3d"

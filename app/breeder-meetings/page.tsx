@@ -2,6 +2,7 @@
 
 import ImageModal from '@/components/ImageModal'
 import { UnifiedLayout } from '@/components/layout/UnifiedLayout'
+import { SmartImage } from '@/components/ui/SmartImage'
 import { Text3D } from '@/components/ui/Text3D'
 import { UnifiedButton } from '@/components/ui/UnifiedButton'
 import { UnifiedCard } from '@/components/ui/UnifiedCard'
@@ -9,7 +10,6 @@ import { getAllBreederMeetings } from '@/utils/getBreederMeetingImages'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, Camera, CheckCircle, Upload, X } from 'lucide-react'
 import { useSession } from 'next-auth/react'
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
@@ -163,13 +163,9 @@ export default function BreederMeetingsPage() {
                 className="relative z-10 pt-32 pb-20 px-4 sm:px-6 lg:px-8"
             >
                 <div className="max-w-4xl mx-auto text-center">
-                    <Text3D
-                        variant="neon"
-                        intensity="high"
-                        className="text-5xl md:text-6xl font-bold mb-6"
-                    >
+                    <h1 className="text-5xl md:text-6xl font-bold mb-6 text-white">
                         Spotkania z Hodowcami
-                    </Text3D>
+                    </h1>
                     <motion.p
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -192,11 +188,11 @@ export default function BreederMeetingsPage() {
                         viewport={{ once: true }}
                         className="mb-20"
                     >
-                        <UnifiedCard variant="glass" className="p-8 rounded-2xl border border-white/30 form-container-glow">
+                        <div className="relative rounded-2xl p-8 bg-white/10 border-2 border-white shadow-xl backdrop-blur-sm hover:shadow-2xl hover:shadow-white/30 hover:bg-white/15 hover:border-white/80 transition-all duration-500 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)]">
                             <div className="text-center mb-8">
-                                <Text3D variant="neon" intensity="high" className="text-3xl font-bold mb-4">
+                                <h2 className="text-3xl font-bold mb-4 text-white">
                                     Dodaj Zdjęcia ze Spotkania
-                                </Text3D>
+                                </h2>
                                 <p className="text-white/80 text-lg">
                                     Podziel się zdjęciami z naszych spotkań z hodowcami
                                 </p>
@@ -223,24 +219,24 @@ export default function BreederMeetingsPage() {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div>
                                                 <label className="block text-white text-sm font-medium mb-2">Tytuł spotkania *</label>
-                                                <input type="text" value={formData.title} onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))} className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300" placeholder="np. Spotkanie w Lubaniu 2024" required />
+                                                <input type="text" value={formData.title} onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))} className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:bg-white/15 hover:border-white/40 hover:shadow-lg hover:shadow-white/20" placeholder="np. Spotkanie w Lubaniu 2024" required />
                                             </div>
                                             <div>
                                                 <label className="block text-white text-sm font-medium mb-2">Data spotkania *</label>
-                                                <input type="date" value={formData.date} onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))} className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300" title="Wybierz datę spotkania" required />
+                                                <input type="date" value={formData.date} onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))} className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:bg-white/15 hover:border-white/40 hover:shadow-lg hover:shadow-white/20" title="Wybierz datę spotkania" required />
                                             </div>
                                         </div>
                                         <div>
                                             <label className="block text-white text-sm font-medium mb-2">Lokalizacja *</label>
-                                            <input type="text" value={formData.location} onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))} className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300" placeholder="Gdzie odbyło się spotkanie?" required />
+                                            <input type="text" value={formData.location} onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))} className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:bg-white/15 hover:border-white/40 hover:shadow-lg hover:shadow-white/20" placeholder="Gdzie odbyło się spotkanie?" required />
                                         </div>
                                         <div>
                                             <label className="block text-white text-sm font-medium mb-2">Opis spotkania</label>
-                                            <textarea value={formData.description} onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))} className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 h-24 resize-none" placeholder="Opisz przebieg spotkania, uczestników, tematy rozmów..." rows={4} />
+                                            <textarea value={formData.description} onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))} className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 h-24 resize-none hover:bg-white/15 hover:border-white/40 hover:shadow-lg hover:shadow-white/20" placeholder="Opisz przebieg spotkania, uczestników, tematy rozmów..." rows={4} />
                                         </div>
                                         <div>
                                             <label className="block text-white text-sm font-medium mb-2">Zdjęcia ze spotkania *</label>
-                                            <div className="border-2 border-dashed border-white/30 rounded-lg p-6 text-center hover:border-white/50 transition-colors duration-300">
+                                            <div className="border-2 border-dashed border-white/30 rounded-lg p-6 text-center hover:border-white/50 hover:bg-white/5 hover:shadow-lg hover:shadow-white/20 transition-all duration-300">
                                                 <input type="file" multiple accept="image/*" onChange={handleImageChange} className="hidden" id="image-upload" required={formData.images.length === 0} />
                                                 <label htmlFor="image-upload" className="cursor-pointer flex flex-col items-center space-y-4">
                                                     <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center"><Camera className="w-8 h-8 text-blue-400" /></div>
@@ -257,7 +253,15 @@ export default function BreederMeetingsPage() {
                                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                                                         {previewImages.map((preview, index) => (
                                                             <motion.div key={index} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="relative group aspect-square">
-                                                                <Image src={preview} alt={`Podgląd ${index + 1}`} fill sizes="150px" className="object-cover rounded-lg" />
+                                                                <SmartImage
+                                                                    src={preview}
+                                                                    alt={`Podgląd ${index + 1}`}
+                                                                    width={150}
+                                                                    height={150}
+                                                                    fitMode="contain"
+                                                                    aspectRatio="square"
+                                                                    className="w-full h-full rounded-lg"
+                                                                />
                                                                 <button type="button" onClick={() => removeImage(index)} title="Usuń zdjęcie" className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"><X className="w-4 h-4" /></button>
                                                             </motion.div>
                                                         ))}
@@ -291,7 +295,7 @@ export default function BreederMeetingsPage() {
                                     </UnifiedButton>
                                 </div>
                             )}
-                        </UnifiedCard>
+                        </div>
                     </motion.section>
 
                     {/* Breeder Meetings Grid */}
@@ -331,12 +335,14 @@ export default function BreederMeetingsPage() {
                                                     className="relative h-48 overflow-hidden rounded-xl cursor-pointer group"
                                                     onClick={() => handleImageClick(meeting.id, imageIndex)}
                                                 >
-                                                    <Image
+                                                    <SmartImage
                                                         src={image}
                                                         alt={`${meeting.name} - zdjęcie ${imageIndex + 1}`}
                                                         width={300}
                                                         height={192}
-                                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                                        fitMode="contain"
+                                                        aspectRatio="landscape"
+                                                        className="w-full h-full transition-transform duration-500 group-hover:scale-110"
                                                     />
                                                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                                                         <div className="w-8 h-8 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">

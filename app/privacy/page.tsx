@@ -12,19 +12,23 @@ export default function PrivacyPage() {
                 <div className="max-w-4xl mx-auto">
                     {/* Header */}
                     <div className="text-center mb-12">
-                        <h1 className="text-4xl font-bold text-gray-900 mb-4">Polityka Prywatności</h1>
-                        <p className="text-xl text-gray-600">
+                        <h1 className="text-4xl font-bold text-white mb-4">Polityka Prywatności</h1>
+                        <p className="text-xl text-white">
                             Polityka Prywatności Serwisu Gołębie Pocztowe
                         </p>
-                        <p className="text-sm text-gray-500 mt-2">
+                        <p className="text-sm text-white/70 mt-2">
                             Data wejścia w życie: {new Date().toLocaleDateString('pl-PL')}
                         </p>
                     </div>
 
                     {/* Privacy Content */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-                        <div className="prose prose-lg max-w-none">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-4">§ 1. Postanowienia Ogólne</h2>
+                    <div className="rounded-lg border-2 border-white p-8" style={{
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        backdropFilter: 'blur(2px)',
+                        boxShadow: '0 8px 32px rgba(255, 255, 255, 0.4), 0 16px 64px rgba(255, 255, 255, 0.2), 0 24px 96px rgba(255, 255, 255, 0.1)'
+                    }}>
+                        <div className="prose prose-lg max-w-none text-white/90">
+                            <h2 className="text-2xl font-bold text-white mb-4">§ 1. Postanowienia Ogólne</h2>
                             <p className="mb-4">
                                 Niniejsza Polityka Prywatności określa zasady przetwarzania i ochrony danych osobowych Użytkowników Serwisu internetowego Gołębie Pocztowe, dostępnego pod adresem gołębiepocztowe.pl.
                             </p>
@@ -35,12 +39,12 @@ export default function PrivacyPage() {
                                 Dbamy o prywatność naszych Użytkowników i bezpieczeństwo ich danych. Dane przetwarzane są z zachowaniem wymogów bezpieczeństwa określonych w obowiązujących przepisach prawa.
                             </p>
 
-                            <h2 className="text-2xl font-bold text-gray-900 mb-4">§ 2. Cele, Podstawy Prawne i Zakres Przetwarzania Danych</h2>
+                            <h2 className="text-2xl font-bold text-white mb-4">§ 2. Cele, Podstawy Prawne i Zakres Przetwarzania Danych</h2>
                             <p className="mb-4">Administrator przetwarza dane osobowe Użytkowników w następujących celach:</p>
 
                             <div className="space-y-6 mb-8">
                                 <div>
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                    <h3 className="text-lg font-semibold text-white mb-2">
                                         1. W celu świadczenia usług drogą elektroniczną (prowadzenie konta i obsługa aukcji):
                                     </h3>
                                     <ul className="ml-6 space-y-2">
@@ -50,7 +54,7 @@ export default function PrivacyPage() {
                                 </div>
 
                                 <div>
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                    <h3 className="text-lg font-semibold text-white mb-2">
                                         2. W celu realizacji transakcji zawieranych między Użytkownikami:
                                     </h3>
                                     <ul className="ml-6 space-y-2">
@@ -60,7 +64,7 @@ export default function PrivacyPage() {
                                 </div>
 
                                 <div>
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                    <h3 className="text-lg font-semibold text-white mb-2">
                                         3. W celu wypełnienia obowiązków prawnych ciążących na Administratorze:
                                     </h3>
                                     <ul className="ml-6 space-y-2">
@@ -70,7 +74,7 @@ export default function PrivacyPage() {
                                 </div>
 
                                 <div>
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                    <h3 className="text-lg font-semibold text-white mb-2">
                                         4. W celach analitycznych i statystycznych:
                                     </h3>
                                     <ul className="ml-6 space-y-2">
@@ -80,7 +84,7 @@ export default function PrivacyPage() {
                                 </div>
 
                                 <div>
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                    <h3 className="text-lg font-semibold text-white mb-2">
                                         5. W celu ewentualnego ustalenia, dochodzenia lub obrony przed roszczeniami:
                                     </h3>
                                     <ul className="ml-6 space-y-2">
@@ -90,7 +94,7 @@ export default function PrivacyPage() {
                                 </div>
                             </div>
 
-                            <h2 className="text-2xl font-bold text-gray-900 mb-4">§ 3. Odbiorcy Danych</h2>
+                            <h2 className="text-2xl font-bold text-white mb-4">§ 3. Odbiorcy Danych</h2>
                             <p className="mb-4">Dane osobowe Użytkowników mogą być przekazywane podmiotom przetwarzającym dane na zlecenie Administratora, m.in.:</p>
                             <ul className="space-y-2 mb-4">
                                 <li>Dostawcom usług hostingowych.</li>
@@ -98,8 +102,8 @@ export default function PrivacyPage() {
                                 <li>Firmom księgowym (jeśli dotyczy).</li>
                                 <li>Dostawcom narzędzi analitycznych (np. Google Analytics).</li>
                             </ul>
-                            <div className="bg-slate-50 border-l-4 border-slate-400 p-4 mb-4">
-                                <p className="text-sm text-slate-700 font-medium">
+                            <div className="bg-white bg-opacity-10 border-l-4 border-slate-400 p-4 mb-4">
+                                <p className="text-sm text-white font-medium">
                                     <strong>Kluczowe:</strong> W celu finalizacji transakcji, dane kontaktowe Kupującego (imię, nazwisko, adres, e-mail, telefon) są udostępniane Sprzedającemu, a dane Sprzedającego są udostępniane Kupującemu. Użytkownik, biorąc udział w aukcji, wyraża na to zgodę, rozumiejąc, że jest to niezbędne do realizacji umowy kupna-sprzedaży.
                                 </p>
                             </div>
@@ -107,7 +111,7 @@ export default function PrivacyPage() {
                                 Dane mogą być również udostępnione organom publicznym na mocy obowiązujących przepisów prawa.
                             </p>
 
-                            <h2 className="text-2xl font-bold text-gray-900 mb-4">§ 4. Okres Przechowywania Danych</h2>
+                            <h2 className="text-2xl font-bold text-white mb-4">§ 4. Okres Przechowywania Danych</h2>
                             <ul className="space-y-3 mb-8">
                                 <li>Dane związane z kontem Użytkownika będą przechowywane przez cały okres jego posiadania w Serwisie.</li>
                                 <li>Po usunięciu konta dane mogą być przechowywane przez okres niezbędny do:
@@ -119,7 +123,7 @@ export default function PrivacyPage() {
                                 <li>Dane przetwarzane w celach analitycznych będą przechowywane do czasu wniesienia sprzeciwu lub do momentu, gdy staną się nieaktualne.</li>
                             </ul>
 
-                            <h2 className="text-2xl font-bold text-gray-900 mb-4">§ 5. Prawa Użytkownika</h2>
+                            <h2 className="text-2xl font-bold text-white mb-4">§ 5. Prawa Użytkownika</h2>
                             <p className="mb-4">Użytkownikowi przysługują następujące prawa związane z przetwarzaniem jego danych osobowych:</p>
                             <ul className="space-y-2 mb-4">
                                 <li><strong>Prawo dostępu do danych</strong> – możliwość uzyskania informacji o przetwarzanych danych oraz kopii tych danych.</li>
@@ -134,7 +138,7 @@ export default function PrivacyPage() {
                                 W celu realizacji swoich praw prosimy o kontakt pod adresem e-mail: kontakt@golebiepocztowe.pl.
                             </p>
 
-                            <h2 className="text-2xl font-bold text-gray-900 mb-4">§ 6. Pliki Cookies (Ciasteczka)</h2>
+                            <h2 className="text-2xl font-bold text-white mb-4">§ 6. Pliki Cookies (Ciasteczka)</h2>
                             <p className="mb-4">
                                 Serwis wykorzystuje pliki cookies, czyli małe pliki tekstowe przechowywane na urządzeniu końcowym Użytkownika.
                             </p>
@@ -147,15 +151,15 @@ export default function PrivacyPage() {
                                 Użytkownik może w każdej chwili zmienić ustawienia dotyczące plików cookies w swojej przeglądarce internetowej, w tym zablokować ich zapisywanie. Może to jednak wpłynąć na niektóre funkcjonalności Serwisu.
                             </p>
 
-                            <h2 className="text-2xl font-bold text-gray-900 mb-4">§ 7. Postanowienia Końcowe</h2>
+                            <h2 className="text-2xl font-bold text-white mb-4">§ 7. Postanowienia Końcowe</h2>
                             <ul className="space-y-3 mb-8">
                                 <li>Administrator zastrzega sobie prawo do wprowadzania zmian w niniejszej Polityce Prywatności.</li>
                                 <li>O wszelkich zmianach Użytkownicy zostaną poinformowani poprzez publikację nowej wersji polityki w Serwisie.</li>
                                 <li>Niniejsza Polityka Prywatności wchodzi w życie z dniem opublikowania.</li>
                             </ul>
 
-                            <div className="mt-12 p-6 bg-gray-50 rounded-lg border border-gray-200">
-                                <p className="text-sm text-gray-600 text-center">
+                            <div className="mt-12 p-6 bg-white bg-opacity-10 rounded-lg border border-white">
+                                <p className="text-sm text-white text-center">
                                     <strong>Ostatnia aktualizacja:</strong> {new Date().toLocaleDateString('pl-PL')}
                                 </p>
                             </div>

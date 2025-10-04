@@ -26,35 +26,49 @@ async function main() {
       }
     })
 
-    const seller = await prisma.user.upsert({
-      where: { email: 'seller@test.com' },
+    const user1 = await prisma.user.upsert({
+      where: { email: 'user1@test.com' },
       update: {},
       create: {
-        email: 'seller@test.com',
+        email: 'user1@test.com',
         password: hashedPassword,
-        firstName: 'Seller',
-        lastName: 'User',
-        role: 'SELLER',
+        firstName: 'Jan',
+        lastName: 'Kowalski',
+        role: 'USER',
         isActive: true,
         emailVerified: new Date()
       }
     })
 
-    const buyer = await prisma.user.upsert({
-      where: { email: 'buyer@test.com' },
+    const user2 = await prisma.user.upsert({
+      where: { email: 'user2@test.com' },
       update: {},
       create: {
-        email: 'buyer@test.com',
+        email: 'user2@test.com',
         password: hashedPassword,
-        firstName: 'Buyer',
-        lastName: 'User',
-        role: 'BUYER',
+        firstName: 'Anna',
+        lastName: 'Nowak',
+        role: 'USER',
         isActive: true,
         emailVerified: new Date()
       }
     })
 
-    console.log('✅ Użytkownicy utworzeni:', { admin: admin.id, seller: seller.id, buyer: buyer.id })
+    const user3 = await prisma.user.upsert({
+      where: { email: 'user3@test.com' },
+      update: {},
+      create: {
+        email: 'user3@test.com',
+        password: hashedPassword,
+        firstName: 'Piotr',
+        lastName: 'Wiśniewski',
+        role: 'USER',
+        isActive: true,
+        emailVerified: new Date()
+      }
+    })
+
+    console.log('✅ Użytkownicy utworzeni:', { admin: admin.id, user1: user1.id, user2: user2.id, user3: user3.id })
 
     // Utwórz gołębie testowe
     console.log('🐦 Tworzę gołębie testowe...')
@@ -130,7 +144,7 @@ async function main() {
         description: 'Wybitny champion z doskonałymi wynikami w konkursach krajowych i międzynarodowych. Idealny do hodowli.',
         category: 'Champions',
         pigeonId: pigeon1.id,
-        sellerId: seller.id,
+        sellerId: user1.id,
         startingPrice: 5000,
         currentPrice: 5000,
         buyNowPrice: 10000,
@@ -151,7 +165,7 @@ async function main() {
         description: 'Młode gołębie z linii Janssen, gotowe do hodowli. Doskonałe geny.',
         category: 'Young Birds',
         pigeonId: pigeon2.id,
-        sellerId: seller.id,
+        sellerId: user1.id,
         startingPrice: 1500,
         currentPrice: 1500,
         buyNowPrice: 3000,
@@ -247,9 +261,10 @@ async function main() {
 
     console.log('🎉 Migracja bazy danych zakończona pomyślnie!')
     console.log('\n📋 Dane testowe:')
-    console.log('👤 Admin: admin@test.com / test123')
-    console.log('👤 Seller: seller@test.com / test123')
-    console.log('👤 Buyer: buyer@test.com / test123')
+    console.log('👤 Super Admin: admin@test.com / test123')
+    console.log('👤 Użytkownik 1: user1@test.com / test123')
+    console.log('👤 Użytkownik 2: user2@test.com / test123')
+    console.log('👤 Użytkownik 3: user3@test.com / test123')
 
   } catch (error) {
     console.error('❌ Błąd podczas migracji:', error)

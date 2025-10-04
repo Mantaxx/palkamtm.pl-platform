@@ -56,9 +56,9 @@ export function FeaturedChampions() {
             viewport={{ once: true }}
           >
             <Link href={champion.link} className="group block h-full">
-              <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200 h-full flex flex-col">
+              <div className="bg-transparent rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-white/20 h-full flex flex-col">
                 {/* Image */}
-                <div className="relative h-56 bg-gradient-to-br from-slate-200 to-slate-300">
+                <div className="relative h-56 bg-transparent">
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="w-28 h-28 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold text-3xl">
                       {champion.name.split(' ').map(n => n[0]).join('')}
@@ -78,7 +78,7 @@ export function FeaturedChampions() {
                     {champion.name}
                   </h3>
                   <p className="text-secondary-200 mt-2 text-base flex-grow">
-                    {champion.description}
+                    {champion.achievements[0]}
                   </p>
                   <div className="mt-6 flex items-center text-sm font-medium text-primary-400 group-hover:text-white transition-colors">
                     Zobacz profil
