@@ -12,7 +12,7 @@ export function HeroSection() {
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
+            transition={{ duration: 1.2, delay: 0.3 }}
             className="font-display font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white leading-tight"
           >
             Pałka MTM
@@ -23,7 +23,7 @@ export function HeroSection() {
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.4 }}
+            transition={{ duration: 1.2, delay: 0.6 }}
             className="mt-8 max-w-4xl mx-auto text-lg sm:text-xl md:text-2xl text-secondary-200 leading-relaxed"
           >
             Pasja, tradycja i nowoczesność w hodowli gołębi pocztowych. Tworzymy historię polskiego sportu gołębiarskiego.
@@ -31,27 +31,32 @@ export function HeroSection() {
         </div>
 
         {/* Główny gołąb - wyśrodkowany pod tekstem z oświetleniem scenicznym */}
-        <div className="flex justify-center relative z-20 mt-64">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8, y: 50 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 1.5, delay: 0.9 }}
+          className="flex justify-center relative z-20 mt-64"
+        >
           <Image
             src="/1360bez tla.png"
             alt="Piękny gołąb pocztowy - symbol hodowli Pałka MTM"
-            width={1200}
-            height={1200}
+            width={800}
+            height={800}
             priority
             style={{
-              width: '1200px',
-              height: '1200px',
+              width: '800px',
+              height: '800px',
               objectFit: 'contain',
               filter: 'drop-shadow(0 20px 13px rgb(0 0 0 / 0.3))'
             }}
           />
-        </div>
+        </motion.div>
 
         {/* Dodatkowy tekst pod gołębiem */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.8 }}
+          transition={{ duration: 1.2, delay: 1.2 }}
           className="mt-12"
         >
           <p className="text-secondary-300 text-base sm:text-lg max-w-2xl mx-auto">
