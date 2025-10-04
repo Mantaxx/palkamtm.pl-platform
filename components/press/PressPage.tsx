@@ -140,7 +140,7 @@ export function PressPage() {
                 >
                   <div className="relative w-full max-w-md xl:max-w-lg 2xl:max-w-xl aspect-square rounded-xl overflow-hidden shadow-2xl hover:shadow-blue-500/30 transition-all duration-500 group">
                     <SmartImage
-                      src="/press/dvd-cover.jpg"
+                      src="/press/articles/older/movie-cover.jpg"
                       alt="Okładka DVD - Film o hodowli MTM Pałka"
                       width={400}
                       height={400}
@@ -205,71 +205,34 @@ export function PressPage() {
                   <UnifiedCard
                     variant="glass"
                     glow={true}
-                    className="w-full h-full relative group overflow-hidden hover:scale-[1.02] transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/20"
+                    className="w-full h-full relative group overflow-hidden hover:scale-[1.02] transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/20 cursor-pointer"
                   >
-                    {/* Gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-purple-500/10 rounded-lg z-10"></div>
-
-                    {/* Image container with enhanced effects */}
-                    <div className="relative w-full h-full overflow-hidden rounded-lg">
+                    <div
+                      onClick={() => {
+                        console.log('Kliknięto kontener dla folderu:', folder.name, 'ID:', folder.id)
+                        setSelectedImagePair({
+                          left: folder.cover,
+                          right: folder.images[0] || folder.cover,
+                          folderId: folder.id
+                        })
+                        setCurrentNewspaperImages(folder.images)
+                        setIsNewspaperOpen(false)
+                        setCurrentPageIndex(0)
+                      }}
+                      className="w-full h-full cursor-pointer"
+                    >
                       <SmartImage
                         src={`/press/articles/older/${folder.id}/${folder.cover}`}
                         alt={`Okładka ${folder.name}`}
                         width={400}
                         height={600}
-                        fitMode="cover"
+                        fitMode="contain"
                         aspectRatio="portrait"
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
                         onError={() => {
                           console.error('Błąd ładowania obrazu:', `/press/articles/older/${folder.id}/${folder.cover}`)
                         }}
                       />
-
-                      {/* Animated border effect */}
-                      <div className="absolute inset-0 border-2 border-transparent group-hover:border-blue-400/50 rounded-lg transition-all duration-500"></div>
-                    </div>
-
-                    {/* Enhanced overlay with better styling */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent rounded-lg flex flex-col justify-end items-center opacity-0 group-hover:opacity-100 transition-all duration-500 z-20">
-                      {/* Title */}
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileHover={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="text-center mb-4 px-2"
-                      >
-                        <h3 className="text-white text-sm lg:text-base font-bold mb-1 drop-shadow-lg">
-                          {folder.name}
-                        </h3>
-                        <p className="text-white/80 text-xs">
-                          Rok: {folder.year}
-                        </p>
-                      </motion.div>
-
-                      {/* Enhanced button */}
-                      <motion.button
-                        onClick={() => {
-                          console.log('Kliknięto przycisk dla folderu:', folder.name, 'ID:', folder.id)
-                          setSelectedImagePair({
-                            left: folder.cover,
-                            right: folder.images[0] || folder.cover,
-                            folderId: folder.id
-                          })
-                          setCurrentNewspaperImages(folder.images)
-                          setIsNewspaperOpen(false)
-                          setCurrentPageIndex(0)
-                        }}
-                        className="px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 text-xs font-semibold hover:scale-105 hover:shadow-lg hover:shadow-blue-500/30 border border-white/20 backdrop-blur-sm"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        📖 Zobacz
-                      </motion.button>
-                    </div>
-
-                    {/* Corner decoration */}
-                    <div className="absolute top-4 right-4 w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
-                      <span className="text-white text-xs font-bold">📰</span>
                     </div>
                   </UnifiedCard>
                 </motion.div>
