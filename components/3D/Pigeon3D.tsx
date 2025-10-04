@@ -6,7 +6,7 @@ import { Suspense } from 'react'
 
 function PigeonModel() {
     const { scene } = useGLTF('/models/cf3eab1f-c4c2-43fc-9a8d-0583cf824574.glb')
-    return <primitive object={scene} scale={0.25} position={[0, -0.3, 0]} />
+    return <primitive object={scene} scale={0.2} position={[0, -0.3, 0]} />
 }
 
 
