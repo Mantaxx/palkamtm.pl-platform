@@ -129,35 +129,45 @@ export function PressPage() {
               glow={true}
               className="p-8 lg:p-12 xl:p-16 2xl:p-20 hover:shadow-2xl hover:shadow-blue-500/20 transition-all duration-500"
             >
-              <div className="text-center mb-8">
-                <motion.h2
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.3 }}
-                  viewport={{ once: true }}
-                  className="text-3xl md:text-4xl font-bold text-white mb-4"
-                >
-                  🎬 Film o hodowli MTM Pałka
-                </motion.h2>
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.4 }}
-                  viewport={{ once: true }}
-                  className="text-white/80 text-lg"
-                >
-                  Zobacz naszą hodowlę w akcji
-                </motion.p>
-              </div>
-
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 lg:gap-12 xl:gap-16 2xl:gap-20 items-center w-full">
+                {/* Okładka DVD */}
+                <motion.div
+                  initial={{ opacity: 0, x: -30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                  viewport={{ once: true }}
+                  className="flex justify-center"
+                >
+                  <div className="relative w-full max-w-md xl:max-w-lg 2xl:max-w-xl aspect-square rounded-xl overflow-hidden shadow-2xl hover:shadow-blue-500/30 transition-all duration-500 group">
+                    <SmartImage
+                      src="/press/dvd-cover.jpg"
+                      alt="Okładka DVD - Film o hodowli MTM Pałka"
+                      width={400}
+                      height={400}
+                      fitMode="cover"
+                      aspectRatio="square"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      onError={() => {
+                        console.error('Błąd ładowania okładki DVD')
+                      }}
+                    />
+
+                    {/* Play button overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
+                      <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                        <span className="text-white text-3xl">▶️</span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+
                 {/* Film YouTube */}
                 <motion.div
                   initial={{ opacity: 0, x: 30 }}
                   whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
+                  transition={{ duration: 0.6, delay: 0.3 }}
                   viewport={{ once: true }}
-                  className="flex justify-center order-2 xl:order-1"
+                  className="flex justify-center"
                 >
                   <div className="relative w-full max-w-4xl xl:max-w-5xl 2xl:max-w-6xl aspect-video rounded-xl overflow-hidden shadow-2xl hover:shadow-blue-500/30 transition-all duration-500 group">
                     <iframe
@@ -167,58 +177,6 @@ export function PressPage() {
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
                     ></iframe>
-                    
-                    {/* Play button overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
-                      <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                        <span className="text-white text-2xl">▶️</span>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-
-                {/* Opis filmu */}
-                <motion.div
-                  initial={{ opacity: 0, x: -30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 0.3 }}
-                  viewport={{ once: true }}
-                  className="order-1 xl:order-2 text-center xl:text-left"
-                >
-                  <div className="space-y-6">
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: 0.4 }}
-                      viewport={{ once: true }}
-                      className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl p-6 border border-white/10"
-                    >
-                      <h3 className="text-2xl font-bold text-white mb-3">
-                        🏆 Nasza historia
-                      </h3>
-                      <p className="text-white/80 leading-relaxed">
-                        Odkryj historię hodowli MTM Pałka, nasze osiągnięcia i pasję do hodowli gołębi pocztowych. 
-                        Film przedstawia nasze najlepsze okazy i metody hodowli.
-                      </p>
-                    </motion.div>
-
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: 0.5 }}
-                      viewport={{ once: true }}
-                      className="flex flex-wrap gap-3 justify-center xl:justify-start"
-                    >
-                      <span className="px-4 py-2 bg-blue-500/20 text-blue-300 rounded-full text-sm font-medium border border-blue-400/30">
-                        🎯 Profesjonalna hodowla
-                      </span>
-                      <span className="px-4 py-2 bg-purple-500/20 text-purple-300 rounded-full text-sm font-medium border border-purple-400/30">
-                        🏅 Mistrzowskie okazy
-                      </span>
-                      <span className="px-4 py-2 bg-green-500/20 text-green-300 rounded-full text-sm font-medium border border-green-400/30">
-                        📈 Sprawdzona genetyka
-                      </span>
-                    </motion.div>
                   </div>
                 </motion.div>
               </div>
@@ -234,7 +192,7 @@ export function PressPage() {
             viewport={{ once: true }}
             className="mb-20"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-8 lg:gap-12 max-w-full mx-auto px-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 max-w-full mx-auto px-4">
               {newspaperFolders.map((folder, index) => (
                 <motion.div
                   key={folder.id}
@@ -242,7 +200,7 @@ export function PressPage() {
                   whileInView={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ duration: 0.8, delay: index * 0.1 }}
                   viewport={{ once: true }}
-                  className="h-[36rem] md:h-[48rem] lg:h-[52rem] xl:h-[56rem]"
+                  className="h-[24rem] sm:h-[28rem] lg:h-[32rem] xl:h-[36rem]"
                 >
                   <UnifiedCard
                     variant="glass"
@@ -251,7 +209,7 @@ export function PressPage() {
                   >
                     {/* Gradient overlay */}
                     <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-transparent to-purple-500/10 rounded-lg z-10"></div>
-                    
+
                     {/* Image container with enhanced effects */}
                     <div className="relative w-full h-full overflow-hidden rounded-lg">
                       <SmartImage
@@ -266,7 +224,7 @@ export function PressPage() {
                           console.error('Błąd ładowania obrazu:', `/press/articles/older/${folder.id}/${folder.cover}`)
                         }}
                       />
-                      
+
                       {/* Animated border effect */}
                       <div className="absolute inset-0 border-2 border-transparent group-hover:border-blue-400/50 rounded-lg transition-all duration-500"></div>
                     </div>
@@ -278,12 +236,12 @@ export function PressPage() {
                         initial={{ opacity: 0, y: 20 }}
                         whileHover={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3 }}
-                        className="text-center mb-6 px-4"
+                        className="text-center mb-4 px-2"
                       >
-                        <h3 className="text-white text-xl font-bold mb-2 drop-shadow-lg">
+                        <h3 className="text-white text-sm lg:text-base font-bold mb-1 drop-shadow-lg">
                           {folder.name}
                         </h3>
-                        <p className="text-white/80 text-sm">
+                        <p className="text-white/80 text-xs">
                           Rok: {folder.year}
                         </p>
                       </motion.div>
@@ -301,11 +259,11 @@ export function PressPage() {
                           setIsNewspaperOpen(false)
                           setCurrentPageIndex(0)
                         }}
-                        className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300 text-sm font-semibold hover:scale-105 hover:shadow-lg hover:shadow-blue-500/30 border border-white/20 backdrop-blur-sm"
+                        className="px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 text-xs font-semibold hover:scale-105 hover:shadow-lg hover:shadow-blue-500/30 border border-white/20 backdrop-blur-sm"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                       >
-                        📖 Zobacz gazetę
+                        📖 Zobacz
                       </motion.button>
                     </div>
 
