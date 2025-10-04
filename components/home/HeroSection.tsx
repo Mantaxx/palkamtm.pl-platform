@@ -40,12 +40,12 @@ export function HeroSection() {
           <Image
             src="/1360bez tla.png"
             alt="Piękny gołąb pocztowy - symbol hodowli Pałka MTM"
-            width={400}
-            height={400}
+            width={200}
+            height={200}
             priority
             style={{
-              width: '400px',
-              height: '400px',
+              width: '200px',
+              height: '200px',
               objectFit: 'contain',
               filter: 'drop-shadow(0 20px 13px rgb(0 0 0 / 0.3))'
             }}
