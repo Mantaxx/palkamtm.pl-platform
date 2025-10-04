@@ -4,8 +4,6 @@ export const metadata = {
 }
 
 import { UnifiedLayout } from '@/components/layout/UnifiedLayout'
-import { Text3D } from '@/components/ui/Text3D'
-import { UnifiedCard } from '@/components/ui/UnifiedCard'
 
 export default function TermsPage() {
     return (
@@ -14,16 +12,20 @@ export default function TermsPage() {
                 <div className="max-w-4xl mx-auto">
                     {/* Header */}
                     <div className="text-center mb-12">
-                        <Text3D variant="neon" intensity="high" className="text-4xl font-bold mb-4">Regulamin</Text3D>
+                        <h1 className="text-4xl font-bold text-white mb-4">Regulamin</h1>
                         <p className="text-xl text-white/90">
                             Regulamin Serwisu Aukcyjnego Gołębie Pocztowe
                         </p>
                     </div>
 
                     {/* Terms Content */}
-                    <UnifiedCard variant="3d" glow={true} className="p-8">
-                        <div className="prose prose-lg max-w-none">
-                            <div className="glass-morphism-strong border-l-4 border-yellow-400 p-4 mb-8">
+                    <div className="rounded-lg border-2 border-white p-8" style={{
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        backdropFilter: 'blur(2px)',
+                        boxShadow: '0 8px 32px rgba(255, 255, 255, 0.4), 0 16px 64px rgba(255, 255, 255, 0.2), 0 24px 96px rgba(255, 255, 255, 0.1)'
+                    }}>
+                        <div className="prose prose-lg max-w-none text-white/90">
+                            <div className="bg-white bg-opacity-10 border-l-4 border-yellow-400 p-4 mb-8">
                                 <div className="flex">
                                     <div className="flex-shrink-0">
                                         <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
@@ -31,7 +33,7 @@ export default function TermsPage() {
                                         </svg>
                                     </div>
                                     <div className="ml-3">
-                                        <p className="text-sm text-yellow-200 font-medium">
+                                        <p className="text-sm text-yellow-300 font-medium">
                                             <strong>UWAGA!</strong> Prosimy o dokładne zapoznanie się z treścią niniejszego regulaminu.
                                             Korzystanie z serwisu jest równoznaczne z akceptacją wszystkich jego postanowień.
                                             Serwis pełni rolę wirtualnej platformy kojarzącej Sprzedających i Kupujących i nie jest stroną zawieranych transakcji.
@@ -107,13 +109,13 @@ export default function TermsPage() {
                                 <li>Uznanie któregokolwiek z postanowień Regulaminu za nieważne lub nieskuteczne nie wpływa na ważność pozostałych postanowień.</li>
                             </ul>
 
-                            <div className="mt-12 p-6 glass-morphism rounded-lg">
-                                <p className="text-sm text-white/80 text-center">
+                            <div className="mt-12 p-6 bg-white bg-opacity-10 rounded-lg border border-white">
+                                <p className="text-sm text-white text-center">
                                     <strong>Ostatnia aktualizacja:</strong> 29.07.2024
                                 </p>
                             </div>
                         </div>
-                    </UnifiedCard>
+                    </div>
                 </div>
             </div>
         </UnifiedLayout>

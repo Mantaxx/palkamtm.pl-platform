@@ -1,10 +1,10 @@
 'use client'
 
+import { SmartImage } from '@/components/ui/SmartImage'
 import { Text3D } from '@/components/ui/Text3D'
 import { UnifiedCard } from '@/components/ui/UnifiedCard'
 import { motion } from 'framer-motion'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
-import Image from 'next/image'
 import { useEffect, useState } from 'react'
 
 // Automatyczne wykrywanie gazet z folderów
@@ -86,7 +86,7 @@ export function PressPage() {
   }, [selectedImagePair])
 
   return (
-    <>
+    <div className="relative">
       {/* Hero Section */}
       <motion.section
         initial={{ opacity: 0, y: 50 }}
@@ -96,7 +96,7 @@ export function PressPage() {
       >
         <div className="max-w-4xl mx-auto text-center">
           <Text3D
-            variant="neon"
+            variant="gradient"
             intensity="high"
             className="text-5xl md:text-6xl font-bold mb-6"
           >
@@ -106,7 +106,7 @@ export function PressPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1 }}
-            className="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto"
+            className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto"
           >
             Artykuły, wywiady i materiały prasowe o hodowli MTM Pałka
           </motion.p>
@@ -124,32 +124,13 @@ export function PressPage() {
             viewport={{ once: true }}
             className="mb-20"
           >
-            <UnifiedCard variant="glass" className="p-16 lg:p-20 xl:p-24 2xl:p-28 border-2 border-white rounded-2xl">
+            <UnifiedCard
+              variant="glass"
+              glow={false}
+              className="p-16 lg:p-20 xl:p-24 2xl:p-28"
+            >
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-16 lg:gap-20 xl:gap-24 2xl:gap-28 items-center w-full">
-                {/* Okładka DVD */}
-                <motion.div
-                  initial={{ opacity: 0, x: -30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6 }}
-                  viewport={{ once: true }}
-                  className="w-full h-full max-w-md mx-auto"
-                >
-                  <div className="relative group w-full h-full">
-                    <div className="absolute inset-0 bg-black/20 rounded-lg transform rotate-3 translate-x-2 translate-y-2 group-hover:translate-x-3 group-hover:translate-y-3 transition-all duration-300"></div>
-                    <div className="relative card-gradient rounded-lg shadow-2xl border-2 border-white group-hover:border-slate-400 group-hover:-translate-y-2 group-hover:scale-105 transition-all duration-300 w-full h-full aspect-video">
-                      <Image
-                        src="/press/articles/older/movie-cover.jpg"
-                        alt="Okładka DVD - Film o hodowli gołębi"
-                        width={400}
-                        height={225}
-                      className="w-full h-full object-cover rounded-lg shadow-lg" // Zmieniamy na object-cover
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none'
-                        }}
-                      />
-                    </div>
-                  </div>
-                </motion.div>
+                {/* Okładka DVD usunięta */}
 
                 {/* Film YouTube */}
                 <motion.div
@@ -182,7 +163,7 @@ export function PressPage() {
             viewport={{ once: true }}
             className="mb-20"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-8xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-16 max-w-full mx-auto px-4">
               {newspaperFolders.map((folder, index) => (
                 <motion.div
                   key={folder.id}
@@ -190,18 +171,23 @@ export function PressPage() {
                   whileInView={{ opacity: 1, y: 0, scale: 1 }}
                   transition={{ duration: 0.8, delay: index * 0.1 }}
                   viewport={{ once: true }}
-                  className="h-[32rem]"
+                  className="h-[36rem] md:h-[48rem] lg:h-[52rem] xl:h-[56rem]"
                 >
-                  <div className="w-full h-full relative group">
-                    <Image
+                  <UnifiedCard
+                    variant="glass"
+                    glow={false}
+                    className="w-full h-full relative group overflow-hidden"
+                  >
+                    <SmartImage
                       src={`/press/articles/older/${folder.id}/${folder.cover}`}
                       alt={`Okładka ${folder.name}`}
                       width={400}
-                      height={300}
+                      height={600}
+                      fitMode="cover"
+                      aspectRatio="portrait"
                       className="w-full h-full object-cover rounded-lg"
-                      onError={(e) => {
-                        console.error('Błąd ładowania obrazu:', e.currentTarget.src)
-                        e.currentTarget.style.display = 'none'
+                      onError={() => {
+                        console.error('Błąd ładowania obrazu:', `/press/articles/older/${folder.id}/${folder.cover}`)
                       }}
                     />
                     <div className="absolute inset-0 bg-black/20 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -222,7 +208,7 @@ export function PressPage() {
                         Zobacz
                       </button>
                     </div>
-                  </div>
+                  </UnifiedCard>
                 </motion.div>
               ))}
             </div>
@@ -287,22 +273,16 @@ export function PressPage() {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, ease: "easeInOut" }}
-                className="w-auto h-auto"
+                className="w-auto h-auto max-w-[90vw] max-h-[90vh]"
               >
-                <Image
+                <SmartImage
                   src={`/press/articles/older/${selectedImagePair.folderId}/${selectedImagePair.left}`}
                   alt="Okładka gazety"
-                  width={400}
-                  height={600}
-                  className="w-auto h-auto object-contain rounded-lg shadow-2xl"
-                  style={{
-                    width: 'auto',
-                    height: 'auto',
-                    maxWidth: '100vw',
-                    maxHeight: '100vh',
-                    minWidth: '80vw',
-                    minHeight: '80vh'
-                  }}
+                  width={800}
+                  height={1200}
+                  fitMode="contain"
+                  aspectRatio="portrait"
+                  className="w-auto h-full max-h-[90vh] rounded-lg shadow-2xl"
                 />
               </motion.div>
             ) : (
@@ -322,12 +302,14 @@ export function PressPage() {
                   transition={{ duration: 0.6, delay: 0.2 }}
                   className="flex-1 max-w-[45vw] max-h-[90vh]"
                 >
-                  <Image
+                  <SmartImage
                     src={`/press/articles/older/${selectedImagePair.folderId}/${currentNewspaperImages[currentPageIndex] || selectedImagePair.left}`}
                     alt={`Strona ${currentPageIndex + 1}`}
-                    width={400}
-                    height={600}
-                  className="w-full h-full object-cover rounded-lg shadow-2xl" // Zmieniamy na object-cover
+                    width={800}
+                    height={1200}
+                    fitMode="contain"
+                    aspectRatio="portrait"
+                    className="w-full h-full max-h-[90vh] rounded-lg shadow-2xl"
                   />
                 </motion.div>
 
@@ -339,12 +321,14 @@ export function PressPage() {
                     transition={{ duration: 0.6, delay: 0.4 }}
                     className="flex-1 max-w-[45vw] max-h-[90vh]"
                   >
-                    <Image
+                    <SmartImage
                       src={`/press/articles/older/${selectedImagePair.folderId}/${currentNewspaperImages[currentPageIndex + 1]}`}
                       alt={`Strona ${currentPageIndex + 2}`}
-                      width={400}
-                      height={600}
-                    className="w-full h-full object-cover rounded-lg shadow-2xl" // Zmieniamy na object-cover
+                      width={800}
+                      height={1200}
+                      fitMode="contain"
+                      aspectRatio="portrait"
+                      className="w-full h-full max-h-[90vh] rounded-lg shadow-2xl"
                     />
                   </motion.div>
                 )}
@@ -368,6 +352,6 @@ export function PressPage() {
           </div>
         </div>
       )}
-    </>
+    </div>
   )
 }

@@ -1,5 +1,6 @@
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { checkProfileCompleteness, getProfileCompletenessMessage } from '@/lib/profile-validation'
 import { apiRateLimit } from '@/lib/rate-limit'
 import { bidCreateSchema } from '@/lib/validations/schemas'
 import { getServerSession } from 'next-auth'
@@ -23,6 +24,19 @@ export async function POST(
             return NextResponse.json(
                 { error: 'Brak autoryzacji' },
                 { status: 401 }
+            )
+        }
+
+        // Sprawdź kompletność profilu
+        const profileCompleteness = await checkProfileCompleteness(session.user.id)
+        if (!profileCompleteness.isComplete) {
+            return NextResponse.json(
+                { 
+                    error: 'Profil użytkownika jest niekompletny',
+                    message: getProfileCompletenessMessage(profileCompleteness),
+                    missingFields: profileCompleteness.missingFields
+                },
+                { status: 400 }
             )
         }
 

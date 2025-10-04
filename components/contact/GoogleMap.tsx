@@ -23,14 +23,14 @@ export default function GoogleMap() {
                         boxShadow: 'none'
                     }}>
                         <iframe
-                            src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(address)}&zoom=15`}
+                            src="https://maps.google.com/maps?q=ul.+Stawowa+6,+59-800+Lubań,+Poland&t=&z=16&ie=UTF8&iwloc=&output=embed"
                             width="100%"
                             height="100%"
                             style={{ border: 0 }}
                             allowFullScreen
                             loading="lazy"
                             referrerPolicy="no-referrer-when-downgrade"
-                            title="Mapa hodowli MTM Pałka"
+                            title="Mapa hodowli MTM Pałka - ul. Stawowa 6, Lubań"
                         />
                     </div>
                 </div>

@@ -24,7 +24,7 @@ const philosophyValues = [
 
 export function PhilosophySection() {
   return (
-    <section className="py-16 sm:py-20">
+    <section className="py-16 sm:py-20 bg-transparent">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-white">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Column - Philosophy Text */}
@@ -50,7 +50,7 @@ export function PhilosophySection() {
                 </p>
               </div>
               <Link
-                href="/heritage"
+                href="/achievements"
                 className="inline-flex items-center bg-primary-600 hover:bg-primary-700 text-white font-semibold px-8 py-3 rounded-lg transition-all duration-300 mt-8 shadow-lg hover:shadow-primary-500/50"
               >
                 <span>Poznaj Naszą Historię</span>

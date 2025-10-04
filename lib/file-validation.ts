@@ -1,9 +1,19 @@
 import { z } from 'zod'
 
 // Dozwolone typy plików
-export const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+export const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'image/psd', 'image/bmp']
 export const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/ogg']
-export const ALLOWED_DOCUMENT_TYPES = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+export const ALLOWED_DOCUMENT_TYPES = [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/webp',
+    'image/psd',
+    'image/bmp'
+]
 
 // Maksymalne rozmiary plików (w bajtach)
 export const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
@@ -32,7 +42,7 @@ export function validateImage(file: File): { valid: boolean; error?: string } {
     if (!validateFileType(file, ALLOWED_IMAGE_TYPES)) {
         return {
             valid: false,
-            error: `Nieprawidłowy typ pliku. Dozwolone typy: ${ALLOWED_IMAGE_TYPES.join(', ')}`
+            error: `Nieprawidłowy typ pliku. Dozwolone typy: JPG, JPEG, PNG, WebP, GIF, PSD, BMP`
         }
     }
 
@@ -70,7 +80,7 @@ export function validateDocument(file: File): { valid: boolean; error?: string }
     if (!validateFileType(file, ALLOWED_DOCUMENT_TYPES)) {
         return {
             valid: false,
-            error: `Nieprawidłowy typ pliku. Dozwolone typy: ${ALLOWED_DOCUMENT_TYPES.join(', ')}`
+            error: `Nieprawidłowy typ pliku. Dozwolone typy: PDF, DOC, DOCX, JPG, JPEG, PNG, WebP, PSD, BMP`
         }
     }
 

@@ -84,7 +84,7 @@ export const authOptions: NextAuthOptions = {
                 firstName: nameParts[0] || '',
                 lastName: nameParts.slice(1).join(' ') || '',
                 image: user.image,
-                role: 'BUYER',
+                role: 'USER',
                 isActive: true,
                 emailVerified: new Date()
               }

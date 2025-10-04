@@ -18,13 +18,9 @@ export default function ContactPageClient() {
         className="relative z-10 pt-8 pb-20 px-4 sm:px-6 lg:px-8"
       >
         <div className="max-w-4xl mx-auto text-center">
-          <Text3D
-            variant="neon"
-            intensity="high"
-            className="text-5xl md:text-6xl font-bold mb-6"
-          >
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 text-white">
             Kontakt
-          </Text3D>
+          </h1>
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -51,8 +47,7 @@ export default function ContactPageClient() {
               <UnifiedCard
                 variant="glass"
                 glow={false}
-                className="p-8 text-center rounded-2xl border-2 border-white bg-white/25 backdrop-blur-xl"
-                style={{ boxShadow: '0 0 14px 3px rgba(255,255,255,0.55)' }}
+                className="p-8 text-center rounded-2xl border-2 border-white bg-white/25 backdrop-blur-xl shadow-[0_0_14px_3px_rgba(255,255,255,0.55)]"
               >
                 <motion.div
                   whileHover={{ rotateY: 360 }}
@@ -78,8 +73,7 @@ export default function ContactPageClient() {
               <UnifiedCard
                 variant="glass"
                 glow={false}
-                className="p-8 text-center rounded-2xl border-2 border-white bg-white/25 backdrop-blur-xl"
-                style={{ boxShadow: '0 0 14px 3px rgba(255,255,255,0.55)' }}
+                className="p-8 text-center rounded-2xl border-2 border-white bg-white/25 backdrop-blur-xl shadow-[0_0_14px_3px_rgba(255,255,255,0.55)]"
               >
                 <motion.div
                   whileHover={{ rotateY: 360 }}
@@ -105,8 +99,7 @@ export default function ContactPageClient() {
               <UnifiedCard
                 variant="glass"
                 glow={false}
-                className="p-8 text-center rounded-2xl border-2 border-white bg-white/25 backdrop-blur-xl"
-                style={{ boxShadow: '0 0 14px 3px rgba(255,255,255,0.55)' }}
+                className="p-8 text-center rounded-2xl border-2 border-white bg-white/25 backdrop-blur-xl shadow-[0_0_14px_3px_rgba(255,255,255,0.55)]"
               >
                 <motion.div
                   whileHover={{ rotateY: 360 }}
@@ -146,8 +139,7 @@ export default function ContactPageClient() {
             <UnifiedCard
               variant="glass"
               glow={false}
-              className="p-8 rounded-2xl border-2 border-white bg-white/25 backdrop-blur-xl"
-              style={{ boxShadow: '0 0 14px 3px rgba(255,255,255,0.55)' }}
+              className="p-8 rounded-2xl border-2 border-white bg-white/25 backdrop-blur-xl shadow-[0_0_14px_3px_rgba(255,255,255,0.55)]"
             >
               <Text3D
                 variant="shimmer"
@@ -228,7 +220,7 @@ export default function ContactPageClient() {
                     variant="primary"
                     size="lg"
                     intensity="high"
-                    glow={true}
+                    glow={false}
                     className="px-12"
                   >
                     Wyślij wiadomość
@@ -248,8 +240,7 @@ export default function ContactPageClient() {
             <UnifiedCard
               variant="glass"
               glow={false}
-              className="relative p-8 rounded-2xl border-2 border-white bg-white/25 backdrop-blur-xl"
-              style={{ boxShadow: '0 0 14px 3px rgba(255,255,255,0.55)' }}
+              className="relative p-8 rounded-2xl border-2 border-white bg-white/25 backdrop-blur-xl shadow-[0_0_14px_3px_rgba(255,255,255,0.55)]"
             >
               <Text3D
                 variant="glow"

@@ -1,4 +1,5 @@
 import { authOptions } from '@/lib/auth'
+import { requirePhoneVerification } from '@/lib/phone-verification'
 import { prisma } from '@/lib/prisma'
 import { apiRateLimit } from '@/lib/rate-limit'
 import { auctionCreateSchema } from '@/lib/validations/schemas'
@@ -166,15 +167,45 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        // Sprawdź czy użytkownik może tworzyć aukcje
-        if (session.user.role !== 'SELLER' && session.user.role !== 'ADMIN') {
-            return NextResponse.json(
-                { error: 'Brak uprawnień do tworzenia aukcji' },
-                { status: 403 }
-            )
+        // Sprawdź weryfikację telefonu dla tworzenia aukcji
+        const phoneVerificationError = await requirePhoneVerification()
+        if (phoneVerificationError) {
+            return phoneVerificationError
         }
 
         const body = await request.json()
+
+        console.log('=== TWORZENIE AUKCJI ===')
+        console.log('Session user:', session.user)
+        console.log('Request body:', JSON.stringify(body, null, 2))
+
+        // Sprawdź czy użytkownik istnieje w bazie danych
+        let user = await prisma.user.findUnique({
+            where: { id: session.user.id }
+        })
+
+        if (!user) {
+            // Jeśli użytkownik nie istnieje, utwórz go
+            const nameParts = session.user.name?.split(' ') || []
+            user = await prisma.user.create({
+                data: {
+                    id: session.user.id,
+                    email: session.user.email!,
+                    firstName: nameParts[0] || '',
+                    lastName: nameParts.slice(1).join(' ') || '',
+                    image: session.user.image,
+                    role: 'USER', // Poprawna rola zgodna ze schematem
+                    isActive: true,
+                    emailVerified: new Date()
+                }
+            })
+        } else if (user.role !== 'USER' && user.role !== 'ADMIN') {
+            // Napraw nieprawidłową rolę
+            user = await prisma.user.update({
+                where: { id: session.user.id },
+                data: { role: 'USER' }
+            })
+        }
 
         // Walidacja danych
         const validatedData = auctionCreateSchema.parse(body)
@@ -194,8 +225,8 @@ export async function POST(request: NextRequest) {
                 title: validatedData.title,
                 description: validatedData.description,
                 category: validatedData.category,
-                startingPrice: validatedData.startingPrice,
-                currentPrice: validatedData.startingPrice,
+                startingPrice: validatedData.startingPrice || 0,
+                currentPrice: validatedData.startingPrice || validatedData.buyNowPrice || 0,
                 buyNowPrice: validatedData.buyNowPrice,
                 reservePrice: validatedData.reservePrice,
                 startTime: new Date(validatedData.startTime),
@@ -226,8 +257,32 @@ export async function POST(request: NextRequest) {
             }
         })
 
+        // Utwórz gołębia jeśli są dane
+        if (validatedData.pigeon) {
+            await prisma.pigeon.create({
+                data: {
+                    name: validatedData.title, // Używamy tytułu aukcji jako nazwy gołębia
+                    ringNumber: validatedData.pigeon.ringNumber || `RING-${auction.id}`,
+                    bloodline: validatedData.pigeon.bloodline || 'Nieznana',
+                    gender: validatedData.pigeon.sex === 'male' ? 'Samiec' : validatedData.pigeon.sex === 'female' ? 'Samica' : 'Nieznana',
+                    birthDate: new Date(), // Domyślna data urodzenia
+                    color: validatedData.pigeon.featherColor || 'Nieznany',
+                    weight: 0, // Domyślna waga
+                    breeder: 'Nieznany',
+                    description: validatedData.description,
+                    images: JSON.stringify(validatedData.images || []),
+                    videos: JSON.stringify(validatedData.videos || []),
+                    pedigree: JSON.stringify(validatedData.documents || []),
+                    achievements: JSON.stringify(validatedData.pigeon.purpose || []),
+                    auctions: {
+                        connect: { id: auction.id }
+                    }
+                }
+            })
+        }
+
         // Utwórz zasoby aukcji (obrazy, wideo, dokumenty)
-        if (validatedData.images.length > 0) {
+        if (validatedData.images && validatedData.images.length > 0) {
             await prisma.auctionAsset.createMany({
                 data: validatedData.images.map(url => ({
                     auctionId: auction.id,
@@ -256,6 +311,8 @@ export async function POST(request: NextRequest) {
                 }))
             })
         }
+
+        console.log('✅ Aukcja utworzona pomyślnie:', auction.id)
 
         return NextResponse.json({
             message: 'Aukcja została utworzona i oczekuje na zatwierdzenie',

@@ -24,7 +24,7 @@ export function PhoneVerification({ user, onVerificationComplete }: PhoneVerific
     const [resendSeconds, setResendSeconds] = useState(0)
     const [isResending, setIsResending] = useState(false)
 
-    const handleSendSMS = async () => {
+    const handleSendSMS = async (retryCount = 0) => {
         if (!phoneNumber) {
             setError('Podaj numer telefonu')
             return
@@ -49,12 +49,30 @@ export function PhoneVerification({ user, onVerificationComplete }: PhoneVerific
                 setSuccess('Kod weryfikacyjny został wysłany na podany numer telefonu')
                 setResendSeconds(60)
             } else {
-                setError(data.error || 'Błąd wysyłania SMS')
+                // Jeśli błąd i nie przekroczono limitu prób, spróbuj ponownie
+                if (retryCount < 2 && (data.error?.includes('błąd') || data.error?.includes('error'))) {
+                    console.log(`🔄 Próba ${retryCount + 1}/3 - ponowne wysłanie SMS...`)
+                    setTimeout(() => {
+                        handleSendSMS(retryCount + 1)
+                    }, 1000 * (retryCount + 1)) // Zwiększające się opóźnienie
+                } else {
+                    setError(data.error || 'Błąd wysyłania SMS')
+                }
             }
         } catch (error) {
-            setError('Wystąpił błąd podczas wysyłania SMS')
+            // Jeśli błąd sieci i nie przekroczono limitu prób, spróbuj ponownie
+            if (retryCount < 2) {
+                console.log(`🔄 Próba ${retryCount + 1}/3 - ponowne wysłanie SMS po błędzie sieci...`)
+                setTimeout(() => {
+                    handleSendSMS(retryCount + 1)
+                }, 1000 * (retryCount + 1))
+            } else {
+                setError('Wystąpił błąd podczas wysyłania SMS. Sprawdź połączenie internetowe.')
+            }
         } finally {
-            setIsLoading(false)
+            if (retryCount === 0) {
+                setIsLoading(false)
+            }
         }
     }
 
@@ -204,18 +222,18 @@ export function PhoneVerification({ user, onVerificationComplete }: PhoneVerific
                                 type="tel"
                                 value={phoneNumber}
                                 onChange={(e) => setPhoneNumber(e.target.value)}
-                                placeholder="+48 123 456 789"
+                                placeholder="+48 XXX XXX XXX"
                                 className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
                                 aria-label="Numer telefonu"
                             />
                         </div>
                         <p className="text-sm text-gray-500 mt-1">
-                            Format: +48 123 456 789 lub 123 456 789
+                            Format: +48 XXX XXX XXX lub XXX XXX XXX
                         </p>
                     </div>
 
                     <button
-                        onClick={handleSendSMS}
+                        onClick={() => handleSendSMS()}
                         disabled={isLoading || !phoneNumber}
                         className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                     >

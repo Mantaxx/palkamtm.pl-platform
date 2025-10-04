@@ -154,23 +154,51 @@ export async function PUT(
             )
         }
 
+        // Przygotuj dane do aktualizacji
+        const updateData: {
+            title?: string;
+            description?: string;
+            category?: string;
+            startingPrice?: number;
+            reservePrice?: number;
+            images?: string[];
+            videos?: string[];
+            documents?: string[];
+            startTime?: Date;
+            endTime?: Date;
+            updatedAt: Date;
+        } = {
+            title: validatedData.title,
+            description: validatedData.description,
+            category: validatedData.category,
+            startingPrice: validatedData.startingPrice,
+            reservePrice: validatedData.reservePrice,
+            images: validatedData.images,
+            videos: validatedData.videos,
+            documents: validatedData.documents,
+            updatedAt: new Date()
+        }
+
+        // Dodaj daty tylko jeśli są podane
+        if (validatedData.startTime) {
+            updateData.startTime = new Date(validatedData.startTime)
+        }
+        if (validatedData.endTime) {
+            updateData.endTime = new Date(validatedData.endTime)
+        }
+
         // Aktualizuj aukcję
         const updatedAuction = await prisma.auction.update({
             where: { id: auctionId },
-            data: {
-                ...validatedData,
-                // Jeśli zmieniono daty, przekonwertuj je
-                startTime: validatedData.startTime ? new Date(validatedData.startTime) : undefined,
-                endTime: validatedData.endTime ? new Date(validatedData.endTime) : undefined,
-                updatedAt: new Date()
-            },
+            data: updateData,
             include: {
                 seller: {
                     select: {
                         id: true,
                         firstName: true,
                         lastName: true,
-                        email: true
+                        email: true,
+                        phoneNumber: true
                     }
                 },
                 assets: true

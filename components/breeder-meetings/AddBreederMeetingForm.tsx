@@ -1,14 +1,10 @@
 'use client';
 
-import { Text3D } from '@/components/ui/Text3D';
-import { UnifiedButton } from '@/components/ui/UnifiedButton';
-import { UnifiedCard } from '@/components/ui/UnifiedCard';
-import { AnimatePresence, motion, useAnimation } from 'framer-motion';
+import { SmartImage } from '@/components/ui/SmartImage';
 import { AlertCircle, Camera, CheckCircle, Upload, X } from 'lucide-react';
 import { useSession } from 'next-auth/react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 export default function AddBreederMeetingForm() {
   const { data: session, status } = useSession();
@@ -107,138 +103,123 @@ export default function AddBreederMeetingForm() {
   if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <UnifiedCard variant="3d" glow={true} className="p-8 text-center">
+        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 text-center border-2 border-white">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <Text3D variant="glow" intensity="medium" className="text-lg">
+          <p className="text-lg text-white">
             Sprawdzanie autoryzacji...
-          </Text3D>
-        </UnifiedCard>
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen py-12 px-4">
-      <div className="max-w-4xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          <UnifiedCard variant="glass" glow={true} className="p-8">
-            <div className="text-center mb-8">
-              <Text3D variant="neon" intensity="high" className="text-4xl font-bold mb-4">
-                Dodaj Zdjęcia ze Spotkania
-              </Text3D>
-              <p className="text-white/80 text-lg">
-                Podziel się zdjęciami z naszych spotkań z hodowcami
-              </p>
-            </div>
+      <div className="max-w-4xl mx-auto bg-white/10 backdrop-blur-sm rounded-2xl p-8 border-2 border-white">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold mb-4 text-white">
+            Dodaj Zdjęcia ze Spotkania
+          </h1>
+          <p className="text-white/80 text-lg">
+            Podziel się zdjęciami z naszych spotkań z hodowcami
+          </p>
+        </div>
 
-            {session ? (
-              <>
-                {/* Status Messages */}
-                <AnimatePresence>
-                  {submitStatus === 'success' && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      className="mb-6 p-4 bg-green-500/20 border border-green-500/50 rounded-lg flex items-center"
-                    >
-                      <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
-                      <span className="text-green-400">Spotkanie zostało dodane pomyślnie! Przekierowujemy...</span>
-                    </motion.div>
-                  )}
-
-                  {submitStatus === 'error' && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-lg flex items-center"
-                    >
-                      <AlertCircle className="w-5 h-5 text-red-400 mr-3" />
-                      <span className="text-red-400">{errorMessage}</span>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* ... reszta formularza ... */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-white text-sm font-medium mb-2">Tytuł spotkania *</label>
-                      <input type="text" value={formData.title} onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))} className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300" placeholder="np. Spotkanie w Lubaniu 2024" required />
-                    </div>
-                    <div>
-                      <label className="block text-white text-sm font-medium mb-2">Data spotkania *</label>
-                      <input type="date" value={formData.date} onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))} className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300" title="Wybierz datę spotkania" required />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-white text-sm font-medium mb-2">Lokalizacja *</label>
-                    <input type="text" value={formData.location} onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))} className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300" placeholder="Gdzie odbyło się spotkanie?" required />
-                  </div>
-                  <div>
-                    <label className="block text-white text-sm font-medium mb-2">Opis spotkania</label>
-                    <textarea value={formData.description} onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))} className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 h-24 resize-none" placeholder="Opisz przebieg spotkania, uczestników, tematy rozmów..." rows={4} />
-                  </div>
-                  <div>
-                    <label className="block text-white text-sm font-medium mb-2">Zdjęcia ze spotkania *</label>
-                    <div className="border-2 border-dashed border-white/30 rounded-lg p-6 text-center hover:border-white/50 transition-colors duration-300">
-                      <input type="file" multiple accept="image/*" onChange={handleImageChange} className="hidden" id="image-upload" required />
-                      <label htmlFor="image-upload" className="cursor-pointer flex flex-col items-center space-y-4">
-                        <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center"><Camera className="w-8 h-8 text-blue-400" /></div>
-                        <div>
-                          <p className="text-white font-medium">Kliknij aby wybrać zdjęcia</p>
-                          <p className="text-white/60 text-sm">lub przeciągnij i upuść</p>
-                        </div>
-                        <div className="flex items-center space-x-2 text-blue-400"><Upload className="w-4 h-4" /> <span className="text-sm">Wybierz pliki</span></div>
-                      </label>
-                    </div>
-                    {previewImages.length > 0 && (
-                      <div className="mt-4">
-                        <p className="text-white/70 text-sm mb-3">Wybrano {previewImages.length} zdjęć</p>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          {previewImages.map((preview, index) => (
-                            <motion.div key={index} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="relative group">
-                              <Image src={preview} alt={`Podgląd ${index + 1}`} width={96} height={96} className="w-full h-24 object-cover rounded-lg" />
-                              <button type="button" onClick={() => removeImage(index)} title="Usuń zdjęcie" className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"><X className="w-4 h-4" /></button>
-                            </motion.div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <div className="pt-4">
-                    <UnifiedButton type="submit" variant="primary" size="lg" className="w-full" disabled={isSubmitting} glow={true}>
-                      {isSubmitting ? (<div className="flex items-center justify-center"><div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>Dodawanie...</div>) : (<div className="flex items-center justify-center"><Camera className="w-5 h-5 mr-2" />Dodaj Spotkanie</div>)}
-                    </UnifiedButton>
-                  </div>
-                </form>
-              </>
-            ) : (
-              <div className="text-center py-8">
-                <Text3D variant="gradient" intensity="medium" className="text-2xl font-bold mb-4">
-                  Dołącz do naszej społeczności!
-                </Text3D>
-                <p className="text-white/80 text-lg mb-6 max-w-md mx-auto">
-                  Aby dodać zdjęcia ze spotkania, musisz być zalogowanym i zweryfikowanym użytkownikiem.
-                </p>
-                <UnifiedButton
-                  variant="primary"
-                  size="lg"
-                  intensity="high"
-                  glow={true}
-                  onClick={() => router.push('/auth/signin?callbackUrl=/breeder-meetings/dodaj-zdjecie')}
-                >
-                  Zaloguj się lub Zarejestruj
-                </UnifiedButton>
+        {session ? (
+          <>
+            {/* Status Messages */}
+            {submitStatus === 'success' && (
+              <div className="mb-6 p-4 bg-green-500/20 border border-green-500/50 rounded-lg flex items-center">
+                <CheckCircle className="w-5 h-5 text-green-400 mr-3" />
+                <span className="text-green-400">Spotkanie zostało dodane pomyślnie! Przekierowujemy...</span>
               </div>
             )}
-          </UnifiedCard>
-        </motion.div>
+
+            {submitStatus === 'error' && (
+              <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-lg flex items-center">
+                <AlertCircle className="w-5 h-5 text-red-400 mr-3" />
+                <span className="text-red-400">{errorMessage}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* ... reszta formularza ... */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-white text-sm font-medium mb-2">Tytuł spotkania *</label>
+                  <input type="text" value={formData.title} onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))} className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300" placeholder="np. Spotkanie w Lubaniu 2024" required />
+                </div>
+                <div>
+                  <label className="block text-white text-sm font-medium mb-2">Data spotkania *</label>
+                  <input type="date" value={formData.date} onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))} className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300" title="Wybierz datę spotkania" required />
+                </div>
+              </div>
+              <div>
+                <label className="block text-white text-sm font-medium mb-2">Lokalizacja *</label>
+                <input type="text" value={formData.location} onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))} className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300" placeholder="Gdzie odbyło się spotkanie?" required />
+              </div>
+              <div>
+                <label className="block text-white text-sm font-medium mb-2">Opis spotkania</label>
+                <textarea value={formData.description} onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))} className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 h-24 resize-none" placeholder="Opisz przebieg spotkania, uczestników, tematy rozmów..." rows={4} />
+              </div>
+              <div>
+                <label className="block text-white text-sm font-medium mb-2">Zdjęcia ze spotkania *</label>
+                <div className="border-2 border-dashed border-white/30 rounded-lg p-6 text-center">
+                  <input type="file" multiple accept="image/*" onChange={handleImageChange} className="hidden" id="image-upload" required />
+                  <label htmlFor="image-upload" className="cursor-pointer flex flex-col items-center space-y-4">
+                    <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center"><Camera className="w-8 h-8 text-blue-400" /></div>
+                    <div>
+                      <p className="text-white font-medium">Kliknij aby wybrać zdjęcia</p>
+                      <p className="text-white/60 text-sm">lub przeciągnij i upuść</p>
+                    </div>
+                    <div className="flex items-center space-x-2 text-blue-400"><Upload className="w-4 h-4" /> <span className="text-sm">Wybierz pliki</span></div>
+                  </label>
+                </div>
+                {previewImages.length > 0 && (
+                  <div className="mt-4">
+                    <p className="text-white/70 text-sm mb-3">Wybrano {previewImages.length} zdjęć</p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {previewImages.map((preview, index) => (
+                        <div key={index} className="relative group">
+                          <SmartImage
+                            src={preview}
+                            alt={`Podgląd ${index + 1}`}
+                            width={96}
+                            height={96}
+                            fitMode="contain"
+                            aspectRatio="square"
+                            className="w-full h-24 rounded-lg"
+                          />
+                          <button type="button" onClick={() => removeImage(index)} title="Usuń zdjęcie" className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center"><X className="w-4 h-4" /></button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="pt-4">
+                <button type="submit" disabled={isSubmitting} className="w-full px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                  {isSubmitting ? (<div className="flex items-center justify-center"><div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>Dodawanie...</div>) : (<div className="flex items-center justify-center"><Camera className="w-5 h-5 mr-2" />Dodaj Spotkanie</div>)}
+                </button>
+              </div>
+            </form>
+          </>
+        ) : (
+          <div className="text-center py-8">
+            <h2 className="text-2xl font-bold mb-4 text-white">
+              Dołącz do naszej społeczności!
+            </h2>
+            <p className="text-white/80 text-lg mb-6 max-w-md mx-auto">
+              Aby dodać zdjęcia ze spotkania, musisz być zalogowanym i zweryfikowanym użytkownikiem.
+            </p>
+            <button
+              onClick={() => router.push('/auth/signin?callbackUrl=/breeder-meetings/dodaj-zdjecie')}
+              className="px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200"
+            >
+              Zaloguj się lub Zarejestruj
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

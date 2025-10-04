@@ -2,20 +2,20 @@
 
 ## 📋 Spis Treści
 
-- [Opis Projektu](#opis-projektu)
-- [Technologie](#technologie)
-- [Architektura](#architektura)
-- [Struktura Projektu](#struktura-projektu)
-- [Instalacja](#instalacja)
-- [Konfiguracja](#konfiguracja)
-- [Baza Danych](#baza-danych)
-- [API Endpoints](#api-endpoints)
-- [Komponenty](#komponenty)
-- [Styling](#styling)
-- [Bezpieczeństwo](#bezpieczeństwo)
-- [Deployment](#deployment)
-- [Skrypty](#skrypty)
-- [Testowanie](#testowanie)
+- [Opis Projektu](#-opis-projektu)
+- [Technologie](#-technologie)
+- [Architektura](#-architektura)
+- [Struktura Projektu](#-struktura-projektu)
+- [Instalacja](#-instalacja)
+- [Konfiguracja](#️-konfiguracja)
+- [Baza Danych](#️-baza-danych)
+- [API Endpoints](#-api-endpoints)
+- [Komponenty](#-komponenty)
+- [Styling](#-styling)
+- [Bezpieczeństwo](#-bezpieczeństwo)
+- [Deployment](#-deployment)
+- [Skrypty](#-skrypty)
+- [Testowanie](#-testowanie)
 
 ## 🎯 Opis Projektu
 
@@ -82,7 +82,7 @@ Ekskluzywna platforma  o hodowli golebi pocztowych jednych z najlepszych w histo
 
 ### Wzorzec Architektoniczny
 
-```
+```text
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Frontend      │    │   API Layer     │    │   Database      │
 │   (Next.js)     │◄──►│   (API Routes)  │◄──►│   (SQLite)      │
@@ -95,7 +95,7 @@ Ekskluzywna platforma  o hodowli golebi pocztowych jednych z najlepszych w histo
 
 ### Struktura Komponentów
 
-```
+```text
 components/
 ├── ui/                 # Podstawowe komponenty UI
 ├── layout/             # Komponenty układu
@@ -109,7 +109,7 @@ components/
 
 ## 📁 Struktura Projektu
 
-```
+```text
 pigeon-auction-platform/
 ├── app/                          # Next.js App Router
 │   ├── api/                      # API Routes
@@ -170,7 +170,7 @@ git clone <repository-url>
 cd pigeon-auction-platform
 ```
 
-2. **Instalacja zależności**
+1. **Instalacja zależności**
 
 ```bash
 npm install
@@ -178,13 +178,13 @@ npm install
 yarn install
 ```
 
-3. **Konfiguracja zmiennych środowiskowych**
+1. **Konfiguracja zmiennych środowiskowych**
 
 ```bash
 cp env.example .env.local
 ```
 
-4. **Konfiguracja bazy danych**
+1. **Konfiguracja bazy danych**
 
 ```bash
 npx prisma generate
@@ -192,7 +192,7 @@ npx prisma db push
 npm run migrate
 ```
 
-5. **Uruchomienie serwera deweloperskiego**
+1. **Uruchomienie serwera deweloperskiego**
 
 ```bash
 npm run dev
@@ -287,7 +287,7 @@ model User {
   email         String    @unique
   firstName     String?
   lastName      String?
-  role          UserRole  @default(BUYER)
+  role          UserRole  @default(USER)
   isActive      Boolean   @default(false)
   // ... inne pola
 }
@@ -337,7 +337,7 @@ npx prisma migrate reset
 
 ### Autentykacja
 
-```
+```text
 POST /api/auth/register          # Rejestracja
 POST /api/auth/activate          # Aktywacja konta
 POST /api/auth/send-sms          # Wysłanie SMS
@@ -346,7 +346,7 @@ POST /api/auth/verify-sms        # Weryfikacja SMS
 
 ### Aukcje
 
-```
+```text
 GET    /api/auctions             # Lista aukcji
 POST   /api/auctions/create      # Tworzenie aukcji
 GET    /api/auctions/[id]        # Szczegóły aukcji
@@ -355,7 +355,7 @@ POST   /api/auctions/bid         # Licytacja
 
 ### Płatności
 
-```
+```text
 POST /api/payments/create-intent     # Tworzenie płatności
 POST /api/payments/confirm-delivery  # Potwierdzenie dostawy
 POST /api/payments/dispute           # Spór
@@ -363,7 +363,7 @@ POST /api/payments/dispute           # Spór
 
 ### Upload
 
-```
+```text
 POST /api/upload                     # Upload plików
 POST /api/breeder-meetings/upload    # Upload zdjęć spotkań
 ```
@@ -390,7 +390,6 @@ POST /api/breeder-meetings/upload    # Upload zdjęć spotkań
 
 - **AuctionDetails** - szczegóły aukcji
 - **ChampionProfile** - profil championa
-- **PaymentModal** - modal płatności
 - **SearchTrends** - trendy wyszukiwania
 
 ### Animacje
@@ -427,7 +426,7 @@ POST /api/breeder-meetings/upload    # Upload zdjęć spotkań
 
 ## 🔒 Bezpieczeństwo
 
-### Autentykacja
+### Bezpieczeństwo Autentykacji
 
 - **NextAuth.js** - OAuth + JWT
 - **Session Management** - bezpieczne sesje
@@ -446,7 +445,7 @@ POST /api/breeder-meetings/upload    # Upload zdjęć spotkań
 - **Helmet** - nagłówki bezpieczeństwa
 - **Input Sanitization** - czyszczenie danych
 
-### Płatności
+### Bezpieczeństwo Płatności
 
 - **Stripe** - bezpieczne płatności
 - **Webhook Verification** - weryfikacja webhooków

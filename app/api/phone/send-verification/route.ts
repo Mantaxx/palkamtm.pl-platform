@@ -41,7 +41,7 @@ export async function POST() {
       },
     });
 
-    // 4. Send the SMS via Twilio
+    // 4. Send the SMS via SMSAPI
     const smsResult = await sendVerificationSms(user.phoneNumber, code);
 
     if (!smsResult.success) {

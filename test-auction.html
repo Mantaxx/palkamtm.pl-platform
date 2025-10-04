@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Auction API</title>
+</head>
+
+<body>
+    <h1>Test Auction Creation</h1>
+    <button id="createAuction">Create Test Auction</button>
+    <pre id="response"></pre>
+
+    <script>
+        document.getElementById('createAuction').addEventListener('click', async () => {
+            const responseElement = document.getElementById('response');
+            responseElement.textContent = 'Sending request...';
+
+            const now = new Date();
+            const endTime = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
+
+            const testData = {
+                title: 'Test Auction from HTML - ' + now.toISOString(),
+                description: 'This is a test auction created directly from an HTML page to debug the API.',
+                category: 'Pigeon',
+                startingPrice: 100,
+                buyNowPrice: 200,
+                startTime: now.toISOString(),
+                endTime: endTime.toISOString(),
+                images: ['/uploads/image/test-image-1.jpg'], // Assuming some dummy image URL
+                location: 'Test City, Test Country'
+            };
+
+            try {
+                const response = await fetch('http://localhost:3000/api/auctions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData),
+                });
+
+                const result = await response.json();
+                responseElement.textContent = JSON.stringify(result, null, 2);
+
+                if (!response.ok) {
+                    responseElement.style.color = 'red';
+                } else {
+                    responseElement.style.color = 'green';
+                }
+
+            } catch (error) {
+                responseElement.textContent = 'Error: ' + error.message;
+                responseElement.style.color = 'red';
+            }
+        });
+    </script>
+</body>
+
+</html>

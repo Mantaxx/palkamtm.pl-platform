@@ -18,6 +18,7 @@ Most endpoints require authentication. Include the session token in cookies or u
 - Auth endpoints: 5 requests per 15 minutes
 - API endpoints: 100 requests per 15 minutes
 - Upload endpoints: 10 requests per hour
+- SMS verification: 3 requests per 15 minutes per user
 
 ## Endpoints
 
@@ -485,3 +486,68 @@ The API supports webhooks for real-time updates:
 - `user.registered` - When a new user registers
 
 Webhook payloads include the event type and relevant data.
+
+## Phone Verification
+
+### POST /api/phone/send-verification
+
+Send SMS verification code to user's phone number.
+
+**Authentication:** Required
+
+**Request Body:** None (uses phone number from user profile)
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Kod weryfikacyjny został wysłany."
+}
+```
+
+**Error Responses:**
+
+```json
+{
+  "error": "Brak numeru telefonu w profilu."
+}
+```
+
+### POST /api/phone/check-verification
+
+Verify SMS code entered by user.
+
+**Authentication:** Required
+
+**Request Body:**
+
+```json
+{
+  "code": "123456"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Numer telefonu został pomyślnie zweryfikowany."
+}
+```
+
+**Error Responses:**
+
+```json
+{
+  "error": "Nieprawidłowy kod weryfikacyjny."
+}
+```
+
+**Notes:**
+
+- Verification code is valid for 10 minutes
+- Code is 6 digits long
+- SMS is sent via SMSAPI service
+- User must have phone number in profile to receive verification

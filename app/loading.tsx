@@ -45,7 +45,7 @@ export default function LoadingPage() {
 
     return (
         <UnifiedLayout showNavigation={false}>
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 flex items-center justify-center relative overflow-hidden">
+            <div className="flex items-center justify-center relative overflow-hidden min-h-screen">
                 {/* Tło z animowanymi elementami */}
                 <div className="absolute inset-0">
                     <motion.div

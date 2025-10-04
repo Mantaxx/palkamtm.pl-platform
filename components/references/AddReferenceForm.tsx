@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Calendar, MapPin, MessageSquare, Plus, Star, Trophy, User, X, Camera } from 'lucide-react'
+import { Calendar, Camera, MapPin, MessageSquare, Plus, Star, Trophy, User, X } from 'lucide-react'
 import { useState } from 'react'
 
 interface Achievement {
@@ -196,7 +196,7 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
               value={formData.location}
               onChange={(e) => handleInputChange('location', e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
-              placeholder="np. Kraków, Polska"
+              placeholder="np. Kraków"
               required
             />
           </div>
@@ -250,19 +250,19 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
             required
           />
         </div>
-        
+
         {/* File Upload */}
         <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <Camera className="w-4 h-4 inline mr-2" />
-              Zdjęcie gołębia (opcjonalnie)
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => e.target.files && setImage(e.target.files[0])}
-              className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-slate-50 file:text-slate-700 hover:file:bg-slate-100"
-            />
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <Camera className="w-4 h-4 inline mr-2" />
+            Zdjęcie gołębia (opcjonalnie)
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => e.target.files && setImage(e.target.files[0])}
+            className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-slate-50 file:text-slate-700 hover:file:bg-slate-100"
+          />
         </div>
 
         {/* Osiągnięcia */}

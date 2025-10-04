@@ -38,8 +38,7 @@ model Session {
 }
 
 enum UserRole {
-  BUYER
-  SELLER
+  USER
   ADMIN
 }
 
@@ -51,7 +50,7 @@ model User {
   emailVerified DateTime?
   image         String?
   password      String?
-  role          UserRole  @default(BUYER)
+  role          UserRole  @default(USER)
   isActive      Boolean   @default(false)
   activationToken String?
   
@@ -80,6 +79,11 @@ model User {
   buyerTransactions  Transaction[] @relation("BuyerTransactions")
   sellerTransactions Transaction[] @relation("SellerTransactions")
   breederMeetings    BreederMeeting[]
+  
+  // Messaging system
+  conversationsAsParticipant1 Conversation[] @relation("ConversationParticipant1")
+  conversationsAsParticipant2 Conversation[] @relation("ConversationParticipant2")
+  sentMessages       UserMessage[] @relation("UserMessageSender")
 }
 
 model BreederMeeting {
@@ -89,11 +93,14 @@ model BreederMeeting {
   location    String
   date        DateTime
   images      String   // JSON array of image URLs
+  isApproved  Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([isApproved])
 }
 
 model VerificationToken {
@@ -220,6 +227,37 @@ model Message {
   createdAt DateTime @default(now())
 
   @@index([auctionId])
+  @@index([senderId])
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  participant1Id String
+  participant1 User   @relation("ConversationParticipant1", fields: [participant1Id], references: [id], onDelete: Cascade)
+  participant2Id String
+  participant2 User   @relation("ConversationParticipant2", fields: [participant2Id], references: [id], onDelete: Cascade)
+  lastMessageAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages UserMessage[]
+
+  @@unique([participant1Id, participant2Id])
+  @@index([participant1Id])
+  @@index([participant2Id])
+}
+
+model UserMessage {
+  id             String   @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User     @relation("UserMessageSender", fields: [senderId], references: [id])
+  content        String
+  isRead         Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  @@index([conversationId])
   @@index([senderId])
 }
 

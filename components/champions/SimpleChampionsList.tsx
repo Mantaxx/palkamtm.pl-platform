@@ -1,27 +1,19 @@
 'use client'
 
 import ImageModal from '@/components/ImageModal'
-import { motion } from 'framer-motion'
-import { TreePine } from 'lucide-react'
-import Image from 'next/image'
 import { useEffect, useState } from 'react'
+import { ChampionsCarousel } from './ChampionsCarousel'
 
 interface Champion {
     id: string
-    name: string
-    ringNumber: string
-    bloodline: string
     images: string[]
-    pedigree?: string
+    pedigreeImage?: string
 }
 
 interface ChampionData {
     id?: string;
-    name?: string;
-    ringNumber?: string;
-    bloodline?: string;
     images?: Array<string | { url?: string }>;
-    pedigree?: string;
+    pedigreeImage?: string;
 }
 
 export function SimpleChampionsList() {
@@ -30,23 +22,32 @@ export function SimpleChampionsList() {
     const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [allImages, setAllImages] = useState<Array<{ src: string; alt: string }>>([])
+    const [selectedPedigreeImage, setSelectedPedigreeImage] = useState<string | null>(null)
 
     // Ładowanie championów z API
     useEffect(() => {
         const loadChampions = async () => {
             try {
                 setIsLoading(true)
+                console.log('Fetching champions from API...')
                 const response = await fetch('/api/champions/images')
+                console.log('API response status:', response.status)
+                console.log('API response ok:', response.ok)
+
                 if (!response.ok) {
                     throw new Error('Nie udało się pobrać danych championów')
                 }
 
                 const responseData = await response.json()
+                console.log('API response data:', responseData)
                 const championsData = responseData.champions || []
+                console.log('Champions data from API:', championsData)
 
                 // Konwertuj dane z API na format Champion
                 const championsList = championsData.map((championData: ChampionData) => {
                     const apiImages = Array.isArray(championData.images) ? championData.images : []
+                    console.log('Raw API images for champion', championData.id, ':', apiImages) // Debug
+
                     const gallery = apiImages.map((img: string | { url?: string }) => {
                         if (typeof img === 'string') return img
                         if (typeof img === 'object' && img !== null) {
@@ -55,22 +56,49 @@ export function SimpleChampionsList() {
                         return ''
                     }).filter(Boolean)
 
+                    // Sprawdź czy champion ma dane pedigree z API
+                    let pedigreeImage = ''
+                    const championWithPedigree = championData as {
+                        id: string;
+                        name?: string;
+                        ringNumber?: string;
+                        pedigree?: {
+                            images?: string[];
+                        };
+                    }
+                    
+                    console.log('Champion data pedigree:', championWithPedigree.pedigree)
+
+                    if (championWithPedigree.pedigree?.images && championWithPedigree.pedigree.images.length > 0) {
+                        pedigreeImage = championWithPedigree.pedigree.images[0]
+                        console.log('Using API pedigree image:', pedigreeImage)
+                    } else {
+                        // Fallback do domyślnej ścieżki
+                        pedigreeImage = `/champions/${championData.id}/pedigree/${championWithPedigree.ringNumber || 'pedigree'}.1.jpg`
+                        console.log('Using fallback pedigree image:', pedigreeImage)
+                    }
+
+                    console.log('Processed champion:', championData.id, 'Gallery length:', gallery.length, 'Gallery:', gallery) // Debug
+                    console.log('Pedigree data for champion', championData.id, ':', championWithPedigree.pedigree) // Debug
+                    console.log('Final pedigreeImage:', pedigreeImage) // Debug
+
                     return {
                         id: String(championData.id || ''),
-                        name: championData.name || `Champion ${championData.id}`,
-                        ringNumber: championData.ringNumber || `PL-2024-${String(championData.id).padStart(3, '0')}`,
-                        bloodline: championData.bloodline || 'Janssen',
                         images: gallery,
-                        pedigree: championData.pedigree
+                        pedigreeImage: pedigreeImage
                     }
                 }).filter((c: Champion) => c && c.id)
 
+                console.log('Processed champions list:', championsList)
+                console.log('Champions list length:', championsList.length)
+
                 setChampions(championsList)
+                console.log('Loaded champions:', championsList) // Debug
 
                 // Przygotuj wszystkie zdjęcia do nawigacji w modalu
                 const flatImages = championsList
-                    .flatMap(champion =>
-                        champion.images.map(src => ({ src, alt: `Zdjęcie championa ${champion.name}` }))
+                    .flatMap((champion: Champion) =>
+                        champion.images.map(src => ({ src, alt: `Zdjęcie championa` }))
                     )
                     .slice(0, 20) // Ogranicz do 20, tak jak w renderowaniu
 
@@ -102,44 +130,19 @@ export function SimpleChampionsList() {
 
     return (
         <>
-            {/* Simple Champions List - 4 w rzędzie */}
-            <div className="mx-auto px-6">
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-8 w-full">
-                    {champions.length === 0 ? (
-                        <div className="col-span-2 sm:col-span-2 md:col-span-4 text-center py-12">
-                            <p className="text-white">Brak championów do wyświetlenia.</p>
-                        </div>
-                    ) : (
-                        champions.flatMap((champion) => champion.images)
-                            .slice(0, 20)
-                            .map((src, imgIndex) => (
-                                <motion.div
-                                    key={imgIndex}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.5, delay: imgIndex * 0.1 }}
-                                    className="relative w-full max-w-xs aspect-[4/3] cursor-pointer group overflow-hidden rounded-lg bg-white border-2 border-white shadow-lg champion-image-glow"
-                                    onClick={() => handleImageClick(src, imgIndex)}
-                                >
-                                    {src ? (
-                                        <Image
-                                            src={src}
-                                            alt={`Zdjęcie ${imgIndex + 1}`}
-                                            fill
-                                            sizes="(max-width: 768px) 50vw, 20vw"
-                                            className="object-cover"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full bg-gradient-to-br from-white/20 to-white/10 flex items-center justify-center">
-                                            <TreePine className="w-8 h-8 text-white/60" />
-                                        </div>
-                                    )}
-                                    <div className="absolute inset-0 bg-white bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300"></div>
-                                </motion.div>
-                            ))
-                    )}
-                </div>
-            </div>
+            {/* Champions Carousel */}
+            <ChampionsCarousel
+                champions={champions}
+                onImageClick={handleImageClick}
+                onPedigreeClick={(pedigreeImage) => {
+                    console.log('=== onPedigreeClick CALLED ===')
+                    console.log('Pedigree image received:', pedigreeImage)
+                    console.log('Setting selectedPedigreeImage to:', pedigreeImage)
+                    setSelectedPedigreeImage(pedigreeImage)
+                    console.log('selectedPedigreeImage set successfully')
+                    console.log('=== END onPedigreeClick ===')
+                }}
+            />
 
             {/* Image Modal - renderowany lokalnie */}
             {selectedImage && selectedImageIndex !== null && (
@@ -156,6 +159,25 @@ export function SimpleChampionsList() {
                     currentIndex={selectedImageIndex}
                     totalImages={allImages.length}
                 />
+            )}
+
+            {/* Pedigree Image Modal */}
+            {selectedPedigreeImage && (
+                <ImageModal
+                    image={{ id: 'pedigree-image', src: selectedPedigreeImage, alt: 'Rodowód championa' }}
+                    onClose={() => {
+                        console.log('Closing pedigree modal')
+                        setSelectedPedigreeImage(null)
+                    }}
+                />
+            )}
+
+            {/* Debug info */}
+            {process.env.NODE_ENV === 'development' && (
+                <div className="fixed bottom-4 right-4 bg-black/80 text-white p-2 rounded text-xs z-50">
+                    <div>Selected Pedigree: {selectedPedigreeImage || 'none'}</div>
+                    <div>Champions loaded: {champions.length}</div>
+                </div>
             )}
         </>
     )

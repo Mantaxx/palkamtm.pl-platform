@@ -12,42 +12,6 @@ interface SearchSuggestion {
   category?: string
 }
 
-const mockSuggestions: SearchSuggestion[] = [
-  {
-    id: '1',
-    title: 'Champion "Thunder Storm" - Linia Janssen',
-    type: 'auction',
-    category: 'Pigeon'
-  },
-  {
-    id: '2',
-    title: 'Janssen',
-    type: 'bloodline'
-  },
-  {
-    id: '3',
-    title: 'Jan Kowalski',
-    type: 'seller'
-  },
-  {
-    id: '4',
-    title: 'Para hodowlana - Linia Sion',
-    type: 'auction',
-    category: 'Pigeon'
-  },
-  {
-    id: '5',
-    title: 'Sion',
-    type: 'bloodline'
-  },
-  {
-    id: '6',
-    title: 'Suplementy witaminowe',
-    type: 'auction',
-    category: 'Supplements'
-  }
-]
-
 interface QuickSearchProps {
   placeholder?: string
   className?: string
@@ -68,11 +32,26 @@ export default function QuickSearch({
 
   useEffect(() => {
     if (query.length > 2) {
-      const filtered = mockSuggestions.filter(suggestion =>
-        suggestion.title.toLowerCase().includes(query.toLowerCase())
-      )
-      setSuggestions(filtered.slice(0, 5))
-      setIsOpen(true)
+      // Pobierz sugestie z API
+      const fetchSuggestions = async () => {
+        try {
+          const response = await fetch(`/api/auctions/search-suggestions?q=${encodeURIComponent(query)}`)
+          if (response.ok) {
+            const data = await response.json()
+            setSuggestions(data.suggestions.slice(0, 5))
+            setIsOpen(true)
+          } else {
+            setSuggestions([])
+            setIsOpen(false)
+          }
+        } catch (error) {
+          console.error('Error fetching suggestions:', error)
+          setSuggestions([])
+          setIsOpen(false)
+        }
+      }
+      
+      fetchSuggestions()
     } else {
       setSuggestions([])
       setIsOpen(false)
@@ -197,6 +176,8 @@ export default function QuickSearch({
             <button
               onClick={clearQuery}
               className="text-gray-400 hover:text-gray-600 transition-colors"
+              title="Wyczyść"
+              aria-label="Wyczyść wyszukiwanie"
             >
               <X className="h-5 w-5" />
             </button>

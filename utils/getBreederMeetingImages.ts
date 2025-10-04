@@ -71,7 +71,7 @@ export const getAllBreederMeetings = async (): Promise<Array<{
     description: string
     images: string[]
 }>> => {
-    // Używaj tylko prawdziwych danych z folderów - bez fallback do mocków
+    // Dane z rzeczywistych folderów
     const breeders = [
         {
             name: 'Geert Munnik',

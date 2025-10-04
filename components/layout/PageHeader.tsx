@@ -30,8 +30,8 @@ export function PageHeader({ title }: PageHeaderProps) {
                 <Link href="/auctions" className="flex items-center justify-center max-w-xs w-full sm:w-auto px-6 py-3 bg-white/20 hover:bg-white/30 text-white rounded-xl backdrop-blur-sm border border-white/30 transition-all duration-300 text-xs md:text-sm font-semibold shadow-md">
                     <i className="fas fa-gavel mr-2 text-2xl" /> Aukcje
                 </Link>
-                <Link href="/heritage" className="flex items-center justify-center max-w-xs w-full sm:w-auto px-6 py-3 bg-white/20 hover:bg-white/30 text-white rounded-xl backdrop-blur-sm border border-white/30 transition-all duration-300 text-xs md:text-sm font-semibold shadow-md">
-                    <i className="fas fa-crown mr-2 text-2xl" /> Dziedzictwo
+                <Link href="/achievements" className="flex items-center justify-center max-w-xs w-full sm:w-auto px-6 py-3 bg-white/20 hover:bg-white/30 text-white rounded-xl backdrop-blur-sm border border-white/30 transition-all duration-300 text-xs md:text-sm font-semibold shadow-md">
+                    <i className="fas fa-crown mr-2 text-2xl" /> Osiągnięcia
                 </Link>
                 <Link href="/champions" className="flex items-center justify-center max-w-xs w-full sm:w-auto px-6 py-3 bg-white/20 hover:bg-white/30 text-white rounded-xl backdrop-blur-sm border border-white/30 transition-all duration-300 text-xs md:text-sm font-semibold shadow-md">
                     <i className="fas fa-trophy mr-2 text-2xl" /> Championy

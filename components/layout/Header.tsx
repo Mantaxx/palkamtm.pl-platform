@@ -8,7 +8,7 @@ const navLinks = [
     { name: 'Start', href: '/' },
     { name: 'Gołębie', href: '/pigeons' },
     { name: 'Hodowla', href: '/breeding' },
-    { name: 'Dziedzictwo', href: '/heritage' },
+            { name: 'Osiągnięcia', href: '/achievements' },
     { name: 'Kontakt', href: '/contact' },
 ];
 

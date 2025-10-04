@@ -1,18 +1,12 @@
 'use client'
 
+import { LocationAutocomplete } from '@/components/ui/LocationAutocomplete'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { AnimatePresence, motion } from 'framer-motion'
-import {
-  ArrowLeft,
-  ArrowRight,
-  ShieldAlert,
-  Upload,
-  Video,
-  X
-} from 'lucide-react'
+import { FileText, Image as LucideImage, RotateCcw, Video, X } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useForm } from 'react-hook-form'
@@ -22,51 +16,41 @@ const createAuctionSchema = z.object({
   category: z.enum(['Pigeon', 'Supplements', 'Accessories'], {
     required_error: 'Wybierz kategorię'
   }),
-  title: z.string().min(10, 'Tytuł musi mieć co najmniej 10 znaków'),
-  description: z.string().min(50, 'Opis musi mieć co najmniej 50 znaków'),
+  title: z.string().min(5, 'Tytuł musi mieć co najmniej 5 znaków'),
+  description: z.string().min(20, 'Opis musi mieć co najmniej 20 znaków'),
 
   // Pola specyficzne dla gołębi
   ringNumber: z.string().optional(),
   bloodline: z.string().optional(),
   sex: z.enum(['male', 'female']).optional(),
-  birthDate: z.string().optional(),
   pedigreeFile: z.any().optional(),
   eyeColor: z.string().optional(),
   featherColor: z.string().optional(),
-  disciplines: z.array(z.string()).optional(),
-  dnaCertificate: z.string().optional(),
+  purpose: z.array(z.string()).optional(),
 
-  // PPQC - ogólny opis
-  ppqcSize: z.string().optional(),
-  ppqcBody: z.string().optional(),
-  ppqcVitality: z.string().optional(),
-  ppqcColorDensity: z.string().optional(),
-  ppqcLength: z.string().optional(),
-  ppqcEndurance: z.string().optional(),
-  ppqcForkStrength: z.string().optional(),
-  ppqcForkLayout: z.string().optional(),
-  ppqcMuscles: z.string().optional(),
-  ppqcBalance: z.string().optional(),
-  ppqcBack: z.string().optional(),
+  // Dodatkowe szczegóły gołębia
+  size: z.string().optional(),
+  bodyStructure: z.string().optional(),
+  vitality: z.string().optional(),
+  colorDensity: z.string().optional(),
+  length: z.string().optional(),
+  endurance: z.string().optional(),
 
-  // PPQC - skrzydło
-  ppqcBreedingFeathers: z.string().optional(),
-  ppqcPrimaries: z.string().optional(),
-  ppqcPlumage: z.string().optional(),
-  ppqcFeatherQuality: z.string().optional(),
-  ppqcSecondaries: z.string().optional(),
-  ppqcElasticity: z.string().optional(),
-
-  // Cena i format sprzedaży
-  startingPrice: z.number().min(1, 'Cena wywoławcza musi być większa od 0'),
+  // Cena
+  startingPrice: z.number().min(0, 'Cena wywoławcza nie może być ujemna').optional(),
   buyNowPrice: z.number().optional(),
-  saleFormat: z.enum(['auction', 'auction_with_buy_now', 'buy_now_only']),
 
   // Czas trwania aukcji
   duration: z.number().min(1).max(30),
 
   // Lokalizacja
-  location: z.string().min(2, 'Podaj lokalizację')
+  location: z.string().min(2, 'Wybierz lokalizację z listy').optional()
+}).refine((data) => {
+  // Sprawdź czy przynajmniej jedna cena jest podana
+  return data.startingPrice || data.buyNowPrice
+}, {
+  message: 'Musisz podać przynajmniej jedną cenę (wywoławczą lub Kup teraz)',
+  path: ['startingPrice']
 })
 
 type CreateAuctionFormData = z.infer<typeof createAuctionSchema>
@@ -75,32 +59,46 @@ interface MediaFile {
   id: string
   file: File
   preview: string
-  type: 'image' | 'video'
+  type: 'image' | 'video' | 'document'
+  category: 'pigeon_images' | 'videos' | 'pedigree'
 }
 
 interface CreateAuctionFormProps {
   onSuccess?: () => void
   onCancel?: () => void
+  showHeader?: boolean
 }
 
-const steps = [
-  { id: 1, title: 'Kategoria', description: 'Wybierz typ produktu' },
-  { id: 2, title: 'Szczegóły', description: 'Podstawowe informacje' },
-  { id: 3, title: 'Cena', description: 'Ustaw cenę i format' },
-  { id: 4, title: 'Media', description: 'Dodaj zdjęcia i filmy' },
-  { id: 5, title: 'Podsumowanie', description: 'Sprawdź i opublikuj' }
-]
-
-export default function CreateAuctionForm({ onSuccess }: CreateAuctionFormProps) {
+export default function CreateAuctionForm({ onSuccess, onCancel, showHeader = true }: CreateAuctionFormProps) {
   const { data: session, status } = useSession()
-  const [currentStep, setCurrentStep] = useState(1)
-  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([])
+  const router = useRouter()
+  const [pigeonImages, setPigeonImages] = useState<MediaFile[]>([])
+  const [videos, setVideos] = useState<MediaFile[]>([])
+  const [pedigreeFiles, setPedigreeFiles] = useState<MediaFile[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const [hasStartingPrice, setHasStartingPrice] = useState(true)
+  const [hasBuyNowPrice, setHasBuyNowPrice] = useState(false)
+  const [selectedLocation, setSelectedLocation] = useState<{
+    lat: string;
+    lon: string;
+    display_name: string;
+    address: {
+      city?: string;
+      town?: string;
+      village?: string;
+      county?: string;
+      state?: string;
+      country?: string;
+      postcode?: string;
+    };
+  } | null>(null)
 
   const {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors }
   } = useForm<CreateAuctionFormData>({
     resolver: zodResolver(createAuctionSchema),
@@ -108,101 +106,256 @@ export default function CreateAuctionForm({ onSuccess }: CreateAuctionFormProps)
   })
 
   const watchedCategory = watch('category')
-  const watchedSaleFormat = watch('saleFormat')
 
-  const onDrop = (acceptedFiles: File[]) => {
-    const newFiles: MediaFile[] = acceptedFiles.map(file => ({
+  // Funkcje do obsługi różnych typów plików
+  const createMediaFile = (file: File, category: 'pigeon_images' | 'videos' | 'pedigree'): MediaFile => {
+    const fileType = file.type.startsWith('video/') ? 'video' :
+      file.type.startsWith('image/') ? 'image' : 'document'
+
+    return {
       id: Math.random().toString(36).substr(2, 9),
       file,
       preview: URL.createObjectURL(file),
-      type: file.type.startsWith('video/') ? 'video' : 'image'
-    }))
-
-    setMediaFiles(prev => [...prev, ...newFiles])
+      type: fileType,
+      category
+    }
   }
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
+  const onDropPigeonImages = (acceptedFiles: File[]) => {
+    const newFiles = acceptedFiles.map(file => createMediaFile(file, 'pigeon_images'))
+    setPigeonImages(prev => [...prev, ...newFiles])
+  }
+
+  const onDropVideos = (acceptedFiles: File[]) => {
+    const newFiles = acceptedFiles.map(file => createMediaFile(file, 'videos'))
+    setVideos(prev => [...prev, ...newFiles])
+  }
+
+  const onDropPedigree = (acceptedFiles: File[]) => {
+    const newFiles = acceptedFiles.map(file => createMediaFile(file, 'pedigree'))
+    setPedigreeFiles(prev => [...prev, ...newFiles])
+  }
+
+  // Dropzone hooks dla różnych typów plików
+  const { getRootProps: getPigeonImagesRootProps, getInputProps: getPigeonImagesInputProps, isDragActive: isPigeonImagesDragActive } = useDropzone({
+    onDrop: onDropPigeonImages,
     accept: {
-      'image/*': ['.jpeg', '.jpg', '.png', '.webp'],
-      'video/*': ['.mp4', '.mov', '.avi']
+      'image/*': ['.jpeg', '.jpg', '.png', '.webp']
     },
-    maxFiles: 10
+    maxFiles: 8
   })
 
-  const removeMediaFile = (id: string) => {
-    setMediaFiles(prev => {
-      const file = prev.find(f => f.id === id)
-      if (file) {
-        URL.revokeObjectURL(file.preview)
-      }
-      return prev.filter(f => f.id !== id)
-    })
+  const { getRootProps: getVideosRootProps, getInputProps: getVideosInputProps, isDragActive: isVideosDragActive } = useDropzone({
+    onDrop: onDropVideos,
+    accept: {
+      'video/*': ['.mp4', '.mov', '.avi']
+    },
+    maxFiles: 3
+  })
+
+  const { getRootProps: getPedigreeRootProps, getInputProps: getPedigreeInputProps, isDragActive: isPedigreeDragActive } = useDropzone({
+    onDrop: onDropPedigree,
+    accept: {
+      'image/*': ['.jpeg', '.jpg', '.png', '.webp'],
+      'application/pdf': ['.pdf']
+    },
+    maxFiles: 2
+  })
+
+  // Funkcje usuwania plików
+  const removePigeonImage = (id: string) => {
+    setPigeonImages(prev => prev.filter(file => file.id !== id))
   }
 
-  const nextStep = () => {
-    if (currentStep < steps.length) {
-      setCurrentStep(currentStep + 1)
-    }
+  const removeVideo = (id: string) => {
+    setVideos(prev => prev.filter(file => file.id !== id))
   }
 
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1)
-    }
+  const removePedigreeFile = (id: string) => {
+    setPedigreeFiles(prev => prev.filter(file => file.id !== id))
+  }
+
+  const openPreview = (imageUrl: string) => {
+    setPreviewImage(imageUrl)
+  }
+
+  const closePreview = () => {
+    setPreviewImage(null)
+  }
+
+  const refreshForm = () => {
+    // Resetuj tylko pola formularza, zachowaj pliki i stan checkboxów
+    setValue('title', '')
+    setValue('description', '')
+    setValue('category', 'Pigeon')
+    setValue('ringNumber', '')
+    setValue('bloodline', '')
+    setValue('sex', undefined)
+    setValue('eyeColor', '')
+    setValue('featherColor', '')
+    setValue('purpose', [])
+    setValue('startingPrice', undefined)
+    setValue('buyNowPrice', undefined)
+    setValue('location', '')
+    setValue('duration', 7)
+
+    // Resetuj lokalizację
+    setSelectedLocation(null)
+
+    // Zachowaj checkboxy i pliki
+    // hasStartingPrice, hasBuyNowPrice, pigeonImages, videos, pedigreeFiles pozostają
   }
 
   const onSubmit = async (data: CreateAuctionFormData) => {
+    console.log('🚀 ONSUBMIT STARTED!')
+    console.log('📝 Form data:', data)
+
     setIsSubmitting(true)
 
     try {
-      // Tworzenie nowej aukcji
-      const newAuction = {
-        id: Date.now().toString(),
-        title: data.title,
-        description: data.description,
-        startingPrice: data.startingPrice,
-        currentPrice: data.startingPrice,
-        buyNowPrice: data.buyNowPrice,
-        endTime: new Date(Date.now() + (data.duration || 7) * 24 * 60 * 60 * 1000),
-        bids: 0,
-        watchers: 0,
-        category: data.category,
-        bloodline: data.bloodline,
-        age: data.birthDate ? new Date().getFullYear() - new Date(data.birthDate).getFullYear() + ' lat' : null,
-        location: data.location,
-        seller: 'Pałka M.T.M.', // Domyślny sprzedawca
-        sellerRating: 5.0,
-        images: mediaFiles.filter(f => f.type === 'image').map(f => f.preview),
-        isWatched: false,
-        createdAt: new Date().toISOString(),
-        status: 'active'
+      // Upload files by category
+      let uploadedImages: string[] = []
+      let uploadedVideos: string[] = []
+      let uploadedDocuments: string[] = []
+
+      // Upload pigeon images
+      if (pigeonImages.length > 0) {
+        const imageFormData = new FormData()
+        imageFormData.append('type', 'image')
+        pigeonImages.forEach(file => {
+          imageFormData.append('files', file.file)
+        })
+
+        const imageResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: imageFormData,
+        })
+
+        if (imageResponse.ok) {
+          const imageResult = await imageResponse.json()
+          uploadedImages = imageResult.files || []
+        } else {
+          const error = await imageResponse.json()
+          console.error('Błąd uploadu obrazów:', error)
+        }
       }
 
-      // Pobieranie istniejących aukcji z localStorage
-      const existingAuctions = JSON.parse(localStorage.getItem('auctions') || '[]')
+      // Upload videos
+      if (videos.length > 0) {
+        const videoFormData = new FormData()
+        videoFormData.append('type', 'video')
+        videos.forEach(file => {
+          videoFormData.append('files', file.file)
+        })
 
-      // Dodanie nowej aukcji
-      const updatedAuctions = [...existingAuctions, newAuction]
+        const videoResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: videoFormData,
+        })
 
-      // Zapisanie do localStorage
-      localStorage.setItem('auctions', JSON.stringify(updatedAuctions))
+        if (videoResponse.ok) {
+          const videoResult = await videoResponse.json()
+          uploadedVideos = videoResult.files || []
+        } else {
+          const error = await videoResponse.json()
+          console.error('Błąd uploadu filmów:', error)
+        }
+      }
 
-      // Symulacja opóźnienia
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Upload pedigree documents
+      if (pedigreeFiles.length > 0) {
+        const pedigreeFormData = new FormData()
+        pedigreeFormData.append('type', 'document')
+        pedigreeFiles.forEach(file => {
+          pedigreeFormData.append('files', file.file)
+        })
 
-      console.log('Aukcja utworzona:', newAuction)
+        const pedigreeResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: pedigreeFormData,
+        })
 
-      // Wywołanie callback onSuccess
-      if (onSuccess) {
-        onSuccess()
+        if (pedigreeResponse.ok) {
+          const pedigreeResult = await pedigreeResponse.json()
+          uploadedDocuments = pedigreeResult.files || []
+        } else {
+          const error = await pedigreeResponse.json()
+          console.error('Błąd uploadu dokumentów:', error)
+        }
+      }
+
+      const now = new Date()
+      const endTime = new Date(now.getTime() + (data.duration || 7) * 24 * 60 * 60 * 1000)
+
+      const requestData = {
+        title: data.title,
+        description: data.description,
+        category: data.category,
+        startingPrice: hasStartingPrice && data.startingPrice && !isNaN(data.startingPrice) ? data.startingPrice : 0,
+        buyNowPrice: hasBuyNowPrice && data.buyNowPrice && !isNaN(data.buyNowPrice) ? data.buyNowPrice : undefined,
+        startTime: now.toISOString(),
+        endTime: endTime.toISOString(),
+        images: uploadedImages,
+        videos: uploadedVideos,
+        documents: uploadedDocuments,
+        location: data.location || 'Nie podano',
+        locationData: selectedLocation ? {
+          lat: parseFloat(selectedLocation.lat),
+          lon: parseFloat(selectedLocation.lon),
+          displayName: selectedLocation.display_name,
+          address: selectedLocation.address
+        } : null,
+        // Dane specyficzne dla gołębi
+        ...(data.category === 'Pigeon' && {
+          pigeon: {
+            ringNumber: data.ringNumber,
+            bloodline: data.bloodline,
+            sex: data.sex,
+            eyeColor: data.eyeColor,
+            featherColor: data.featherColor,
+            purpose: data.purpose || [],
+            size: data.size,
+            bodyStructure: data.bodyStructure,
+            vitality: data.vitality,
+            colorDensity: data.colorDensity,
+            length: data.length,
+            endurance: data.endurance
+          }
+        })
+      }
+
+      const response = await fetch('/api/auctions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        console.log('✅ Aukcja utworzona pomyślnie:', result)
+        alert('✅ Aukcja została utworzona pomyślnie!')
+
+        if (onSuccess) {
+          onSuccess()
+        } else {
+          // Jeśli nie ma callback, przekieruj do aukcji i odśwież
+          router.push('/auctions')
+          // Odśwież stronę po krótkim opóźnieniu żeby router zdążył przekierować
+          setTimeout(() => {
+            window.location.reload()
+          }, 100)
+        }
       } else {
-        // Fallback - przekierowanie do strony aukcji
-        window.location.href = '/auctions'
+        const error = await response.json()
+        console.error('❌ Błąd API:', error)
+        alert('❌ Wystąpił błąd podczas tworzenia aukcji: ' + (error.message || 'Nieznany błąd'))
       }
 
     } catch (error) {
-      console.error('Błąd podczas tworzenia aukcji:', error)
+      console.error('❌ Błąd podczas tworzenia aukcji:', error)
+      alert('❌ Wystąpił błąd podczas tworzenia aukcji')
     } finally {
       setIsSubmitting(false)
     }
@@ -219,7 +372,7 @@ export default function CreateAuctionForm({ onSuccess }: CreateAuctionFormProps)
   if (status === 'unauthenticated' || !session?.user) {
     return (
       <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-md">
-        <p className="text-sm text-red-700">
+        <p className="text-xs text-red-700">
           Musisz być zalogowany, aby utworzyć aukcję.
           <Link href="/auth/signin" className="font-medium underline text-red-800 hover:text-red-900 ml-2">
             Zaloguj się
@@ -229,561 +382,473 @@ export default function CreateAuctionForm({ onSuccess }: CreateAuctionFormProps)
     )
   }
 
-  if (!session.user.isPhoneVerified) {
-    return (
-      <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md">
-        <div className="flex">
-          <div className="flex-shrink-0">
-            <ShieldAlert className="h-5 w-5 text-yellow-400" aria-hidden="true" />
-          </div>
-          <div className="ml-3">
-            <p className="text-sm text-yellow-700">
-              Weryfikacja numeru telefonu jest wymagana.
-              <Link href="/settings/profile" className="font-medium underline text-yellow-800 hover:text-yellow-900 ml-2">
-                Przejdź do ustawień, aby zweryfikować swój numer i uzyskać pełen dostęp.
-              </Link>
-            </p>
-          </div>
-        </div>
+  return (
+    <div className="bg-white/80 backdrop-blur-xl border-2 border-white rounded-2xl shadow-[0_0_14px_3px_rgba(255,255,255,0.55)] max-h-[95vh] overflow-y-auto text-black relative">
+      {/* Przyciski na górze */}
+      <div className="absolute top-3 right-3 flex gap-2 z-10">
+        <button
+          onClick={refreshForm}
+          className="w-8 h-8 bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center transition-colors"
+          title="Odśwież formularz"
+        >
+          <RotateCcw className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => {
+            if (onCancel) {
+              onCancel()
+            } else {
+              // Jeśli nie ma callback, przekieruj do aukcji
+              router.push('/auctions')
+            }
+          }}
+          className="w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-colors"
+          title="Zamknij"
+        >
+          <X className="w-4 h-4" />
+        </button>
       </div>
-    )
-  }
-
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-gray-900">Wybierz kategorię</h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {[
-                { value: 'Pigeon', label: 'Gołąb Pocztowy', icon: '🐦' },
-                { value: 'Supplements', label: 'Suplementy', icon: '💊' },
-                { value: 'Accessories', label: 'Akcesoria', icon: '🏠' }
-              ].map((category) => (
-                <label
-                  key={category.value}
-                  className={`relative flex flex-col items-center p-6 border-2 rounded-lg cursor-pointer transition-colors ${watchedCategory === category.value
-                    ? 'border-slate-500 bg-slate-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                >
-                  <input
-                    type="radio"
-                    value={category.value}
-                    {...register('category')}
-                    className="sr-only"
-                  />
-                  <span className="text-4xl mb-2">{category.icon}</span>
-                  <span className="font-medium text-gray-900">{category.label}</span>
-                </label>
-              ))}
-            </div>
-
-            {errors.category && (
-              <p className="text-red-600 text-sm">{errors.category.message}</p>
-            )}
+      <form onSubmit={handleSubmit(onSubmit)} className="p-4">
+        {showHeader && (
+          <div className="mb-4">
+            <h1 className="text-xl font-bold text-black mb-1">Utwórz nową aukcję</h1>
+            <p className="text-black/90 text-sm">Wypełnij wszystkie wymagane pola i opublikuj swoją aukcję</p>
           </div>
-        )
+        )}
 
-      case 2:
-        return (
-          <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-gray-900">Szczegóły produktu</h2>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tytuł aukcji *
-                </label>
-                <input
-                  type="text"
-                  {...register('title')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
-                  placeholder="np. Champion 'Thunder Storm' - Linia Janssen"
-                />
-                {errors.title && (
-                  <p className="text-red-600 text-sm mt-1">{errors.title.message}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Opis *
-                </label>
-                <textarea
-                  {...register('description')}
-                  rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
-                  placeholder="Opisz szczegółowo produkt, jego historię, osiągnięcia..."
-                />
-                {errors.description && (
-                  <p className="text-red-600 text-sm mt-1">{errors.description.message}</p>
-                )}
-              </div>
-
-              {watchedCategory === 'Pigeon' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Numer obrączki
-                    </label>
-                    <input
-                      type="text"
-                      {...register('ringNumber')}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
-                      placeholder="PL 2024 123456"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Linia krwi/Szczep
-                    </label>
-                    <input
-                      type="text"
-                      {...register('bloodline')}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
-                      placeholder="np. Janssen, Sion, Bricoux"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Płeć
-                    </label>
-                    <select
-                      {...register('sex')}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
-                    >
-                      <option value="">Wybierz płeć</option>
-                      <option value="male">Samiec</option>
-                      <option value="female">Samica</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Data urodzenia
-                    </label>
-                    <input
-                      type="date"
-                      {...register('birthDate')}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Kolor oka (opcjonalnie)
-                    </label>
-                    <input
-                      type="text"
-                      {...register('eyeColor')}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
-                      placeholder="np. żółty"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Barwa gołębia (opcjonalnie)
-                    </label>
-                    <input
-                      type="text"
-                      {...register('featherColor')}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
-                      placeholder="np. szpak"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Dyscypliny (opcjonalnie)
-                    </label>
-                    <input
-                      type="text"
-                      {...register('disciplines')}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
-                      placeholder="np. krótki dystans, średni dystans"
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Certyfikat DNA (opcjonalnie)
-                    </label>
-                    <input
-                      type="text"
-                      {...register('dnaCertificate')}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
-                      placeholder="np. Oboje rodziców"
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Lokalizacja *
-                </label>
-                <input
-                  type="text"
-                  {...register('location')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
-                  placeholder="np. Kraków, Polska"
-                />
-                {errors.location && (
-                  <p className="text-red-600 text-sm mt-1">{errors.location.message}</p>
-                )}
-              </div>
-            </div>
-          </div>
-        )
-
-      case 3:
-        return (
-          <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-gray-900">Cena i format sprzedaży</h2>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Format sprzedaży *
-                </label>
-                <div className="space-y-2">
-                  {[
-                    { value: 'auction', label: 'Tylko licytacja', description: 'Aukcja od ceny wywoławczej' },
-                    { value: 'auction_with_buy_now', label: 'Licytacja + Kup teraz', description: 'Możliwość licytacji lub natychmiastowego zakupu' },
-                    { value: 'buy_now_only', label: 'Tylko Kup teraz', description: 'Stała cena bez licytacji' }
-                  ].map((format) => (
-                    <label
-                      key={format.value}
-                      className={`flex items-start p-4 border rounded-lg cursor-pointer transition-colors ${watchedSaleFormat === format.value
-                        ? 'border-slate-500 bg-slate-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                    >
-                      <input
-                        type="radio"
-                        value={format.value}
-                        {...register('saleFormat')}
-                        className="mt-1 mr-3"
-                      />
-                      <div>
-                        <p className="font-medium text-gray-900">{format.label}</p>
-                        <p className="text-sm text-gray-600">{format.description}</p>
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Cena wywoławcza (zł) *
-                  </label>
-                  <input
-                    type="number"
-                    {...register('startingPrice', { valueAsNumber: true })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
-                    placeholder="5000"
-                  />
-                  {errors.startingPrice && (
-                    <p className="text-red-600 text-sm mt-1">{errors.startingPrice.message}</p>
-                  )}
-                </div>
-
-                {(watchedSaleFormat === 'auction_with_buy_now' || watchedSaleFormat === 'buy_now_only') && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Cena Kup teraz (zł)
-                    </label>
-                    <input
-                      type="number"
-                      {...register('buyNowPrice', { valueAsNumber: true })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
-                      placeholder="15000"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {watchedSaleFormat !== 'buy_now_only' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Czas trwania aukcji (dni)
-                  </label>
-                  <select
-                    {...register('duration', { valueAsNumber: true })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
-                  >
-                    <option value={1}>1 dzień</option>
-                    <option value={3}>3 dni</option>
-                    <option value={7}>7 dni</option>
-                    <option value={14}>14 dni</option>
-                    <option value={30}>30 dni</option>
-                  </select>
-                </div>
-              )}
-            </div>
-          </div>
-        )
-
-      case 4:
-        return (
-          <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-gray-900">Zdjęcia i filmy</h2>
-
-            <div
-              {...getRootProps()}
-              className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${isDragActive
-                ? 'border-slate-500 bg-slate-50'
-                : 'border-gray-300 hover:border-gray-400'
+        {/* Kategoria */}
+        <h2 className="text-sm font-semibold text-black mb-2">Kategoria *</h2>
+        <div className="grid grid-cols-3 gap-2 mb-3">
+          {[
+            { value: 'Pigeon', label: 'Gołąb Pocztowy', icon: '🐦' },
+            { value: 'Supplements', label: 'Suplementy', icon: '💊' },
+            { value: 'Accessories', label: 'Akcesoria', icon: '🏠' }
+          ].map((category) => (
+            <label
+              key={category.value}
+              className={`relative flex flex-col items-center p-2 border-2 rounded-lg cursor-pointer transition-colors ${watchedCategory === category.value
+                ? 'border-white bg-white/20'
+                : 'border-white/30 bg-white/10 hover:border-white/50 hover:bg-white/15'
                 }`}
             >
-              <input {...getInputProps()} />
-              <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-lg font-medium text-gray-900 mb-2">
-                {isDragActive ? 'Upuść pliki tutaj' : 'Przeciągnij pliki lub kliknij, aby wybrać'}
-              </p>
-              <p className="text-sm text-gray-600">
-                Obsługiwane formaty: JPG, PNG, WebP, MP4, MOV, AVI (max 10 plików)
-              </p>
-            </div>
-
-            {mediaFiles.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {mediaFiles.map((file) => (
-                  <div key={file.id} className="relative group">
-                    <div className="aspect-square relative rounded-lg overflow-hidden bg-gray-100">
-                      {file.type === 'image' ? (
-                        <Image
-                          src={file.preview}
-                          alt="Preview"
-                          width={200}
-                          height={200}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Video className="w-8 h-8 text-gray-400" />
-                        </div>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => removeMediaFile(file.id)}
-                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="Usuń plik"
-                      aria-label="Usuń plik"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-            {/* PPQC i Charakterystyka - opcjonalne */}
-            <div className="mt-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Charakterystyka i PPQC (opcjonalnie)</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Wielkość</label>
-                  <input type="text" {...register('ppqcSize')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="średni" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Budowa korpusu</label>
-                  <input type="text" {...register('ppqcBody')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="normalny" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Witalność</label>
-                  <input type="text" {...register('ppqcVitality')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="silny" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Gęstość barwy</label>
-                  <input type="text" {...register('ppqcColorDensity')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="bardzo silny" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Długość</label>
-                  <input type="text" {...register('ppqcLength')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="średni" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Wytrzymałość</label>
-                  <input type="text" {...register('ppqcEndurance')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="silny" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Siła widełek</label>
-                  <input type="text" {...register('ppqcForkStrength')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="silny" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Układ widełek</label>
-                  <input type="text" {...register('ppqcForkLayout')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="lekko otwarty" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Mięśnie</label>
-                  <input type="text" {...register('ppqcMuscles')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="giętki" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Balans</label>
-                  <input type="text" {...register('ppqcBalance')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="zbalansowany" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Plecy</label>
-                  <input type="text" {...register('ppqcBack')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="przeciętny" />
-                </div>
-
-                <div className="md:col-span-2 h-px bg-gray-200" />
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Pióra rozpłodowe</label>
-                  <input type="text" {...register('ppqcBreedingFeathers')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="za młody" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Lotki</label>
-                  <input type="text" {...register('ppqcPrimaries')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="długi, normalny" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Upierzenie</label>
-                  <input type="text" {...register('ppqcPlumage')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="normalne upierzenie" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Jakość piór</label>
-                  <input type="text" {...register('ppqcFeatherQuality')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="miękki" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Lotki II-go rzędu</label>
-                  <input type="text" {...register('ppqcSecondaries')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="normalny" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Elastyczność</label>
-                  <input type="text" {...register('ppqcElasticity')} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500" placeholder="bardzo giętki" />
-                </div>
-              </div>
-            </div>
-          </div>
-        )
-
-      case 5:
-        return (
-          <div className="space-y-6">
-            <h2 className="text-xl font-semibold text-gray-900">Podsumowanie</h2>
-
-            <div className="bg-gray-50 rounded-lg p-6 space-y-4">
-              <div>
-                <h3 className="font-medium text-gray-900">Kategoria</h3>
-                <p className="text-gray-600">{watchedCategory}</p>
-              </div>
-
-              <div>
-                <h3 className="font-medium text-gray-900">Tytuł</h3>
-                <p className="text-gray-600">{watch('title')}</p>
-              </div>
-
-              <div>
-                <h3 className="font-medium text-gray-900">Cena wywoławcza</h3>
-                <p className="text-gray-600">{watch('startingPrice')} zł</p>
-              </div>
-
-              {watch('buyNowPrice') && (
-                <div>
-                  <h3 className="font-medium text-gray-900">Cena Kup teraz</h3>
-                  <p className="text-gray-600">{watch('buyNowPrice')} zł</p>
-                </div>
-              )}
-
-              <div>
-                <h3 className="font-medium text-gray-900">Pliki multimedialne</h3>
-                <p className="text-gray-600">{mediaFiles.length} plików</p>
-              </div>
-
-              {/* PPQC summary (optional) */}
-              <div>
-                <h3 className="font-medium text-gray-900">PPQC (opcjonalnie)</h3>
-                <p className="text-gray-600 text-sm">Możesz uzupełnić po opublikowaniu w edycji aukcji.</p>
-              </div>
-            </div>
-          </div>
-        )
-
-      default:
-        return null
-    }
-  }
-
-  return (
-    <div className="bg-white rounded-lg shadow-sm">
-      {/* Progress bar */}
-      <div className="px-6 py-4 border-b border-gray-200">
-        <div className="flex items-center justify-between mb-4">
-          {steps.map((step, index) => (
-            <div key={step.id} className="flex items-center">
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${currentStep >= step.id
-                  ? 'bg-slate-600 text-white'
-                  : 'bg-gray-200 text-gray-600'
-                  }`}
-              >
-                {step.id}
-              </div>
-              <div className="ml-3 hidden sm:block">
-                <p className="text-sm font-medium text-gray-900">{step.title}</p>
-                <p className="text-xs text-gray-500">{step.description}</p>
-              </div>
-              {index < steps.length - 1 && (
-                <div className="w-8 h-0.5 bg-gray-200 mx-4 hidden sm:block" />
-              )}
-            </div>
+              <input
+                type="radio"
+                value={category.value}
+                {...register('category')}
+                className="sr-only"
+              />
+              <span className="text-xl mb-1">{category.icon}</span>
+              <span className="text-xs font-medium text-black">{category.label}</span>
+            </label>
           ))}
         </div>
-      </div>
+        {errors.category && (
+          <p className="text-red-600 text-xs mb-3">{errors.category.message}</p>
+        )}
 
-      {/* Form content */}
-      <form onSubmit={handleSubmit(onSubmit)} className="p-6">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentStep}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.2 }}
-          >
-            {renderStepContent()}
-          </motion.div>
-        </AnimatePresence>
+        {/* Podstawowe informacje */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+          <div>
+            <label className="block text-sm font-medium text-black mb-2">
+              Tytuł aukcji *
+            </label>
+            <input
+              type="text"
+              {...register('title')}
+              className="w-full px-3 py-2 bg-white/50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 text-black placeholder-gray-500"
+            />
+            {errors.title && (
+              <p className="text-red-600 text-sm mt-1">{errors.title.message}</p>
+            )}
+          </div>
 
-        {/* Navigation buttons */}
-        <div className="flex justify-between mt-8 pt-6 border-t border-gray-200">
-          <button
-            type="button"
-            onClick={prevStep}
-            disabled={currentStep === 1}
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Wstecz
-          </button>
+          <div>
+            <label className="block text-sm font-medium text-black mb-2">
+              Lokalizacja *
+            </label>
+            <LocationAutocomplete
+              value={watch('location') || ''}
+              onChange={(value) => {
+                setValue('location', value)
+              }}
+              onLocationSelect={(location) => {
+                setSelectedLocation(location)
+              }}
+              error={errors.location?.message}
+            />
+          </div>
+        </div>
 
-          {currentStep < steps.length ? (
-            <button
-              type="button"
-              onClick={nextStep}
-              className="flex items-center gap-2 px-6 py-2 bg-slate-600 text-white rounded-md hover:bg-slate-700 transition-colors"
-            >
-              Dalej
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          ) : (
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {isSubmitting ? 'Publikuję...' : 'Opublikuj aukcję'}
-            </button>
+        {/* Opis */}
+        <div className="mb-3">
+          <label className="block text-xs font-medium text-black mb-1">
+            Opis *
+          </label>
+          <textarea
+            {...register('description')}
+            rows={2}
+            className="w-full px-2 py-1 text-sm bg-white/50 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-gray-400 text-black placeholder-gray-500"
+          />
+          {errors.description && (
+            <p className="text-red-600 text-xs mt-1">{errors.description.message}</p>
           )}
         </div>
+
+        {/* Szczegóły gołębia (tylko dla kategorii Pigeon) */}
+        {watchedCategory === 'Pigeon' && (
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-2">
+              <div>
+                <label className="block text-xs font-medium text-black mb-1">Numer obrączki</label>
+                <input
+                  type="text"
+                  {...register('ringNumber')}
+                  className="w-full px-2 py-1 text-sm bg-white/50 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-gray-400 text-black placeholder-gray-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-black mb-1">Linia krwi</label>
+                <input
+                  type="text"
+                  {...register('bloodline')}
+                  className="w-full px-2 py-1 text-sm bg-white/50 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-gray-400 text-black placeholder-gray-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-black mb-1">Płeć</label>
+                <select
+                  {...register('sex')}
+                  className="w-full px-2 py-1 text-sm bg-white/50 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-gray-400 text-black"
+                >
+                  <option value="">Wybierz</option>
+                  <option value="male">Samiec</option>
+                  <option value="female">Samica</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-black mb-1">Kolor oczu</label>
+                <select
+                  {...register('eyeColor')}
+                  className="w-full px-2 py-1 text-sm bg-white/50 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-gray-400 text-black"
+                >
+                  <option value="">Wybierz</option>
+                  <option value="yellow">Żółte</option>
+                  <option value="red">Czerwone</option>
+                  <option value="glass">Szklane</option>
+                  <option value="mixed">Mieszane</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-black mb-1">Kolor upierzenia</label>
+                <select
+                  {...register('featherColor')}
+                  className="w-full px-2 py-1 text-sm bg-white/50 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-gray-400 text-black"
+                >
+                  <option value="">Wybierz</option>
+                  <option value="speckled">Nakrapiany</option>
+                  <option value="blue">Niebieski</option>
+                  <option value="blue_white_flight">Niebieski białolot</option>
+                  <option value="speckled_white_flight">Nakrapiany białolot</option>
+                  <option value="red">Czerwony</option>
+                  <option value="dun">Płowy</option>
+                  <option value="dark">Ciemny</option>
+                  <option value="mottled">Pstry</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-black mb-1">Czas trwania aukcji</label>
+                <select
+                  {...register('duration', { valueAsNumber: true })}
+                  className="w-full px-2 py-1 text-sm bg-white/50 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-gray-400 text-black"
+                >
+                  <option value={1}>1 dzień</option>
+                  <option value={3}>3 dni</option>
+                  <option value={7}>7 dni</option>
+                  <option value={14}>14 dni</option>
+                  <option value={30}>30 dni</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Przeznaczenie */}
+            <div className="mb-2">
+              <label className="block text-xs font-medium text-black mb-1">Przeznaczenie</label>
+              <div className="grid grid-cols-3 gap-1">
+                {[
+                  'Krótki dystans',
+                  'Średni dystans',
+                  'Długi dystans'
+                ].map((purpose) => (
+                  <label key={purpose} className="flex items-center space-x-1 text-black text-xs">
+                    <input
+                      type="checkbox"
+                      value={purpose}
+                      {...register('purpose')}
+                      className="rounded border-gray-300 bg-white/50 text-black focus:ring-gray-400"
+                    />
+                    <span>{purpose}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
+
+        {/* Cena */}
+        <div className="grid grid-cols-2 gap-2 mb-2">
+          <div>
+            <div className="flex items-center space-x-2 mb-1">
+              <input
+                type="checkbox"
+                checked={hasStartingPrice}
+                onChange={(e) => setHasStartingPrice(e.target.checked)}
+                className="text-gray-600 focus:ring-gray-500"
+                title="Zaznacz aby włączyć licytację"
+              />
+              <label className="text-xs font-medium text-black">Cena wywoławcza (zł)</label>
+            </div>
+            <input
+              type="number"
+              {...register('startingPrice', { valueAsNumber: true })}
+              disabled={!hasStartingPrice}
+              className={`w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-gray-400 text-black placeholder-gray-500 ${!hasStartingPrice ? 'bg-gray-200' : 'bg-white/50'
+                }`}
+            />
+            {errors.startingPrice && (
+              <p className="text-red-600 text-xs mt-1">{errors.startingPrice.message}</p>
+            )}
+          </div>
+
+          <div>
+            <div className="flex items-center space-x-2 mb-1">
+              <input
+                type="checkbox"
+                checked={hasBuyNowPrice}
+                onChange={(e) => setHasBuyNowPrice(e.target.checked)}
+                className="text-gray-600 focus:ring-gray-500"
+                title="Zaznacz aby włączyć opcję Kup teraz"
+              />
+              <label className="text-xs font-medium text-black">Cena Kup teraz (zł)</label>
+            </div>
+            <input
+              type="number"
+              {...register('buyNowPrice', { valueAsNumber: true })}
+              disabled={!hasBuyNowPrice}
+              className={`w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-gray-400 text-black placeholder-gray-500 ${!hasBuyNowPrice ? 'bg-gray-200' : 'bg-white/50'
+                }`}
+            />
+            {errors.buyNowPrice && (
+              <p className="text-red-600 text-xs mt-1">{errors.buyNowPrice.message}</p>
+            )}
+          </div>
+        </div>
+
+
+        {/* Upload plików */}
+        <div className="mb-2">
+          <h2 className="text-sm font-medium text-black mb-2">Pliki *</h2>
+
+          <div className="grid grid-cols-2 gap-4">
+            {/* Lewa kolumna - zdjęcia i filmy */}
+            <div>
+              <h2 className="text-sm font-medium text-black mb-2">Zdjęcia i filmy *</h2>
+              <div className="grid grid-cols-2 gap-2">
+                {/* Zdjęcia gołębia */}
+                <div
+                  {...getPigeonImagesRootProps()}
+                  className={`border border-dashed rounded p-2 text-center cursor-pointer transition-colors ${isPigeonImagesDragActive
+                    ? 'border-gray-400 bg-white/70'
+                    : 'border-gray-300 bg-white/50 hover:border-gray-400 hover:bg-white/60'
+                    }`}
+                >
+                  <input {...getPigeonImagesInputProps()} />
+                  <LucideImage className="w-5 h-5 text-blue-400 mx-auto mb-1" />
+                  <p className="text-xs text-black">Zdjęcia</p>
+                  <p className="text-xs text-black/60">({pigeonImages.length}/8)</p>
+                </div>
+
+                {/* Filmy */}
+                <div
+                  {...getVideosRootProps()}
+                  className={`border border-dashed rounded p-2 text-center cursor-pointer transition-colors ${isVideosDragActive
+                    ? 'border-gray-400 bg-white/70'
+                    : 'border-gray-300 bg-white/50 hover:border-gray-400 hover:bg-white/60'
+                    }`}
+                >
+                  <input {...getVideosInputProps()} />
+                  <Video className="w-5 h-5 text-blue-400 mx-auto mb-1" />
+                  <p className="text-xs text-black">Filmy</p>
+                  <p className="text-xs text-black/60">({videos.length}/3)</p>
+                </div>
+              </div>
+
+              {/* Miniaturki zdjęć gołębia */}
+              {pigeonImages.length > 0 && (
+                <div className="mt-2">
+                  <div className="space-y-1">
+                    {pigeonImages.map((file) => (
+                      <div key={file.id} className="relative group flex items-center space-x-2">
+                        <div
+                          className="w-8 h-8 relative rounded overflow-hidden bg-gray-100 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() => openPreview(file.preview)}
+                          title="Kliknij aby powiększyć"
+                        >
+                          <Image
+                            src={file.preview}
+                            alt="Preview"
+                            width={100}
+                            height={100}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <span className="text-xs text-black truncate flex-1">{file.file.name}</span>
+                        <button
+                          onClick={() => removePigeonImage(file.id)}
+                          className="w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                          title="Usuń"
+                        >
+                          <X className="w-2 h-2" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Prawa kolumna - rodowód */}
+            <div>
+              <h2 className="text-sm font-medium text-black mb-2">Rodowód *</h2>
+              {watchedCategory === 'Pigeon' && (
+                <div
+                  {...getPedigreeRootProps()}
+                  className={`border border-dashed rounded p-2 text-center cursor-pointer transition-colors ${isPedigreeDragActive
+                    ? 'border-gray-400 bg-white/70'
+                    : 'border-gray-300 bg-white/50 hover:border-gray-400 hover:bg-white/60'
+                    }`}
+                >
+                  <input {...getPedigreeInputProps()} />
+                  <FileText className="w-5 h-5 text-blue-400 mx-auto mb-1" />
+                  <p className="text-xs text-black">Rodowód</p>
+                  <p className="text-xs text-black/60">({pedigreeFiles.length}/2)</p>
+                </div>
+              )}
+
+              {/* Miniaturki rodowodu */}
+              {pedigreeFiles.length > 0 && watchedCategory === 'Pigeon' && (
+                <div className="mt-2">
+                  <div className="space-y-1">
+                    {pedigreeFiles.map((file) => (
+                      <div key={file.id} className="relative group flex items-center space-x-2">
+                        <div
+                          className={`w-8 h-8 relative rounded overflow-hidden bg-gray-100 flex-shrink-0 ${file.type === 'image' ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+                          onClick={file.type === 'image' ? () => openPreview(file.preview) : undefined}
+                          title={file.type === 'image' ? 'Kliknij aby powiększyć' : undefined}
+                        >
+                          {file.type === 'image' ? (
+                            <Image
+                              src={file.preview}
+                              alt="Preview"
+                              width={100}
+                              height={100}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <span className="text-gray-500 text-xs">PDF</span>
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-xs text-black truncate flex-1">{file.file.name}</span>
+                        <button
+                          onClick={() => removePedigreeFile(file.id)}
+                          className="w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                          title="Usuń"
+                        >
+                          <X className="w-2 h-2" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Podgląd plików */}
+          {(videos.length > 0) && (
+            <div className="mt-3 space-y-2">
+              {videos.length > 0 && (
+                <div>
+                  <p className="text-xs text-black/60 mb-1">Filmy:</p>
+                  <div className="space-y-1">
+                    {videos.map((file) => (
+                      <div key={file.id} className="relative group flex items-center space-x-2">
+                        <div className="w-8 h-8 relative rounded overflow-hidden bg-gray-100 flex items-center justify-center flex-shrink-0">
+                          <Video className="w-4 h-4 text-gray-500" />
+                        </div>
+                        <span className="text-xs text-black truncate flex-1">{file.file.name}</span>
+                        <button
+                          onClick={() => removeVideo(file.id)}
+                          className="w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                          title="Usuń"
+                        >
+                          <X className="w-2 h-2" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+
+        {/* Submit button */}
+        <div className="flex justify-end mt-8 pt-6 border-t border-white/20">
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="flex items-center gap-2 px-8 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-lg font-medium"
+          >
+            {isSubmitting ? 'Publikuję...' : 'Opublikuj aukcję'}
+          </button>
+        </div>
       </form>
+
+      {/* Modal z podglądem obrazu */}
+      {previewImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50"
+          onClick={closePreview}
+        >
+          <div className="relative max-w-4xl max-h-4xl p-4">
+            <button
+              onClick={closePreview}
+              className="absolute top-2 right-2 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center z-10"
+              title="Zamknij"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <Image
+              src={previewImage}
+              alt="Podgląd"
+              width={800}
+              height={600}
+              className="max-w-full max-h-full object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

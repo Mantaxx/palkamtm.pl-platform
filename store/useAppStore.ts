@@ -8,7 +8,7 @@ interface User {
     email: string
     firstName?: string
     lastName?: string
-    role: 'BUYER' | 'SELLER' | 'ADMIN'
+    role: 'USER' | 'ADMIN'
     isActive: boolean
 }
 
@@ -114,7 +114,6 @@ export const useAppStore = create<AppState>()(
                 setUser: (user) => set({ user }),
                 setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
                 setAuctions: (auctions) => {
-                    console.log('Store: Setting auctions:', auctions.length)
                     set({ auctions })
                 },
                 setChampions: (champions) => set({ champions }),
@@ -130,7 +129,6 @@ export const useAppStore = create<AppState>()(
 
                 getFilteredAuctions: () => {
                     const { auctions, searchTerm, selectedCategory, sortBy } = get()
-                    console.log('Store: getFilteredAuctions called with:', { auctions: auctions.length, searchTerm, selectedCategory, sortBy })
 
                     let filtered = auctions.filter(auction => {
                         const matchesSearch = auction.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -199,5 +197,36 @@ export const useLoading = () => useAppStore((state) => state.isLoading)
 export const useError = () => useAppStore((state) => state.error)
 
 // Computed selectors
-export const useFilteredAuctions = () => useAppStore((state) => state.getFilteredAuctions())
+export const useFilteredAuctions = () => {
+    return useAppStore((state) => {
+        let filtered = state.auctions.filter(auction => {
+            const matchesSearch = auction.title.toLowerCase().includes(state.searchTerm.toLowerCase()) ||
+                auction.description.toLowerCase().includes(state.searchTerm.toLowerCase())
+            const matchesCategory = !state.selectedCategory || auction.category === state.selectedCategory
+            return matchesSearch && matchesCategory
+        })
+
+        // Sort
+        switch (state.sortBy) {
+            case 'newest':
+                filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                break
+            case 'oldest':
+                filtered.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+                break
+            case 'price-low':
+                filtered.sort((a, b) => a.currentPrice - b.currentPrice)
+                break
+            case 'price-high':
+                filtered.sort((a, b) => b.currentPrice - a.currentPrice)
+                break
+            case 'ending-soon':
+                filtered.sort((a, b) => new Date(a.endTime).getTime() - new Date(b.endTime).getTime())
+                break
+        }
+
+        return filtered
+    })
+}
+
 export const useFilteredChampions = () => useAppStore((state) => state.getFilteredChampions())
