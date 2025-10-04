@@ -1,4 +1,10 @@
 import crypto from 'crypto'
+import sgMail from '@sendgrid/mail'
+
+// Konfiguracja SendGrid
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+}
 
 export interface EmailData {
     to: string
@@ -78,24 +84,33 @@ export function createActivationEmail(email: string, activationToken: string): E
     }
 }
 
-// W rzeczywistej aplikacji tutaj byłby kod do wysyłania emaili przez SMTP
-// Na przykład przez Nodemailer, SendGrid, czy inny serwis
 export async function sendEmail(emailData: EmailData): Promise<boolean> {
     try {
-        // Symulacja wysyłania emaila
-        console.log('📧 Wysyłanie emaila:', {
+        if (!process.env.SENDGRID_API_KEY) {
+            console.log('📧 SendGrid API Key nie jest ustawiony - symulacja wysyłania emaila:', {
+                to: emailData.to,
+                subject: emailData.subject,
+            })
+            return true
+        }
+
+        const msg = {
+            to: emailData.to,
+            from: process.env.SENDGRID_FROM_EMAIL || 'noreply@palkamtm.pl',
+            subject: emailData.subject,
+            text: emailData.text,
+            html: emailData.html,
+        }
+
+        await sgMail.send(msg)
+        console.log('📧 Email wysłany przez SendGrid:', {
             to: emailData.to,
             subject: emailData.subject,
-            // W produkcji tutaj byłby rzeczywisty kod wysyłania
         })
-
-        // W rzeczywistej aplikacji:
-        // const transporter = nodemailer.createTransporter({...})
-        // await transporter.sendMail(emailData)
 
         return true
     } catch (error) {
-        console.error('Błąd wysyłania emaila:', error)
+        console.error('Błąd wysyłania emaila przez SendGrid:', error)
         return false
     }
 }
