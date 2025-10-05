@@ -39,27 +39,28 @@ export default function HomePage() {
         <div className="pigeon-stage-lighting h-screen overflow-hidden">
           {/* Sekcja tekstu - pozycjonowana pod nawigacją */}
           <motion.section
-            className="absolute top-0 left-1/2 transform -translate-x-1/2 text-center px-4 z-10"
             initial={{ opacity: 0 }}
-            animate={{ opacity: isVisible ? 0.4 : 0 }}
+            animate={{ opacity: isVisible ? 1 : 0 }}
             transition={{ duration: 1 }}
+            style={{ position: 'absolute', top: '30%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', padding: '0 1rem', zIndex: 30 }}
           >
             <motion.div
-              className="max-w-6xl mx-auto"
               style={{
                 rotateX: mousePosition.y * 2,
                 rotateY: mousePosition.x * 2,
+                maxWidth: '72rem',
+                margin: '0 auto'
               }}
             >
-              <div className="focus-in-contract-bck text-shadow-pop-tr">
-                <h1 className="font-display font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-white/90 leading-tight mb-6 drop-shadow-2xl shadow-black/80 shadow-2xl">
+              <div className="focus-in-contract-bck">
+                <h1 className="font-display font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-white leading-tight mb-6">
                   Pałka MTM
                   <span className="block text-primary-400 mt-2 text-xl sm:text-2xl md:text-3xl lg:text-4xl">
                     Mistrzowie Sprintu
                   </span>
                 </h1>
 
-                <p className="mt-8 max-w-4xl mx-auto text-lg sm:text-xl md:text-2xl text-white/70 leading-relaxed">
+                <p className="mt-8 max-w-4xl mx-auto text-lg sm:text-xl md:text-2xl text-white leading-relaxed drop-shadow-lg">
                   Pasja, tradycja i nowoczesność w hodowli gołębi pocztowych. Tworzymy historię polskiego sportu gołębiarskiego.
                 </p>
               </div>
@@ -68,17 +69,17 @@ export default function HomePage() {
 
           {/* Sekcja zdjęcia gołębia - pozycjonowana absolutnie */}
           <motion.section
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20"
             initial={{ opacity: 0 }}
             animate={{ opacity: isVisible ? 1 : 0 }}
-            transition={{ duration: 3, delay: 2 }}
+            transition={{ duration: 3, delay: 4 }}
+            style={{ position: 'absolute', top: '72%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 20 }}
           >
             <div className="flex items-center justify-center">
               <Image
                 src="/1360bez tla.png"
                 alt="Gołąb Pałka MTM"
-                width={800}
-                height={960}
+                width={600}
+                height={720}
                 className={`rounded-lg shadow-lg brightness-110 ${isVisible ? 'puff-in-bottom' : ''}`}
                 priority
               />
