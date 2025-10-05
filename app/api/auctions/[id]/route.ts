@@ -88,7 +88,12 @@ export async function GET(
             )
         }
 
-        return NextResponse.json(auction)
+        return NextResponse.json(auction, {
+            headers: {
+                'Cache-Control': 'public, max-age=60, s-maxage=60',
+                'CDN-Cache-Control': 'max-age=60'
+            }
+        })
 
     } catch (error) {
         console.error('Błąd podczas pobierania aukcji:', error)

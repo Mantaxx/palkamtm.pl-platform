@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useRef, useCallback, useMemo, useState } from 'react'
 import { monitoring } from '@/lib/monitoring'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 interface PerformanceConfig {
   enableTracking?: boolean
@@ -27,7 +27,7 @@ export function usePerformanceOptimization(
   const renderCount = useRef(0)
   const lastRenderTime = useRef(Date.now())
   const mountTime = useRef(Date.now())
-  const debounceTimeout = useRef<NodeJS.Timeout>()
+  const debounceTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   // Śledzenie renderów
   useEffect(() => {
@@ -235,7 +235,7 @@ export function useImageOptimization(src: string, options: {
 
     const params = new URLSearchParams()
     if (quality !== 85) params.set('q', quality.toString())
-    
+
     const queryString = params.toString()
     return queryString ? `${src}?${queryString}` : src
   }, [src, quality])

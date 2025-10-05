@@ -11,7 +11,7 @@ import {
   Star,
   Users
 } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { memo, useCallback, useEffect, useState } from 'react'
 
 interface SearchFilters {
   query: string
@@ -78,7 +78,7 @@ const sortOptions = [
   { value: 'createdAt', label: 'Data dodania' }
 ]
 
-export default function AdvancedSearch() {
+export default memo(function AdvancedSearch() {
   const [filters, setFilters] = useState<SearchFilters>({
     query: '',
     category: '',
@@ -99,9 +99,9 @@ export default function AdvancedSearch() {
   const [isLoading, setIsLoading] = useState(false)
   const [isClient, setIsClient] = useState(false)
 
-  const handleFilterChange = (key: keyof SearchFilters, value: unknown) => {
+  const handleFilterChange = useCallback((key: keyof SearchFilters, value: unknown) => {
     setFilters(prev => ({ ...prev, [key]: value }))
-  }
+  }, [])
 
   const handleSearch = useCallback(async () => {
     setIsLoading(true)
@@ -109,7 +109,7 @@ export default function AdvancedSearch() {
     try {
       // Buduj parametry zapytania
       const params = new URLSearchParams()
-      
+
       if (filters.query) params.append('search', filters.query)
       if (filters.category) params.append('category', filters.category)
       if (filters.bloodline) params.append('bloodline', filters.bloodline)
@@ -121,10 +121,10 @@ export default function AdvancedSearch() {
 
       // Wyślij zapytanie do API
       const response = await fetch(`/api/auctions?${params.toString()}`)
-      
+
       if (response.ok) {
         const data = await response.json()
-        
+
         // Przekształć dane z API na format SearchResult
         const transformedResults: SearchResult[] = data.auctions.map((auction: {
           id: string;
@@ -136,7 +136,7 @@ export default function AdvancedSearch() {
           endTime: string;
           status: string;
           category: string;
-          pigeon?: { 
+          pigeon?: {
             bloodline?: string;
             age?: number;
             gender?: string;
@@ -170,7 +170,7 @@ export default function AdvancedSearch() {
           watchers: auction._count?.watchlist || 0,
           views: 0
         }))
-        
+
         setResults(transformedResults)
       } else {
         console.error('Error fetching search results')
@@ -584,4 +584,4 @@ export default function AdvancedSearch() {
       </div>
     </div>
   )
-}
+})

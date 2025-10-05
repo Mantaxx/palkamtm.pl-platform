@@ -13,7 +13,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, delay: 0.3 }}
-            className="font-display font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl text-white leading-tight"
+            style={{ fontFamily: 'inherit', fontWeight: 'bold', fontSize: '2.25rem', lineHeight: '1.1', color: 'white' }}
           >
             Pałka MTM
             <span className="block text-primary-400 mt-4 text-3xl sm:text-4xl md:text-5xl lg:text-6xl">
@@ -24,7 +24,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, delay: 0.6 }}
-            className="mt-8 max-w-4xl mx-auto text-lg sm:text-xl md:text-2xl text-secondary-200 leading-relaxed"
+            style={{ marginTop: '2rem', maxWidth: '56rem', margin: '2rem auto 0', fontSize: '1.125rem', lineHeight: '1.75rem', color: 'rgba(255, 255, 255, 0.7)' }}
           >
             Pasja, tradycja i nowoczesność w hodowli gołębi pocztowych. Tworzymy historię polskiego sportu gołębiarskiego.
           </motion.p>
@@ -35,7 +35,7 @@ export function HeroSection() {
           initial={{ opacity: 0, scale: 0.8, y: 50 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 1.5, delay: 0.9 }}
-          className="flex justify-center relative z-20 mt-64"
+          style={{ display: 'flex', justifyContent: 'center', position: 'relative', zIndex: 20, marginTop: '16rem' }}
         >
           <Image
             src="/1360bez tla.png"
@@ -57,7 +57,7 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.2, delay: 1.2 }}
-          className="mt-12"
+          style={{ marginTop: '3rem' }}
         >
           <p className="text-secondary-300 text-base sm:text-lg max-w-2xl mx-auto">
             Odkryj świat najlepszych gołębi pocztowych w Polsce. Każdy ptak to historia, każdy lot to legenda.

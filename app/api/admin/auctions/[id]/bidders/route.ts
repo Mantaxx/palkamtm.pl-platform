@@ -71,7 +71,19 @@ export async function GET(
         })
 
         // Przetwórz dane licytujących z dodatkowymi statystykami
-        const biddersWithStats = bids.map(bid => ({
+        const biddersWithStats = bids.map((bid: {
+            id: string;
+            amount: number;
+            createdAt: Date;
+            bidder: {
+                id: string;
+                firstName: string | null;
+                lastName: string | null;
+                email: string;
+                createdAt: Date;
+                bids: any[];
+            };
+        }) => ({
             id: bid.bidder.id,
             firstName: bid.bidder.firstName,
             lastName: bid.bidder.lastName,
@@ -85,20 +97,20 @@ export async function GET(
         }))
 
         // Usuń duplikaty licytujących (jeden użytkownik może mieć wiele ofert)
-        const uniqueBidders = biddersWithStats.reduce((acc, current) => {
-            const existing = acc.find(bidder => bidder.id === current.id)
+        const uniqueBidders = biddersWithStats.reduce((acc: typeof biddersWithStats, current: typeof biddersWithStats[0]) => {
+            const existing = acc.find((bidder: any) => bidder.id === current.id)
             if (!existing) {
                 acc.push(current)
             } else if (current.amount > existing.amount) {
                 // Zachowaj najwyższą ofertę tego użytkownika
-                const index = acc.findIndex(bidder => bidder.id === current.id)
+                const index = acc.findIndex((bidder: any) => bidder.id === current.id)
                 acc[index] = current
             }
             return acc
         }, [] as typeof biddersWithStats)
 
         // Posortuj według wysokości oferty
-        uniqueBidders.sort((a, b) => b.amount - a.amount)
+        uniqueBidders.sort((a: typeof biddersWithStats[0], b: typeof biddersWithStats[0]) => b.amount - a.amount)
 
         return NextResponse.json({
             bidders: uniqueBidders,

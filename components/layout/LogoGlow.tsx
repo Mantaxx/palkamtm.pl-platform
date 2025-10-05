@@ -10,7 +10,7 @@ export function LogoGlow() {
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 2.5, delay: 0.8 }}
-            className="relative z-60"
+            className="fixed top-8 left-8 z-[9998]"
         >
             <Link href="/">
                 <motion.div

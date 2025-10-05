@@ -70,13 +70,24 @@ export async function GET(request: NextRequest) {
       prisma.breederMeeting.count({ where })
     ])
 
-    const formattedMeetings = meetings.map((meeting) => ({
+    const formattedMeetings = meetings.map((meeting: {
+      id: string;
+      title: string;
+      description: string | null;
+      location: string;
+      date: Date;
+      createdAt: Date;
+      updatedAt: Date;
+      images: string;
+      isApproved: boolean;
+      user: any;
+    }) => ({
       id: meeting.id,
       title: meeting.title,
       description: meeting.description,
       location: meeting.location,
       date: meeting.date.toISOString(),
-      images: JSON.parse(meeting.images || '[]'),
+      images: JSON.parse(JSON.stringify(meeting.images || [])),
       isApproved: meeting.isApproved,
       createdAt: meeting.createdAt.toISOString(),
       updatedAt: meeting.updatedAt.toISOString(),

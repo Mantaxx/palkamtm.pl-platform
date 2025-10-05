@@ -1,0 +1,54 @@
+-- Dodaj indeksy do bazy danych dla optymalizacji wydajności
+-- Te indeksy znacznie przyspieszą zapytania
+-- Indeksy dla tabeli Auction
+CREATE INDEX idx_auction_status_approved ON Auction(status, isApproved);
+CREATE INDEX idx_auction_category_status ON Auction(category, status);
+CREATE INDEX idx_auction_end_time ON Auction(endTime);
+CREATE INDEX idx_auction_seller_id ON Auction(sellerId);
+CREATE INDEX idx_auction_start_time ON Auction(startTime);
+CREATE INDEX idx_auction_current_price ON Auction(currentPrice);
+-- Indeksy dla tabeli Bid
+CREATE INDEX idx_bid_auction_id ON Bid(auctionId);
+CREATE INDEX idx_bid_bidder_id ON Bid(bidderId);
+CREATE INDEX idx_bid_amount ON Bid(amount);
+CREATE INDEX idx_bid_created_at ON Bid(createdAt);
+-- Indeksy dla tabeli User
+CREATE INDEX idx_user_email ON User(email);
+CREATE INDEX idx_user_phone_verified ON User(isPhoneVerified);
+CREATE INDEX idx_user_role ON User(role);
+CREATE INDEX idx_user_active ON User(isActive);
+-- Indeksy dla tabeli Pigeon
+CREATE INDEX idx_pigeon_ring_number ON Pigeon(ringNumber);
+CREATE INDEX idx_pigeon_champion ON Pigeon(isChampion);
+CREATE INDEX idx_pigeon_bloodline ON Pigeon(bloodline);
+CREATE INDEX idx_pigeon_gender ON Pigeon(gender);
+-- Indeksy dla tabeli Transaction
+CREATE INDEX idx_transaction_auction_id ON Transaction(auctionId);
+CREATE INDEX idx_transaction_buyer_id ON Transaction(buyerId);
+CREATE INDEX idx_transaction_seller_id ON Transaction(sellerId);
+CREATE INDEX idx_transaction_status ON Transaction(status);
+-- Indeksy dla tabeli Message
+CREATE INDEX idx_message_auction_id ON Message(auctionId);
+CREATE INDEX idx_message_sender_id ON Message(senderId);
+CREATE INDEX idx_message_read ON Message(isRead);
+-- Indeksy dla tabeli UserMessage
+CREATE INDEX idx_user_message_conversation_id ON UserMessage(conversationId);
+CREATE INDEX idx_user_message_sender_id ON UserMessage(senderId);
+CREATE INDEX idx_user_message_read ON UserMessage(isRead);
+-- Indeksy dla tabeli Conversation
+CREATE INDEX idx_conversation_participant1 ON Conversation(participant1Id);
+CREATE INDEX idx_conversation_participant2 ON Conversation(participant2Id);
+CREATE INDEX idx_conversation_last_message ON Conversation(lastMessageAt);
+-- Indeksy dla tabeli BreederMeeting
+CREATE INDEX idx_breeder_meeting_approved ON BreederMeeting(isApproved);
+CREATE INDEX idx_breeder_meeting_date ON BreederMeeting(date);
+CREATE INDEX idx_breeder_meeting_user_id ON BreederMeeting(userId);
+-- Indeksy dla tabeli Reference
+CREATE INDEX idx_reference_approved ON Reference(isApproved);
+CREATE INDEX idx_reference_rating ON Reference(rating);
+-- Indeksy dla tabeli WatchlistItem
+CREATE INDEX idx_watchlist_user_id ON WatchlistItem(userId);
+CREATE INDEX idx_watchlist_auction_id ON WatchlistItem(auctionId);
+-- Indeksy dla tabeli AuctionAsset
+CREATE INDEX idx_auction_asset_auction_id ON AuctionAsset(auctionId);
+CREATE INDEX idx_auction_asset_type ON AuctionAsset(type);

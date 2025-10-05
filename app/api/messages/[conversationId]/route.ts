@@ -98,7 +98,7 @@ export async function GET(
         })
 
         // Przekształć dane wiadomości
-        const formattedMessages = messages.map(msg => ({
+        const formattedMessages = messages.map((msg: any) => ({
             id: msg.id,
             content: msg.content,
             senderId: msg.senderId,

@@ -47,7 +47,7 @@ export async function GET() {
             }
         })
 
-        const formattedReferences = references.map((ref) => ({
+        const formattedReferences = references.map((ref: any) => ({
             id: ref.id,
             breeder: {
                 name: ref.breederName,

@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
         })
 
         // Przekształć dane konwersacji
-        const formattedConversations = conversations.map(conv => {
+        const formattedConversations = conversations.map((conv: any) => {
             const otherParticipant = conv.participant1Id === session.user.id
                 ? conv.participant2
                 : conv.participant1

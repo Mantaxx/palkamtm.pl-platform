@@ -1,9 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import ReactDOM from 'react-dom';
 import { X, ZoomIn, ZoomOut } from 'lucide-react';
 import { MouseEventHandler, useEffect, useState } from 'react';
+import ReactDOM from 'react-dom';
 
 interface ImageItem {
   id: string;
@@ -247,7 +247,7 @@ export default function ImageModal({ image, onClose, onPrevious, onNext, hasPrev
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             drag={isDragging}
             dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-            onDrag={(e, info) => {
+            onDrag={(e: any, info: any) => {
               if (zoomLevel > 1) {
                 setImagePosition({
                   x: imagePosition.x + info.delta.x,

@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -84,6 +84,11 @@ model User {
   conversationsAsParticipant1 Conversation[] @relation("ConversationParticipant1")
   conversationsAsParticipant2 Conversation[] @relation("ConversationParticipant2")
   sentMessages       UserMessage[] @relation("UserMessageSender")
+
+  @@index([email])
+  @@index([isPhoneVerified])
+  @@index([role])
+  @@index([isActive])
 }
 
 model BreederMeeting {
@@ -131,6 +136,11 @@ model Pigeon {
   updatedAt   DateTime @updatedAt
 
   auctions Auction[]
+
+  @@index([ringNumber])
+  @@index([isChampion])
+  @@index([bloodline])
+  @@index([gender])
 }
 
 enum AuctionStatus {
@@ -173,7 +183,12 @@ model Auction {
   messages     Message[]
   transactions Transaction[]
 
-  @@index([isApproved])
+  @@index([status, isApproved])
+  @@index([category, status])
+  @@index([endTime])
+  @@index([sellerId])
+  @@index([startTime])
+  @@index([currentPrice])
 }
 
 enum AssetType {
@@ -203,6 +218,8 @@ model Bid {
 
   @@index([auctionId])
   @@index([bidderId])
+  @@index([amount])
+  @@index([createdAt])
 }
 
 model WatchlistItem {

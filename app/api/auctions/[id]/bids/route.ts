@@ -31,7 +31,7 @@ export async function POST(
         const profileCompleteness = await checkProfileCompleteness(session.user.id)
         if (!profileCompleteness.isComplete) {
             return NextResponse.json(
-                { 
+                {
                     error: 'Profil użytkownika jest niekompletny',
                     message: getProfileCompletenessMessage(profileCompleteness),
                     missingFields: profileCompleteness.missingFields
@@ -113,7 +113,7 @@ export async function POST(
         }
 
         // Utwórz licytację w transakcji
-        const result = await prisma.$transaction(async (tx) => {
+        const result = await prisma.$transaction(async (tx: any) => {
             // Utwórz nową licytację
             const bid = await tx.bid.create({
                 data: {

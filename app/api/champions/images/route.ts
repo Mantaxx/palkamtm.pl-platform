@@ -64,6 +64,11 @@ export async function GET(request: NextRequest) {
         offset,
         hasMore: offset + limit < total
       }
+    }, {
+      headers: {
+        'Cache-Control': 'public, max-age=600, s-maxage=600',
+        'CDN-Cache-Control': 'max-age=600'
+      }
     })
 
   } catch (error) {

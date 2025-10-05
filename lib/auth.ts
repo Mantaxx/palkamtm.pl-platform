@@ -1,16 +1,27 @@
 import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
 import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
+import FacebookProvider from 'next-auth/providers/facebook'
 import GoogleProvider from 'next-auth/providers/google'
 import { prisma } from './prisma'
 
 export const authOptions: NextAuthOptions = {
-  debug: process.env.NODE_ENV === 'development',
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
+    // Google Provider tylko jeśli zmienne środowiskowe są ustawione
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET ? [
+      GoogleProvider({
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      })
+    ] : []),
+    // Facebook Provider tylko jeśli zmienne środowiskowe są ustawione
+    ...(process.env.FACEBOOK_CLIENT_ID && process.env.FACEBOOK_CLIENT_SECRET ? [
+      FacebookProvider({
+        clientId: process.env.FACEBOOK_CLIENT_ID,
+        clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+      })
+    ] : []),
     CredentialsProvider({
       name: 'credentials',
       credentials: {
@@ -68,7 +79,7 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async signIn({ user, account }) {
-      if (account?.provider === 'google') {
+      if (account?.provider === 'google' || account?.provider === 'facebook') {
         try {
           // Sprawdź czy użytkownik już istnieje
           const existingUser = await prisma.user.findUnique({
@@ -76,23 +87,32 @@ export const authOptions: NextAuthOptions = {
           })
 
           if (!existingUser) {
-            // Utwórz nowego użytkownika
+            // Generuj token aktywacyjny
+            const activationToken = crypto.randomUUID()
+            
+            // Utwórz nowego użytkownika - wymaga aktywacji
             const nameParts = user.name?.split(' ') || []
-            await prisma.user.create({
+            const newUser = await prisma.user.create({
               data: {
                 email: user.email!,
                 firstName: nameParts[0] || '',
                 lastName: nameParts.slice(1).join(' ') || '',
                 image: user.image,
                 role: 'USER',
-                isActive: true,
-                emailVerified: new Date()
+                isActive: false, // Wymaga aktywacji
+                activationToken,
+                emailVerified: new Date() // Email jest już zweryfikowany przez OAuth
               }
             })
+
+            // Wyślij email aktywacyjny
+            const { createActivationEmail, sendEmail } = await import('./email')
+            const emailData = createActivationEmail(user.email!, activationToken)
+            await sendEmail(emailData)
           }
           return true
         } catch (error) {
-          console.error('Błąd podczas tworzenia użytkownika Google:', error)
+          console.error(`Błąd podczas tworzenia użytkownika ${account?.provider}:`, error)
           return false
         }
       }
@@ -108,6 +128,8 @@ export const authOptions: NextAuthOptions = {
           token.id = dbUser.id;
           token.role = dbUser.role;
           token.isPhoneVerified = dbUser.isPhoneVerified;
+          token.isActive = dbUser.isActive;
+          token.emailVerified = dbUser.emailVerified;
           token.name = `${dbUser.firstName || ''} ${dbUser.lastName || ''}`.trim() || dbUser.email;
           token.image = dbUser.image;
           token.email = dbUser.email;
@@ -123,6 +145,8 @@ export const authOptions: NextAuthOptions = {
         session.user.email = token.email as string;
         session.user.image = token.image as string;
         session.user.isPhoneVerified = token.isPhoneVerified as boolean;
+        session.user.isActive = token.isActive as boolean;
+        session.user.emailVerified = token.emailVerified as Date | null;
       }
       return session;
     },

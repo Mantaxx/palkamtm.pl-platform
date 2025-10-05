@@ -6,7 +6,7 @@ import { HeroSection } from '@/components/home/HeroSection'
 import { PhilosophySection } from '@/components/home/PhilosophySection'
 import { UpcomingAuctions } from '@/components/home/UpcomingAuctions'
 import { motion, useScroll, useSpring, useTransform } from 'framer-motion'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 export default function HomePageClient() {
     const containerRef = useRef<HTMLDivElement>(null)
@@ -29,22 +29,22 @@ export default function HomePageClient() {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
     const [isHovering, setIsHovering] = useState(false)
 
+    const handleMouseMove = useCallback((e: MouseEvent) => {
+        if (containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect()
+            const x = (e.clientX - rect.left - rect.width / 2) / rect.width
+            const y = (e.clientY - rect.top - rect.height / 2) / rect.height
+            setMousePosition({ x, y })
+        }
+    }, [])
+
     useEffect(() => {
         // Sprawdź czy jesteśmy w przeglądarce
         if (typeof window === 'undefined') return;
 
-        const handleMouseMove = (e: MouseEvent) => {
-            if (containerRef.current) {
-                const rect = containerRef.current.getBoundingClientRect()
-                const x = (e.clientX - rect.left - rect.width / 2) / rect.width
-                const y = (e.clientY - rect.top - rect.height / 2) / rect.height
-                setMousePosition({ x, y })
-            }
-        }
-
         window.addEventListener('mousemove', handleMouseMove)
         return () => window.removeEventListener('mousemove', handleMouseMove)
-    }, [])
+    }, [handleMouseMove])
 
     // Dynamic 3D transforms based on mouse position
     const mouseRotateX = useTransform(scrollYProgress, [0, 1], [mousePosition.y * 10, mousePosition.y * 5])

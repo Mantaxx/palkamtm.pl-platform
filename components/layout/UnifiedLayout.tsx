@@ -60,7 +60,7 @@ export function UnifiedLayout({
 
         {/* Navigation Menu */}
         {showNavigation && (
-          <nav className="absolute top-8 left-80 z-[1001] pointer-events-auto">
+          <nav className="fixed top-8 left-80 z-[9999] pointer-events-auto">
             <motion.div
               className="flex items-center gap-3"
               variants={navContainerVariants}
@@ -73,7 +73,7 @@ export function UnifiedLayout({
                     href={item.href}
                     className="glass-nav-button"
                     title={item.title}
-                    onClick={() => console.log('Clicked:', item.href)}
+                    onClick={() => { }}
                   >
                     <i className={`${item.icon} relative z-10 text-3xl`}></i>
                     <span className="relative z-10 text-sm">{item.label}</span>

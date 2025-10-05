@@ -207,9 +207,6 @@ export default function CreateAuctionForm({ onSuccess, onCancel, showHeader = tr
   }
 
   const onSubmit = async (data: CreateAuctionFormData) => {
-    console.log('🚀 ONSUBMIT STARTED!')
-    console.log('📝 Form data:', data)
-
     setIsSubmitting(true)
 
     try {
@@ -333,8 +330,7 @@ export default function CreateAuctionForm({ onSuccess, onCancel, showHeader = tr
       })
 
       if (response.ok) {
-        const result = await response.json()
-        console.log('✅ Aukcja utworzona pomyślnie:', result)
+        await response.json() // Potwierdzenie że odpowiedź jest OK
         alert('✅ Aukcja została utworzona pomyślnie!')
 
         if (onSuccess) {
@@ -350,12 +346,56 @@ export default function CreateAuctionForm({ onSuccess, onCancel, showHeader = tr
       } else {
         const error = await response.json()
         console.error('❌ Błąd API:', error)
-        alert('❌ Wystąpił błąd podczas tworzenia aukcji: ' + (error.message || 'Nieznany błąd'))
+
+        // Sprawdź kod statusu i wyświetl odpowiedni komunikat
+        let errorMessage = 'Nieznany błąd'
+
+        if (response.status === 401) {
+          errorMessage = 'Musisz być zalogowany, aby utworzyć aukcję. Zaloguj się ponownie.'
+        } else if (response.status === 403) {
+          if (error.requiresPhoneVerification) {
+            errorMessage = 'Weryfikacja numeru telefonu jest wymagana do tworzenia aukcji. Przejdź do ustawień profilu, aby zweryfikować swój numer telefonu.'
+          } else {
+            errorMessage = 'Brak uprawnień do tworzenia aukcji.'
+          }
+        } else if (response.status === 400) {
+          if (error.details) {
+            errorMessage = `Nieprawidłowe dane: ${error.details}`
+          } else {
+            errorMessage = 'Nieprawidłowe dane w formularzu. Sprawdź wszystkie pola.'
+          }
+        } else if (response.status === 500) {
+          if (error.details) {
+            errorMessage = `Błąd serwera: ${error.details}`
+          } else {
+            errorMessage = 'Wystąpił błąd serwera. Spróbuj ponownie za chwilę.'
+          }
+        } else if (error.error) {
+          errorMessage = error.error
+        }
+
+        alert(`❌ ${errorMessage}`)
       }
 
     } catch (error) {
       console.error('❌ Błąd podczas tworzenia aukcji:', error)
-      alert('❌ Wystąpił błąd podczas tworzenia aukcji')
+
+      // Sprawdź typ błędu i wyświetl odpowiedni komunikat
+      let errorMessage = 'Wystąpił nieoczekiwany błąd podczas tworzenia aukcji'
+
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        errorMessage = 'Błąd połączenia z serwerem. Sprawdź połączenie internetowe i spróbuj ponownie.'
+      } else if (error instanceof Error) {
+        if (error.message.includes('NetworkError')) {
+          errorMessage = 'Błąd sieci. Sprawdź połączenie internetowe.'
+        } else if (error.message.includes('timeout')) {
+          errorMessage = 'Przekroczono limit czasu. Spróbuj ponownie.'
+        } else {
+          errorMessage = `Błąd: ${error.message}`
+        }
+      }
+
+      alert(`❌ ${errorMessage}`)
     } finally {
       setIsSubmitting(false)
     }

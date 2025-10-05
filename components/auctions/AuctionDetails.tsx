@@ -1,10 +1,12 @@
 'use client'
 
+import { BaseCard } from '@/components/ui/BaseCard'
 import { FullscreenImageModal } from '@/components/ui/FullscreenImageModal'
+import { LazyImage } from '@/components/ui/LazyImage'
+import { useAPIError } from '@/hooks/useAPIError'
 import { useAppStore } from '@/store/useAppStore'
 import { format } from 'date-fns'
 import { pl } from 'date-fns/locale'
-import { motion } from 'framer-motion'
 import {
   AlertCircle,
   Calendar,
@@ -13,8 +15,7 @@ import {
   Users
 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
-import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 
 interface AuctionDetailsProps {
   auctionId: string
@@ -105,8 +106,8 @@ const getAuctionById = async (id: string): Promise<Auction | null> => {
         email: auction.seller.email,
         phoneNumber: auction.seller.phoneNumber,
         avatar: auction.seller.image || null,
-        rating: 0, // Brak systemu ocen
-        salesCount: 0 // Brak danych o sprzedaży
+        rating: 0,
+        salesCount: 0
       },
       images: auction.assets?.filter((a: { type: string; url: string }) => a.type === 'IMAGE').map((a: { url: string }) => a.url) || [],
       videos: auction.assets?.filter((a: { type: string; url: string }) => a.type === 'VIDEO').map((a: { url: string }) => a.url) || [],
@@ -133,9 +134,10 @@ const getAuctionById = async (id: string): Promise<Auction | null> => {
 }
 
 
-export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
+export default memo(function AuctionDetails({ auctionId }: AuctionDetailsProps) {
   const { data: session } = useSession()
   const currencyStore = useAppStore()
+  const { error: apiError, handleAPIError, clearError } = useAPIError()
   const [auction, setAuction] = useState<Auction | null>(null)
   const [bidAmount, setBidAmount] = useState('')
   const [timeLeft, setTimeLeft] = useState('')
@@ -169,13 +171,16 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
         const loadedAuction = await getAuctionById(auctionId)
         setAuction(loadedAuction)
         setError(null)
+        clearError()
       } catch (err) {
+        console.error('Error loading auction:', err)
+        handleAPIError(err)
         setError(err instanceof Error ? err.message : 'Błąd podczas ładowania aukcji')
         setAuction(null)
       }
     }
     loadAuction()
-  }, [auctionId])
+  }, [auctionId, handleAPIError, clearError])
 
   // Timer effect
   useEffect(() => {
@@ -239,13 +244,23 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
     return () => clearInterval(interval)
   }, [auction?.endTime, auction, session?.user?.name])
 
-  if (!auction && error) {
+  if (!auction && (error || apiError)) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Aukcja niedostępna</h1>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <a href="/auctions" className="btn-primary">
+          <p className="text-gray-600 mb-6">{apiError?.message || error}</p>
+          <button
+            onClick={() => {
+              setError(null)
+              clearError()
+              window.location.reload()
+            }}
+            className="btn-primary"
+          >
+            Spróbuj ponownie
+          </button>
+          <a href="/auctions" className="btn-secondary ml-4">
             Powrót do aukcji
           </a>
         </div>
@@ -295,17 +310,23 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
         }
 
         setBidAmount('')
+        setError(null)
+        clearError()
         alert(`Licytacja ${formatPrice(bidValue)} została złożona!`)
       } else {
         // Obsługa błędów z serwera
-        if (data.missingFields) {
-          alert(`${data.message}\nBrakujące pola: ${data.missingFields.join(', ')}`)
-        } else {
-          alert(data.error || 'Błąd podczas składania licytacji')
-        }
+        const errorMessage = data.missingFields
+          ? `${data.message}\nBrakujące pola: ${data.missingFields.join(', ')}`
+          : data.error || 'Błąd podczas składania licytacji'
+
+        handleAPIError(new Error(errorMessage))
+        setError(errorMessage)
+        alert(errorMessage)
       }
     } catch (error) {
       console.error('Błąd podczas składania licytacji:', error)
+      handleAPIError(error)
+      setError('Wystąpił błąd podczas składania licytacji')
       alert('Wystąpił błąd podczas składania licytacji')
     } finally {
       setIsBidding(false)
@@ -356,27 +377,22 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
           {/* Główna zawartość */}
           <div className="lg:col-span-2 space-y-6">
             {/* Galeria zdjęć */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="card hover:border-white/80 transition-colors"
-            >
+            <BaseCard>
               <div
                 className="relative w-full aspect-[4/3] rounded-lg overflow-hidden bg-gray-900 cursor-pointer group"
                 onClick={() => auction.images && auction.images[0] && openFullscreen(0)}
               >
                 {auction.images && auction.images[0] ? (
                   <>
-                    <Image
+                    <LazyImage
                       src={auction.images[0]}
                       alt={auction.title}
                       fill
                       className="object-contain transition-transform group-hover:scale-105"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       priority
-                      onError={(e) => {
+                      onError={() => {
                         console.error('Image failed to load:', auction.images[0])
-                        e.currentTarget.style.display = 'none'
                       }}
                     />
                     {/* Overlay z ikoną powiększenia */}
@@ -412,7 +428,7 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
                       className="aspect-square relative rounded-lg overflow-hidden cursor-pointer group hover:ring-2 hover:ring-white/50 transition-all"
                       onClick={() => openFullscreen(index + 1)}
                     >
-                      <Image
+                      <LazyImage
                         src={image}
                         alt={`${auction.title} ${index + 2}`}
                         fill
@@ -431,15 +447,10 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
                   ))}
                 </div>
               )}
-            </motion.div>
+            </BaseCard>
 
             {/* Szczegóły aukcji */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="card hover:border-white/80 transition-colors"
-            >
+            <BaseCard>
               <h1 className="text-2xl font-bold text-white mb-4">{auction.title}</h1>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -464,15 +475,10 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
               <div className="prose max-w-none">
                 <p className="text-white/80 leading-relaxed">{auction.description}</p>
               </div>
-            </motion.div>
+            </BaseCard>
 
             {/* Rodowód */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-              className="card hover:border-white/80 transition-colors"
-            >
+            <BaseCard>
               <h2 className="text-xl font-semibold text-white mb-4">Rodowód</h2>
               <div
                 className="relative w-full h-96 border border-white/30 rounded-md overflow-hidden bg-gray-900 cursor-pointer group"
@@ -480,7 +486,7 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
               >
                 {auction.documents && auction.documents.length > 0 ? (
                   <>
-                    <Image
+                    <LazyImage
                       src={auction.documents[0]}
                       alt={`${auction.title} pedigree`}
                       fill
@@ -506,15 +512,10 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
                   </div>
                 )}
               </div>
-            </motion.div>
+            </BaseCard>
 
             {/* Historia licytacji */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="card hover:border-white/80 transition-colors"
-            >
+            <BaseCard>
               <h2 className="text-xl font-semibold text-white mb-4">Historia licytacji</h2>
 
               <div className="space-y-3">
@@ -544,19 +545,14 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
                   </div>
                 ))}
               </div>
-            </motion.div>
+            </BaseCard>
           </div>
 
           {/* Prawa kolumna */}
           <div className="space-y-6">
             {/* Panel licytacji + Odliczanie */}
             {auction.status !== 'ended' && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0 }}
-                className="card hover:border-white/80 transition-colors"
-              >
+              <BaseCard>
                 {/* Countdown */}
                 <div className="text-center mb-6">
                   <div className="text-sm text-white/80">Pozostało czasu</div>
@@ -600,16 +596,11 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
                     </button>
                   )}
                 </div>
-              </motion.div>
+              </BaseCard>
             )}
 
             {/* Oferty */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.05 }}
-              className="card hover:border-white/80 transition-colors"
-            >
+            <BaseCard>
               <h3 className="text-lg font-semibold text-white mb-4">Oferty</h3>
               <div className="space-y-4">
                 {auction.bids.slice(0, 5).map((bid) => (
@@ -630,29 +621,19 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
               <button className="mt-4 w-full bg-white/10 text-white/80 py-2 px-4 rounded-md text-sm font-medium hover:bg-white/20 transition-colors">
                 Pokaż wszystkie oferty
               </button>
-            </motion.div>
+            </BaseCard>
 
             {/* Breeder/Supplier */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 }}
-              className="card hover:border-white/80 transition-colors"
-            >
+            <BaseCard>
               <h4 className="text-sm font-semibold text-white">Breeder(s)</h4>
               <p className="text-sm text-white/80 mt-1">{`${auction.seller.firstName} ${auction.seller.lastName}`}</p>
               <div className="h-px bg-white/20 my-4" />
               <h4 className="text-sm font-semibold text-white">Supplier(s)</h4>
               <p className="text-sm text-white/80 mt-1">{`${auction.seller.firstName} ${auction.seller.lastName}`}</p>
-            </motion.div>
+            </BaseCard>
 
             {/* Charakterystyka i Ocena jakości */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.15 }}
-              className="card hover:border-white/80 transition-colors"
-            >
+            <BaseCard>
               <h4 className="text-sm font-semibold text-white mb-3">Charakterystyka</h4>
               <div className="text-sm divide-y divide-white/20 mb-4">
                 {[
@@ -707,7 +688,7 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
                 <span>Data aukcji</span>
                 <span className="text-white/80 font-medium">{format(new Date(), 'dd/MM/yyyy HH:mm', { locale: pl })}</span>
               </div>
-            </motion.div>
+            </BaseCard>
 
           </div>
         </div>
@@ -729,4 +710,4 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
 
     </div>
   )
-}
+})

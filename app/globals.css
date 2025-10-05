@@ -9,6 +9,27 @@
   touch-action: none;
 }
 
+/* LazyImage component styles */
+.lazy-image-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.lazy-image-placeholder {
+  background-color: #e5e7eb;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 12rem;
+}
+
+.lazy-image-loading-text {
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+
 /* Background image for layout */
 .pigeon-lofts-background {
   background-image: url('/pigeon-lofts-background.jpg');
@@ -285,12 +306,6 @@
   html {
     scroll-behavior: smooth;
     font-feature-settings: "rlig" 1, "calt" 1;
-    -webkit-text-size-adjust: 100%;
-    /* Safari */
-    -moz-text-size-adjust: 100%;
-    /* Firefox */
-    text-size-adjust: 100%;
-    /* Standard property */
   }
 
   body {
@@ -1045,6 +1060,51 @@
 
 .rotate-z-5 {
   transform: rotateZ(5deg);
+}
+
+/* Glassmorphism Carousel Cards - Similar to navigation */
+.glass-carousel-card {
+  --transition-duration: 500ms;
+  --transition-easing: ease-out;
+
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background-color: rgba(255, 248, 220, 0.1);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  box-shadow:
+    0px 20px 40px rgba(0, 0, 0, 0.1),
+    0 0 20px rgba(255, 248, 220, 0.3);
+  transition: transform var(--transition-duration) var(--transition-easing),
+    box-shadow var(--transition-duration) var(--transition-easing),
+    border-color var(--transition-duration) var(--transition-easing),
+    border-width var(--transition-duration) var(--transition-easing);
+  overflow: hidden;
+  position: relative;
+}
+
+.glass-carousel-card::before {
+  content: '';
+  background: rgba(255, 255, 255, 0.4);
+  width: 60%;
+  height: 100%;
+  top: 0%;
+  left: -125%;
+  transform: skew(45deg);
+  position: absolute;
+  transition: left var(--transition-duration) var(--transition-easing);
+}
+
+.glass-carousel-card:hover {
+  transform: translateY(-5px);
+  box-shadow:
+    0px 30px 60px rgba(0, 0, 0, 0.25),
+    0 0 35px 15px rgba(255, 255, 255, 0.95);
+  border-width: 2px;
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+.glass-carousel-card:hover::before {
+  left: 150%;
 }
 
 /* Glassmorphism Navigation Buttons - Exact from article */

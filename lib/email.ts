@@ -4,7 +4,7 @@ import crypto from 'crypto'
 // Konfiguracja SendGrid
 if (process.env.SENDGRID_API_KEY) {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY)
-  sgMail.setDataResidency('eu')
+  // sgMail.setDataResidency('eu') // Uncomment if needed
 }
 
 export interface EmailData {

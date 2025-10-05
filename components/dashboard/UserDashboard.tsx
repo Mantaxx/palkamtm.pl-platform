@@ -1,7 +1,8 @@
 'use client'
 
+import { LogoGlow } from '@/components/layout/LogoGlow'
 import { UnifiedCard } from '@/components/ui/UnifiedCard'
-import { Activity, AlertTriangle, Bookmark, Gavel, LogOut, Package, Plus, Shield, Star } from 'lucide-react'
+import { Activity, AlertTriangle, Bookmark, Gavel, Package, Settings, Shield, Star } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -17,12 +18,97 @@ export function UserDashboard() {
     { id: 'auctions', label: 'Moje aukcje', icon: Gavel },
     { id: 'bids', label: 'Moje oferty', icon: Star },
     { id: 'watchlist', label: 'Obserwowane', icon: Bookmark },
-    { id: 'purchases', label: 'Zakupy', icon: Package }
+    { id: 'purchases', label: 'Zakupy', icon: Package },
+    { id: 'settings', label: 'Ustawienia', icon: Settings }
   ]
 
   return (
-    <div className="min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gray-900/8 relative">
+      {/* Dodatkowe tło dla lepszej widoczności */}
+      <div className="absolute inset-0 bg-gradient-to-b from-gray-800/4 to-gray-900/6"></div>
+
+
+      {/* Logo w lewym górnym rogu */}
+      <LogoGlow />
+
+      {/* Navigation Tiles - Glass Style - na samej górze */}
+      <div className="absolute top-8 left-80 z-[1001] pointer-events-auto">
+        <div className="flex flex-wrap gap-4">
+          <Link
+            href="/"
+            className="glass-nav-button"
+            title="Strona główna"
+          >
+            <i className="fas fa-home text-3xl"></i>
+            <span className="text-sm">Strona główna</span>
+          </Link>
+
+          <Link
+            href="/auctions"
+            className="glass-nav-button"
+            title="Przeglądaj aukcje"
+          >
+            <i className="fas fa-gavel text-3xl"></i>
+            <span className="text-sm">Aukcje</span>
+          </Link>
+
+          <Link
+            href="/search"
+            className="glass-nav-button"
+            title="Wyszukiwarka"
+          >
+            <i className="fas fa-search text-3xl"></i>
+            <span className="text-sm">Wyszukiwarka</span>
+          </Link>
+
+          <Link
+            href="/champions"
+            className="glass-nav-button"
+            title="Championy"
+          >
+            <i className="fas fa-trophy text-3xl"></i>
+            <span className="text-sm">Championy</span>
+          </Link>
+
+          <Link
+            href="/breeder-meetings"
+            className="glass-nav-button"
+            title="Spotkania hodowców"
+          >
+            <i className="fas fa-users text-3xl"></i>
+            <span className="text-sm">Spotkania</span>
+          </Link>
+
+          <Link
+            href="/breeder-visits"
+            className="glass-nav-button"
+            title="Wizyty hodowców"
+          >
+            <i className="fas fa-camera text-3xl"></i>
+            <span className="text-sm">Wizyty</span>
+          </Link>
+
+          <Link
+            href="/references"
+            className="glass-nav-button"
+            title="Referencje"
+          >
+            <i className="fas fa-star text-3xl"></i>
+            <span className="text-sm">Referencje</span>
+          </Link>
+
+          <Link
+            href="/messages"
+            className="glass-nav-button"
+            title="Wiadomości"
+          >
+            <i className="fas fa-envelope text-3xl"></i>
+            <span className="text-sm">Wiadomości</span>
+          </Link>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         {/* Header */}
         <div className="mb-8">
           <div className="flex justify-between items-center">
@@ -32,9 +118,48 @@ export function UserDashboard() {
                 Zarządzaj swoimi aukcjami, ofertami i zakupami
               </p>
 
-              {/* Status weryfikacji telefonu */}
+              {/* Status weryfikacji konta */}
               {session?.user && (
-                <div className="mt-4">
+                <div className="mt-4 space-y-2">
+                  {/* Status aktywacji konta email */}
+                  {session.user.isActive ? (
+                    <div className="flex items-center gap-2 px-3 py-2 bg-green-600/20 text-green-400 rounded-lg border border-green-500/30">
+                      <Shield className="w-4 h-4" />
+                      <span className="text-sm font-medium">Konto aktywne</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 px-3 py-2 bg-red-600/20 text-red-400 rounded-lg border border-red-500/30">
+                      <AlertTriangle className="w-4 h-4" />
+                      <span className="text-sm font-medium">Konto nieaktywne - wymagana aktywacja email</span>
+                      <Link
+                        href="/auth/activate"
+                        className="text-red-300 hover:text-red-200 underline text-sm"
+                      >
+                        Aktywuj teraz
+                      </Link>
+                    </div>
+                  )}
+
+                  {/* Status weryfikacji email */}
+                  {session.user.emailVerified ? (
+                    <div className="flex items-center gap-2 px-3 py-2 bg-green-600/20 text-green-400 rounded-lg border border-green-500/30">
+                      <Shield className="w-4 h-4" />
+                      <span className="text-sm font-medium">Email zweryfikowany</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 px-3 py-2 bg-yellow-600/20 text-yellow-400 rounded-lg border border-yellow-500/30">
+                      <AlertTriangle className="w-4 h-4" />
+                      <span className="text-sm font-medium">Wymagana weryfikacja email</span>
+                      <Link
+                        href="/auth/check-email"
+                        className="text-yellow-300 hover:text-yellow-200 underline text-sm"
+                      >
+                        Zweryfikuj teraz
+                      </Link>
+                    </div>
+                  )}
+
+                  {/* Status weryfikacji telefonu */}
                   {session.user.isPhoneVerified ? (
                     <div className="flex items-center gap-2 px-3 py-2 bg-green-600/20 text-green-400 rounded-lg border border-green-500/30">
                       <Shield className="w-4 h-4" />
@@ -58,17 +183,17 @@ export function UserDashboard() {
             <div className="flex gap-4">
               <Link
                 href="/user/create-auction"
-                className="flex items-center gap-2 px-4 py-2 bg-green-600/20 hover:bg-green-600/30 text-green-400 rounded-lg backdrop-blur-sm transition-all duration-200 border border-green-500/30"
+                className="glass-nav-button"
               >
-                <Plus className="w-4 h-4" />
-                Utwórz aukcję
+                <i className="fas fa-plus text-2xl"></i>
+                <span className="text-sm">Utwórz aukcję</span>
               </Link>
               <button
                 onClick={() => router.push('/api/auth/signout')}
-                className="flex items-center gap-2 px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg backdrop-blur-sm transition-all duration-200 border border-red-500/30"
+                className="glass-nav-button"
               >
-                <LogOut className="w-4 h-4" />
-                Wyloguj się
+                <i className="fas fa-sign-out-alt text-2xl"></i>
+                <span className="text-sm">Wyloguj się</span>
               </button>
             </div>
           </div>
@@ -76,7 +201,7 @@ export function UserDashboard() {
 
         {/* Tabs */}
         <div className="mb-8">
-          <div className="border-b border-white/20">
+          <div className="border-b-2 border-white/40">
             <nav className="-mb-px flex space-x-8">
               {tabs.map((tab) => {
                 const Icon = tab.icon
@@ -84,9 +209,9 @@ export function UserDashboard() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2 py-2 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
+                    className={`flex items-center gap-2 py-3 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
                       ? 'border-white text-white'
-                      : 'border-transparent text-white/60 hover:text-white hover:border-white/40'
+                      : 'border-transparent text-white/60 hover:text-white hover:border-white/60'
                       }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -101,95 +226,7 @@ export function UserDashboard() {
         {/* Tab Content */}
         {activeTab === 'overview' && (
           <div className="space-y-8">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <UnifiedCard variant="glass" className="p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-blue-500/20 rounded-lg">
-                    <Gavel className="w-6 h-6 text-blue-400" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-white/70">Moje aukcje</p>
-                    <p className="text-2xl font-bold text-white">0</p>
-                  </div>
-                </div>
-              </UnifiedCard>
-
-              <UnifiedCard variant="glass" className="p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-green-500/20 rounded-lg">
-                    <Star className="w-6 h-6 text-green-400" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-white/70">Aktywne oferty</p>
-                    <p className="text-2xl font-bold text-white">0</p>
-                  </div>
-                </div>
-              </UnifiedCard>
-
-              <UnifiedCard variant="glass" className="p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-purple-500/20 rounded-lg">
-                    <Bookmark className="w-6 h-6 text-purple-400" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-white/70">Obserwowane</p>
-                    <p className="text-2xl font-bold text-white">0</p>
-                  </div>
-                </div>
-              </UnifiedCard>
-
-              <UnifiedCard variant="glass" className="p-6">
-                <div className="flex items-center">
-                  <div className="p-2 bg-amber-500/20 rounded-lg">
-                    <Package className="w-6 h-6 text-amber-400" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-white/70">Zakupy</p>
-                    <p className="text-2xl font-bold text-white">0</p>
-                  </div>
-                </div>
-              </UnifiedCard>
-            </div>
-
-            {/* Quick Actions */}
-            <UnifiedCard variant="glass" className="p-6">
-              <h2 className="text-xl font-semibold text-white mb-6">Szybkie akcje</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <Link
-                  href="/user/create-auction"
-                  className="flex items-center gap-3 p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
-                >
-                  <Plus className="w-5 h-5 text-green-400" />
-                  <div>
-                    <p className="font-medium text-white">Utwórz aukcję</p>
-                    <p className="text-sm text-white/60">Dodaj nową aukcję</p>
-                  </div>
-                </Link>
-
-                <Link
-                  href="/auctions"
-                  className="flex items-center gap-3 p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
-                >
-                  <Gavel className="w-5 h-5 text-blue-400" />
-                  <div>
-                    <p className="font-medium text-white">Przeglądaj aukcje</p>
-                    <p className="text-sm text-white/60">Znajdź interesujące oferty</p>
-                  </div>
-                </Link>
-
-                <Link
-                  href="/dashboard?tab=watchlist"
-                  className="flex items-center gap-3 p-4 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
-                >
-                  <Bookmark className="w-5 h-5 text-purple-400" />
-                  <div>
-                    <p className="font-medium text-white">Obserwowane</p>
-                    <p className="text-sm text-white/60">Twoje ulubione aukcje</p>
-                  </div>
-                </Link>
-              </div>
-            </UnifiedCard>
+            {/* Zakładka przegląd jest pusta - użytkownik może przejść do konkretnych sekcji */}
           </div>
         )}
 
@@ -199,16 +236,16 @@ export function UserDashboard() {
               <h2 className="text-xl font-semibold text-white">Moje aukcje</h2>
               <Link
                 href="/user/create-auction"
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                className="glass-nav-button"
               >
-                <Plus className="w-4 h-4" />
-                Utwórz aukcję
+                <i className="fas fa-plus text-2xl"></i>
+                <span className="text-sm">Utwórz aukcję</span>
               </Link>
             </div>
             <div className="text-center py-8">
-              <Gavel className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-              <p className="text-gray-400">Brak aukcji</p>
-              <p className="text-sm text-gray-500 mt-2">Utwórz swoją pierwszą aukcję</p>
+              <Gavel className="w-12 h-12 text-white/30 mx-auto mb-4" />
+              <p className="text-white/70">Brak aukcji</p>
+              <p className="text-sm text-white/50 mt-2">Utwórz swoją pierwszą aukcję</p>
             </div>
           </UnifiedCard>
         )}
@@ -217,9 +254,9 @@ export function UserDashboard() {
           <UnifiedCard variant="glass" className="p-6">
             <h2 className="text-xl font-semibold text-white mb-6">Moje oferty</h2>
             <div className="text-center py-8">
-              <Star className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-              <p className="text-gray-400">Brak ofert</p>
-              <p className="text-sm text-gray-500 mt-2">Rozpocznij licytowanie na aukcjach</p>
+              <Star className="w-12 h-12 text-white/30 mx-auto mb-4" />
+              <p className="text-white/70">Brak ofert</p>
+              <p className="text-sm text-white/50 mt-2">Rozpocznij licytowanie na aukcjach</p>
             </div>
           </UnifiedCard>
         )}
@@ -228,9 +265,9 @@ export function UserDashboard() {
           <UnifiedCard variant="glass" className="p-6">
             <h2 className="text-xl font-semibold text-white mb-6">Obserwowane aukcje</h2>
             <div className="text-center py-8">
-              <Bookmark className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-              <p className="text-gray-400">Brak obserwowanych aukcji</p>
-              <p className="text-sm text-gray-500 mt-2">Rozpocznij obserwowanie interesujących aukcji</p>
+              <Bookmark className="w-12 h-12 text-white/30 mx-auto mb-4" />
+              <p className="text-white/70">Brak obserwowanych aukcji</p>
+              <p className="text-sm text-white/50 mt-2">Rozpocznij obserwowanie interesujących aukcji</p>
             </div>
           </UnifiedCard>
         )}
@@ -239,9 +276,78 @@ export function UserDashboard() {
           <UnifiedCard variant="glass" className="p-6">
             <h2 className="text-xl font-semibold text-white mb-6">Moje zakupy</h2>
             <div className="text-center py-8">
-              <Package className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-              <p className="text-gray-400">Brak zakupów</p>
-              <p className="text-sm text-gray-500 mt-2">Twoje zakupy będą wyświetlane tutaj</p>
+              <Package className="w-12 h-12 text-white/30 mx-auto mb-4" />
+              <p className="text-white/70">Brak zakupów</p>
+              <p className="text-sm text-white/50 mt-2">Twoje zakupy będą wyświetlane tutaj</p>
+            </div>
+          </UnifiedCard>
+        )}
+
+        {activeTab === 'settings' && (
+          <UnifiedCard variant="glass" className="p-6">
+            <h2 className="text-xl font-semibold text-white mb-6">Ustawienia konta</h2>
+            <div className="space-y-6">
+              {/* Informacje o koncie */}
+              <div className="bg-white/5 rounded-lg p-4">
+                <h3 className="text-lg font-medium text-white mb-4">Informacje o koncie</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-white/70 mb-1">Email</label>
+                    <p className="text-white">{session?.user?.email}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-white/70 mb-1">Nazwa</label>
+                    <p className="text-white">{session?.user?.name}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Akcje ustawień */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Link
+                  href="/settings/profile"
+                  className="flex items-center gap-3 p-4 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <Settings className="w-5 h-5 text-blue-400" />
+                  <div>
+                    <p className="font-medium text-white">Profil</p>
+                    <p className="text-sm text-white/60">Zarządzaj danymi osobowymi</p>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/settings/security"
+                  className="flex items-center gap-3 p-4 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <Shield className="w-5 h-5 text-green-400" />
+                  <div>
+                    <p className="font-medium text-white">Bezpieczeństwo</p>
+                    <p className="text-sm text-white/60">Zmiana hasła, 2FA</p>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/settings/notifications"
+                  className="flex items-center gap-3 p-4 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <Activity className="w-5 h-5 text-purple-400" />
+                  <div>
+                    <p className="font-medium text-white">Powiadomienia</p>
+                    <p className="text-sm text-white/60">Ustawienia powiadomień</p>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/settings/privacy"
+                  className="flex items-center gap-3 p-4 bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <Shield className="w-5 h-5 text-amber-400" />
+                  <div>
+                    <p className="font-medium text-white">Prywatność</p>
+                    <p className="text-sm text-white/60">Ustawienia prywatności</p>
+                  </div>
+                </Link>
+              </div>
             </div>
           </UnifiedCard>
         )}
@@ -249,3 +355,4 @@ export function UserDashboard() {
     </div>
   )
 }
+

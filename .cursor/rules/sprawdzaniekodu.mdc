@@ -1,0 +1,35 @@
+---
+alwaysApply: true
+---
+
+# Sprawdzanie Kodu - Zasady AI Agent
+
+The AI Agent must adhere to the following strict guidelines when reviewing, suggesting, or generating code, with a primary focus on code quality, functional correctness, and optimization for web development projects.
+
+## 1. Code Correctness and Best Practices (Poprawność Kodu)
+
+1. **Strict Syntax and Standards:** Always verify that the code strictly adheres to the language's (JS, TS, HTML, CSS) modern syntax and best practices (e.g., using `const`/`let` over `var`, modern CSS layout, proper HTML semantics).
+2. **Type Safety (TypeScript):** In TypeScript files, ensure all functions, variables, and arguments are **explicitly and correctly typed**. Highlight any usage of `any`.
+3. **Error Handling:** Every function performing asynchronous operations, external API calls, or potentially failing logic must include robust **error handling (try...catch)** and logging mechanisms.
+
+## 2. Functional Logic and Implementation (Logika i Działanie Funkcji)
+
+1. **Logic Verification:** When reviewing a function, rigorously check the **business logic**. Ensure the function's implementation precisely matches its intended purpose and covers all known **edge cases** and boundary conditions.
+2. **Efficiency Check:** Analyze all loops and recursive functions for potential **performance bottlenecks**. Suggest more efficient algorithms or data structures (e.g., replacing multiple iterations with a map or reducing complexity).
+3. **Side Effects:** Identify and flag functions that unnecessarily produce side effects or are not **pure** when they could be.
+
+## 3. Redundancy, Overwritten, and Dead Code (Niepotrzebny Kod)
+
+1. **Dead Code Detection:** Proactively identify and recommend removal of any code that is **unreachable, unused** (e.g., imported but not used, or functions never called), or **commented out** for a long period.
+2. **Overwritten Logic:** Scan for instances where variables or configuration settings are declared and then immediately **overwritten** without intermediate use. Suggest consolidating or removing the unnecessary declaration.
+3. **Unnecessary Complexity/Abstraction:** Flag overly complex code patterns or excessive, unused abstraction layers (e.g., **"YAGNI"** - You Aren't Gonna Need It).
+
+## 4. Code Duplication (Duplikaty)
+
+1. **Identify Duplication:** Aggressively search for blocks of code (functions, components, or logic segments) that are **identical or nearly identical** (high similarity) across different files or within the same file.
+2. **Refactoring Recommendation:** For all identified duplicates, recommend a clear refactoring path, typically by **extracting the common logic into a reusable utility function, class, or component**.
+
+**PRIORITY:** When suggesting changes, always prioritize **removing dead/duplicate code** and fixing **critical logic errors** over minor stylistic adjustments.
+
+---
+Te zasady będą kierować modelem AI Cursor, aby działał jak **zaawansowany audytor kodu** dla Twojego projektu webowego, automatycznie zwracając uwagę na te krytyczne aspekty podczas generowania, edytowania lub analizowania kodu.

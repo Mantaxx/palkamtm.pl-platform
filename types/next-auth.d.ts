@@ -10,6 +10,8 @@ declare module 'next-auth' {
             role: string
             phoneNumber?: string | null
             isPhoneVerified?: boolean
+            isActive?: boolean
+            emailVerified?: Date | null
         }
     }
 
@@ -21,6 +23,8 @@ declare module 'next-auth' {
         role: string
         phoneNumber?: string | null
         isPhoneVerified?: boolean
+        isActive?: boolean
+        emailVerified?: Date | null
     }
 }
 
@@ -29,5 +33,7 @@ declare module 'next-auth/jwt' {
         role: string
         phoneNumber?: string | null
         isPhoneVerified?: boolean
+        isActive?: boolean
+        emailVerified?: Date | null
     }
 }

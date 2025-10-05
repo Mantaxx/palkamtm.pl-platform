@@ -26,12 +26,12 @@ export async function PATCH(
 
         const { id: auctionId } = await params
         const body = await request.json()
-        const { title, currentPrice, endTime, status } = body
+        const { title, currentPrice, endTime, status, isApproved } = body
 
         // Sprawdź czy aukcja istnieje
         const auction = await prisma.auction.findUnique({
             where: { id: auctionId },
-            select: { id: true, title: true, currentPrice: true, endTime: true, status: true }
+            select: { id: true, title: true, currentPrice: true, endTime: true, status: true, isApproved: true }
         })
 
         if (!auction) {
@@ -47,25 +47,30 @@ export async function PATCH(
             currentPrice?: number;
             endTime?: Date;
             status?: 'ACTIVE' | 'ENDED' | 'CANCELLED' | 'PENDING';
+            isApproved?: boolean;
         } = {}
-        
+
         if (title !== undefined && title.trim().length > 0) {
             updateData.title = title.trim()
         }
-        
+
         if (currentPrice !== undefined && currentPrice >= 0) {
             updateData.currentPrice = parseFloat(currentPrice)
         }
-        
+
         if (endTime !== undefined) {
             const newEndTime = new Date(endTime)
             if (!isNaN(newEndTime.getTime())) {
                 updateData.endTime = newEndTime
             }
         }
-        
+
         if (status !== undefined && ['PENDING', 'ACTIVE', 'ENDED', 'CANCELLED'].includes(status)) {
             updateData.status = status as 'ACTIVE' | 'ENDED' | 'CANCELLED' | 'PENDING'
+        }
+
+        if (isApproved !== undefined) {
+            updateData.isApproved = Boolean(isApproved)
         }
 
         // Aktualizuj aukcję
@@ -78,6 +83,7 @@ export async function PATCH(
                 currentPrice: true,
                 endTime: true,
                 status: true,
+                isApproved: true,
                 updatedAt: true
             }
         })

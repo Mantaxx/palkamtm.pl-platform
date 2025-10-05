@@ -7,8 +7,10 @@ const nextConfig = {
   generateEtags: false,
   poweredByHeader: false,
 
-  // Wyłącz wszystkie eksperymentalne funkcje
-  experimental: {},
+  // Optymalizacja wydajności
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'framer-motion'],
+  },
 
   // Ustawienia dla stabilności na Windows
   ...(process.env.NODE_ENV === 'development' && {
@@ -26,6 +28,20 @@ const nextConfig = {
       }
     }
 
+    // Optymalizacja bundle size
+    if (!dev) {
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
+          },
+        },
+      }
+    }
+
     return config
   },
 
@@ -39,8 +55,6 @@ const nextConfig = {
 
   // Włącz kompresję tylko w production
   compress: process.env.NODE_ENV === 'production',
-
-  // Zezwól na cross-origin requests w dev
 
   // Optymalizacja obrazów - Next.js 15 format
   images: {
@@ -76,6 +90,12 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
+    localPatterns: [
+      {
+        pathname: '/**',
+      },
+    ],
+    qualities: [25, 50, 75, 85, 100],
     formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],

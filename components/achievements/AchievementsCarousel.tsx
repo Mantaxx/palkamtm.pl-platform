@@ -1,7 +1,6 @@
 'use client'
 
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-import React, { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 interface AchievementItem {
   id: number
@@ -417,280 +416,73 @@ interface AchievementsCarouselProps {
 
 export function AchievementsCarousel({ onNavigationReady }: AchievementsCarouselProps = {}) {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [expandedCard, setExpandedCard] = useState<number | null>(null)
-  const [collapsingCard, setCollapsingCard] = useState<number | null>(null)
-  const [rotatingCard, setRotatingCard] = useState<number | null>(null)
-  const [rotatingBackCard, setRotatingBackCard] = useState<number | null>(null)
-  const [flyingCard, setFlyingCard] = useState<number | null>(null)
-  const [flyingBackCard, setFlyingBackCard] = useState<number | null>(null)
-  const [scaledCard, setScaledCard] = useState<number | null>(null)
+  const [selectedCard, setSelectedCard] = useState<number | null>(null)
   const [isAutoRotating, setIsAutoRotating] = useState(true)
-  const [isAnimationPaused, setIsAnimationPaused] = useState(false)
-  const [isManuallyStopped, setIsManuallyStopped] = useState(false)
-
-  const nextSlide = useCallback(() => {
-    setIsAutoRotating(false) // Zatrzymaj automatyczne obracanie
-    setIsAnimationPaused(true) // Wstrzymaj animację CSS
-    setIsManuallyStopped(true) // Oznacz jako ręcznie zatrzymane
-
-    // Natychmiast zatrzymaj CSS animację przez manipulację DOM
-    const carousel = document.querySelector('.heritage-carousel') as HTMLElement
-    if (carousel) {
-      carousel.style.setProperty('animation', 'none', 'important')
-      carousel.style.setProperty('transition', 'none', 'important')
-      carousel.style.animationPlayState = 'paused'
-      carousel.classList.add('manual-stop')
-    }
-
-    setCurrentIndex((prev) => (prev + 1) % achievementItems.length)
-  }, [])
-
-  const prevSlide = useCallback(() => {
-    setIsAutoRotating(false) // Zatrzymaj automatyczne obracanie
-    setIsAnimationPaused(true) // Wstrzymaj animację CSS
-    setIsManuallyStopped(true) // Oznacz jako ręcznie zatrzymane
-
-    // Natychmiast zatrzymaj CSS animację przez manipulację DOM
-    const carousel = document.querySelector('.heritage-carousel') as HTMLElement
-    if (carousel) {
-      carousel.style.setProperty('animation', 'none', 'important')
-      carousel.style.setProperty('transition', 'none', 'important')
-      carousel.style.animationPlayState = 'paused'
-      carousel.classList.add('manual-stop')
-    }
-
-    setCurrentIndex((prev) => (prev - 1 + achievementItems.length) % achievementItems.length)
-  }, [])
+  const [highlightedCard, setHighlightedCard] = useState<number | null>(null)
 
   const goToSlide = useCallback((index: number) => {
-    setIsAutoRotating(false) // Zatrzymaj automatyczne obracanie
-    setIsAnimationPaused(true) // Wstrzymaj animację CSS
-    setIsManuallyStopped(true) // Oznacz jako ręcznie zatrzymane
-
-    // Natychmiast zatrzymaj CSS animację przez manipulację DOM
-    const carousel = document.querySelector('.heritage-carousel') as HTMLElement
-    if (carousel) {
-      carousel.style.setProperty('animation', 'none', 'important')
-      carousel.style.setProperty('transition', 'none', 'important')
-      carousel.style.animationPlayState = 'paused'
-      carousel.classList.add('manual-stop')
-    }
-
+    if (highlightedCard !== null) return // Nie pozwól na nawigację gdy karta jest podświetlona
     setCurrentIndex(index)
-  }, [])
+  }, [highlightedCard])
 
   // Przekaż funkcje nawigacji do rodzica
-  React.useEffect(() => {
+  useEffect(() => {
     if (onNavigationReady) {
       onNavigationReady({
-        prevSlide,
-        nextSlide,
+        prevSlide: () => { },
+        nextSlide: () => { },
         goToSlide,
         currentIndex,
         totalItems: achievementItems.length
       })
     }
-  }, [currentIndex, onNavigationReady, prevSlide, nextSlide, goToSlide])
+  }, [currentIndex, onNavigationReady, goToSlide])
 
   // Automatyczne obracanie karuzeli
-  React.useEffect(() => {
-    if (!isAutoRotating || isManuallyStopped) return
-
+  useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % achievementItems.length)
-    }, 10000) // Obraca co 10 sekund
+    }, 8000) // Obraca co 8 sekund
 
     return () => clearInterval(interval)
-  }, [isAutoRotating, isManuallyStopped])
+  }, [])
 
-  const toggleAutoRotate = () => {
-    setIsAutoRotating(!isAutoRotating)
-    setIsAnimationPaused(!isAutoRotating) // Jeśli włączamy obracanie, wznowij animację
-    setIsManuallyStopped(!isAutoRotating) // Jeśli włączamy obracanie, wyczyść stan ręcznego zatrzymania
+  // Obsługa scroll'a i klawiatury do obracania karuzeli
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault()
 
-    const carousel = document.querySelector('.heritage-carousel') as HTMLElement
-    if (carousel) {
-      if (!isAutoRotating) {
-        // Włączamy obracanie
-        carousel.classList.remove('manual-stop')
-        carousel.style.removeProperty('animation')
-        carousel.style.removeProperty('transition')
-        carousel.style.animationPlayState = 'running'
+      if (e.deltaY > 0) {
+        setCurrentIndex((prev) => (prev + 1) % achievementItems.length)
       } else {
-        // Wyłączamy obracanie
-        carousel.classList.add('manual-stop')
-        carousel.style.setProperty('animation', 'none', 'important')
-        carousel.style.setProperty('transition', 'none', 'important')
-        carousel.style.animationPlayState = 'paused'
+        setCurrentIndex((prev) => (prev - 1 + achievementItems.length) % achievementItems.length)
       }
     }
-  }
 
-  const handleCardClick = (index: number) => {
-    console.log('Kliknięto kartę:', index)
-
-    // Natychmiast zatrzymaj automatyczne obracanie
-    setIsAutoRotating(false)
-    setIsAnimationPaused(true)
-    setIsManuallyStopped(true)
-
-    // Proste zatrzymanie karuzeli
-    const carousel = document.querySelector('.heritage-carousel') as HTMLElement
-    if (carousel) {
-      carousel.style.animation = 'none'
-      carousel.style.animationPlayState = 'paused'
-      carousel.classList.add('manual-stop')
-
-      // Zapisz aktualną pozycję karuzeli
-      const computedStyle = window.getComputedStyle(carousel)
-      const currentTransform = computedStyle.transform
-      carousel.setAttribute('data-clicked-position', currentTransform)
-
-      console.log('Karuzela zatrzymana')
-      console.log('Zapisana pozycja:', currentTransform)
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault()
+        setCurrentIndex((prev) => (prev - 1 + achievementItems.length) % achievementItems.length)
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault()
+        setCurrentIndex((prev) => (prev + 1) % achievementItems.length)
+      }
     }
 
-    if (scaledCard === index) {
-      // Karta jest w stanie końcowym - rozpocznij lot z powrotem z obracaniem
-      setFlyingBackCard(index)
-      setScaledCard(null)
+    window.addEventListener('wheel', handleWheel, { passive: false })
+    document.addEventListener('keydown', handleKeyDown)
 
-      // Po locie wstecz z obrotem, zatrzymaj w pozycji wysuniętej
-      setTimeout(() => {
-        setExpandedCard(index)
-        setFlyingBackCard(null)
-
-        // Po 1 sekundzie w pozycji wysuniętej, wsuń do karuzeli
-        setTimeout(() => {
-          setCollapsingCard(index)
-          setExpandedCard(null)
-
-          // Po zakończeniu animacji zwijania, wyczyść stany i wznowij automatyczne obracanie
-          setTimeout(() => {
-            setCollapsingCard(null)
-            setIsAutoRotating(true) // Wznów automatyczne obracanie
-            setIsAnimationPaused(false) // Wznów animację CSS
-            setIsManuallyStopped(false) // Wyczyść stan ręcznego zatrzymania
-
-            // Wznów CSS animację przez manipulację DOM
-            const carousel = document.querySelector('.heritage-carousel') as HTMLElement
-            if (carousel) {
-              carousel.classList.remove('manual-stop')
-              carousel.style.removeProperty('animation')
-              carousel.style.removeProperty('transition')
-              carousel.style.animationPlayState = 'running'
-
-              // Wyczyść zapisaną pozycję
-              carousel.removeAttribute('data-clicked-position')
-            }
-
-            // Wyczyść style karty, żeby wróciła do normalnej pozycji w karuzeli
-            const card = document.querySelector(`.heritage-cell[data-index="${index}"]`) as HTMLElement
-            if (card) {
-              // Wyczyść wszystkie style i klasy
-              card.style.cssText = ''
-              card.classList.remove('expanded', 'rotating', 'rotating-back', 'flying', 'flying-back', 'scaled', 'collapsing')
-
-              // Przywróć normalną pozycję karty w karuzeli
-              const numberOfCells = achievementItems.length
-              const cardAngle = (index * 360) / numberOfCells
-              const cellSize = 400
-              const translateZ = Math.round((cellSize / 2) / Math.tan(Math.PI / numberOfCells)) + 1000
-
-              // Ustaw normalną pozycję karty w karuzeli
-              card.style.transform = `rotateY(${cardAngle}deg) translateZ(${translateZ}px)`
-
-              console.log('Karta wróciła do karuzeli na pozycję:', `rotateY(${cardAngle}deg) translateZ(${translateZ}px)`)
-            }
-          }, 1500)
-        }, 1000)
-      }, 800)
-    } else {
-      // Pierwsze kliknięcie - rozpocznij pełną sekwencję
-      setExpandedCard(index)
-      setCollapsingCard(null)
-      setRotatingCard(null)
-      setRotatingBackCard(null)
-      setFlyingCard(null)
-      setFlyingBackCard(null)
-      setScaledCard(null)
-
-      // Po 1.5 sekundach wysuwania, rozpocznij obracanie
-      setTimeout(() => {
-        setRotatingCard(index)
-
-        // Po 2 sekundach obracania, rozpocznij lecenie
-        setTimeout(() => {
-          setFlyingCard(index)
-          setRotatingCard(null)
-
-          // Po 1 sekundzie lotu z obrotem, zatrzymaj i powiększ na wprost
-          setTimeout(() => {
-            setScaledCard(index)
-            setFlyingCard(null)
-
-            // Użyj zapisanej pozycji karuzeli do pozycjonowania karty
-            const carousel = document.querySelector('.heritage-carousel') as HTMLElement
-            const card = document.querySelector(`.heritage-cell[data-index="${index}"]`) as HTMLElement
-
-            if (carousel && card) {
-              const clickedPosition = carousel.getAttribute('data-clicked-position')
-              console.log('Odczytywana pozycja:', clickedPosition)
-
-              if (clickedPosition && clickedPosition !== 'none') {
-                console.log('Pozycja karuzeli to matrix3d, nie rotateY!')
-
-                // Dla matrix3d, użyjmy prostszego podejścia - zawsze na wprost
-                requestAnimationFrame(() => {
-                  // Ustaw kartę zawsze na wprost ekranu, bliżej użytkownika i większą
-                  const newTransform = `rotateY(0deg) translateZ(2500px) translateY(0px) scaleX(3.5) scaleY(2.8)`
-
-                  // Usuń wszystkie klasy CSS które mogą interferować
-                  card.classList.remove('expanded', 'rotating', 'rotating-back', 'flying', 'flying-back', 'collapsing')
-
-                  // Ustaw pozycję bezpośrednio
-                  card.style.cssText = `
-                background: rgba(55, 65, 81, 0.9) !important;
-                border: 3px solid white !important;
-                transform-style: preserve-3d !important;
-                transition: transform 1s ease-out !important;
-                z-index: 1000 !important;
-                backdrop-filter: none !important;
-                box-shadow: 0 0 20px rgba(55, 65, 81, 0.8) !important;
-                transform-origin: center center !important;
-                transform: ${newTransform} !important;
-              `
-
-                  console.log('Ustawiona pozycja karty na wprost:', newTransform)
-                })
-              }
-            }
-          }, 1000)
-        }, 2000)
-      }, 1500)
+    return () => {
+      window.removeEventListener('wheel', handleWheel)
+      document.removeEventListener('keydown', handleKeyDown)
     }
-  }
+  }, [])
+
 
   // Calculate translateZ value for 3D positioning
   const cellSize = 400
   const numberOfCells = achievementItems.length
-  const translateZ = Math.round((cellSize / 2) / Math.tan(Math.PI / numberOfCells)) + 1000
-
-  // Generate dynamic CSS for all cards
-  const generateCardPositions = () => {
-    let css = ''
-    for (let i = 0; i < numberOfCells; i++) {
-      const angle = (i * 360) / numberOfCells
-      css += `.heritage-cell[data-index="${i}"] { transform: rotateY(${angle}deg) translateZ(${translateZ}px); }\n`
-      css += `.heritage-cell[data-index="${i}"].expanded { transform: rotateY(${angle}deg) translateZ(${translateZ}px) translateY(-400px) !important; }\n`
-      css += `.heritage-cell[data-index="${i}"].rotating { transform: rotateY(${angle}deg) translateZ(${translateZ}px) translateY(-400px) rotateX(360deg) !important; }\n`
-      css += `.heritage-cell[data-index="${i}"].rotating-back { transform: rotateY(${angle}deg) translateZ(${translateZ}px) translateY(-400px) rotateX(360deg) !important; }\n`
-      css += `.heritage-cell[data-index="${i}"].flying { transform: rotateY(${angle}deg) translateZ(${translateZ + 800}px) translateY(-400px) !important; }\n`
-      css += `.heritage-cell[data-index="${i}"].flying-back { transform: rotateY(${angle}deg) translateZ(${translateZ}px) translateY(-400px) rotateX(360deg) !important; }\n`
-      css += `.heritage-cell[data-index="${i}"].collapsing { transform: rotateY(${angle}deg) translateZ(${translateZ}px) translateY(0px) scale(1) !important; }\n`
-    }
-    return css
-  }
+  const translateZ = Math.round((cellSize / 2) / Math.tan(Math.PI / numberOfCells)) + 2000
 
   return (
     <>
@@ -698,32 +490,25 @@ export function AchievementsCarousel({ onNavigationReady }: AchievementsCarousel
         __html: `
           .heritage-scene {
             width: 100%;
-            height: 1000px;
+            height: 800px;
             position: relative;
             perspective: 1200px;
             perspective-origin: center center;
-            margin: -12rem 0 2rem 0;
+            margin: 0;
           }
 
           .heritage-carousel {
             width: 100%;
             height: 100%;
             position: absolute;
+            top: 0;
+            left: 0;
             transform-style: preserve-3d;
             transition: transform 1s ease-in-out;
           }
 
           .heritage-carousel.auto-rotating {
-            animation: continuousRotation 80s linear infinite;
-          }
-
-          .heritage-carousel.auto-rotating.paused {
-            animation-play-state: paused;
-          }
-
-          .heritage-carousel.manual-stop {
-            animation: none !important;
-            transition: none !important;
+            animation: continuousRotation 60s linear infinite;
           }
 
           @keyframes continuousRotation {
@@ -735,206 +520,183 @@ export function AchievementsCarousel({ onNavigationReady }: AchievementsCarousel
             }
           }
 
-          .heritage-carousel[data-current-index="0"] { transform: translateZ(-6000px) rotateY(0deg); }
-          .heritage-carousel[data-current-index="1"] { transform: translateZ(-6000px) rotateY(-15deg); }
-          .heritage-carousel[data-current-index="2"] { transform: translateZ(-6000px) rotateY(-30deg); }
-          .heritage-carousel[data-current-index="3"] { transform: translateZ(-6000px) rotateY(-45deg); }
-          .heritage-carousel[data-current-index="4"] { transform: translateZ(-6000px) rotateY(-60deg); }
-          .heritage-carousel[data-current-index="5"] { transform: translateZ(-6000px) rotateY(-75deg); }
-          .heritage-carousel[data-current-index="6"] { transform: translateZ(-6000px) rotateY(-90deg); }
-          .heritage-carousel[data-current-index="7"] { transform: translateZ(-6000px) rotateY(-105deg); }
-          .heritage-carousel[data-current-index="8"] { transform: translateZ(-6000px) rotateY(-120deg); }
-          .heritage-carousel[data-current-index="9"] { transform: translateZ(-6000px) rotateY(-135deg); }
-          .heritage-carousel[data-current-index="10"] { transform: translateZ(-6000px) rotateY(-150deg); }
-          .heritage-carousel[data-current-index="11"] { transform: translateZ(-6000px) rotateY(-165deg); }
-          .heritage-carousel[data-current-index="12"] { transform: translateZ(-6000px) rotateY(-180deg); }
-          .heritage-carousel[data-current-index="13"] { transform: translateZ(-6000px) rotateY(-195deg); }
-          .heritage-carousel[data-current-index="14"] { transform: translateZ(-6000px) rotateY(-210deg); }
-          .heritage-carousel[data-current-index="15"] { transform: translateZ(-6000px) rotateY(-225deg); }
-          .heritage-carousel[data-current-index="16"] { transform: translateZ(-6000px) rotateY(-240deg); }
-          .heritage-carousel[data-current-index="17"] { transform: translateZ(-6000px) rotateY(-255deg); }
-          .heritage-carousel[data-current-index="18"] { transform: translateZ(-6000px) rotateY(-270deg); }
-          .heritage-carousel[data-current-index="19"] { transform: translateZ(-6000px) rotateY(-285deg); }
-          .heritage-carousel[data-current-index="20"] { transform: translateZ(-6000px) rotateY(-300deg); }
-          .heritage-carousel[data-current-index="21"] { transform: translateZ(-6000px) rotateY(-315deg); }
-          .heritage-carousel[data-current-index="22"] { transform: translateZ(-6000px) rotateY(-330deg); }
-          .heritage-carousel[data-current-index="23"] { transform: translateZ(-6000px) rotateY(-345deg); }
-
           .heritage-cell {
             position: absolute;
             width: 600px;
-            height: 740px;
+            height: 1100px;
             left: 50%;
             top: 50%;
             margin-left: -300px;
-            margin-top: -370px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-            border: 2px solid rgba(255,255,255,1);
+            margin-top: -550px;
+            border: 3px solid rgba(255, 255, 255, 1);
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+          }
+
+          .heritage-cell.highlighted {
+            box-shadow: 
+              0px 200px 400px rgba(0, 0, 0, 0.3),
+              0 0 80px 30px rgba(255, 255, 255, 1),
+              0 0 150px 60px rgba(255, 255, 255, 0.9),
+              0 0 200px 80px rgba(255, 255, 255, 0.6);
+            border-width: 5px;
+            border-color: rgba(255, 255, 255, 1);
             border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 0 0 5px rgba(255,255,255,1);
-            outline: 2px solid rgba(255,255,255,1);
-            outline-offset: 10px;
-            backdrop-filter: blur(10px);
+            transform: scale(1.5) translateZ(500px);
+            z-index: 1000;
+            transition: all 0.5s ease-out;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            margin-left: -450px;
+            margin-top: -825px;
+            filter: none;
+          }
+
+
+
+          .heritage-cell.expanded .achievement-details {
+            display: block;
+            background: rgba(0, 0, 0, 0.9);
             color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            padding: 2rem;
+            border-radius: 20px;
+            font-size: 1.5rem;
+            line-height: 1.8;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.3);
+          }
+
+          .heritage-cell.expanded .achievement-details h3 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
             text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            color: #fff;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.9);
           }
 
-          .heritage-cell:hover {
-            background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1));
-            border: 2px solid rgba(255,255,255,1);
-            box-shadow: 0 0 20px rgba(255,255,255,0.5), 0 0 0 5px rgba(255,255,255,1);
-            outline: 2px solid rgba(255,255,255,1);
-            outline-offset: 10px;
-            transform: scale(1.05);
+          .heritage-cell.expanded .achievement-details ul {
+            list-style: none;
+            padding: 0;
           }
 
-
-          ${generateCardPositions()}
-
-          .heritage-cell.expanded {
-            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)) !important;
-            border: 2px solid white !important;
-            transform-style: preserve-3d !important;
-            transition: transform 1.5s ease-out !important;
-            z-index: 1000;
-          }
-
-          .heritage-cell.rotating {
-            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)) !important;
-            border: 2px solid white !important;
-            transform-style: preserve-3d !important;
-            transition: transform 2s linear !important;
-            z-index: 1000;
-          }
-
-          .heritage-cell.rotating-back {
-            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)) !important;
-            border: 2px solid white !important;
-            transform-style: preserve-3d !important;
-            transition: transform 2s ease-in-out !important;
-            z-index: 1000;
-          }
-
-          .heritage-cell.flying {
-            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)) !important;
-            border: 2px solid white !important;
-            transform-style: preserve-3d !important;
-            transition: transform 0.2s ease-in !important;
-            z-index: 1000;
-          }
-
-          .heritage-cell.flying-back {
-            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)) !important;
-            border: 2px solid white !important;
-            transform-style: preserve-3d !important;
-            transition: transform 0.8s ease-in-out !important;
-            z-index: 1000;
+          .heritage-cell.expanded .achievement-details li {
+            font-size: 1.3rem;
+            margin-bottom: 0.8rem;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            border-left: 4px solid #fff;
           }
 
 
-
-          .heritage-cell.collapsing {
-            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05)) !important;
-            border: 2px solid white !important;
-            transform-style: preserve-3d !important;
-            transition: transform 1.5s ease-out !important;
-            z-index: 1000;
+          .heritage-cell.highlighted .achievement-details {
+            display: block !important;
+            background: rgba(128, 128, 128, 0.9);
+            color: white;
+            padding: 2rem;
+            border-radius: 20px;
+            font-size: 1.5rem;
+            line-height: 1.8;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.3);
           }
 
-          .heritage-cell.scaled {
-            background: rgba(55, 65, 81, 0.9) !important;
-            border: 3px solid white !important;
-            transform-style: preserve-3d !important;
-            transition: transform 1s ease-out !important;
-            z-index: 1000;
-            backdrop-filter: none !important;
-            box-shadow: 0 0 20px rgba(55, 65, 81, 0.8) !important;
-            transform-origin: center center !important;
-            transform: rotateY(var(--card-angle, 0deg)) translateZ(1000px) translateY(0px) scaleX(3) scaleY(2.5) !important;
+          .heritage-cell.highlighted .achievement-details h3 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #fff;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.9);
           }
 
+          .heritage-cell.highlighted .achievement-details ul {
+            list-style: none;
+            padding: 0;
+          }
 
+          .heritage-cell.highlighted .achievement-details li {
+            font-size: 1.3rem;
+            margin-bottom: 0.8rem;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            border-left: 4px solid #fff;
+          }
 
+          .heritage-cell .achievement-details {
+            display: none;
+          }
 
+          .achievement-year-text {
+            font-size: 6rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+            color: white;
+          }
 
+          .achievement-details {
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            padding: 1rem;
+          }
+
+          .achievement-details h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+          }
+
+          .achievement-details ul {
+            list-style: none;
+            padding: 0;
+          }
+
+          .achievement-details li {
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+          }
         `
       }} />
 
       <div className="heritage-scene">
         <div
-          className={`heritage-carousel ${isAutoRotating && !isManuallyStopped ? 'auto-rotating' : ''} ${isAnimationPaused ? 'paused' : ''} ${isManuallyStopped ? 'manual-stop' : ''}`}
-          data-current-index={currentIndex}
+          className={`heritage-carousel`}
+          style={{
+            transform: `translateZ(-6000px) rotateY(${-currentIndex * (360 / numberOfCells)}deg)`
+          }}
         >
           {achievementItems.map((item, index) => (
             <div
               key={item.id}
-              className={`heritage-cell ${expandedCard === index ? 'expanded' : ''
-                } ${collapsingCard === index ? 'collapsing' : ''
-                } ${rotatingCard === index ? 'rotating' : ''
-                } ${rotatingBackCard === index ? 'rotating-back' : ''
-                } ${flyingCard === index ? 'flying' : ''
-                } ${flyingBackCard === index ? 'flying-back' : ''
-                } ${scaledCard === index ? 'scaled' : ''
-                }`}
-              data-index={index}
-              onClick={() => handleCardClick(index)}
+              className={`glass-carousel-card heritage-cell`}
+              style={{
+                transform: `rotateY(${(index * 360) / numberOfCells}deg) translateZ(${translateZ}px)`,
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                marginLeft: '-300px',
+                marginTop: '-550px'
+              }}
             >
-              {scaledCard === index ? (
-                <div className="w-full h-full overflow-y-auto p-8">
-                  <h3 className="text-2xl font-bold mb-6 text-white text-center">
-                    Rok {item.year}
-                  </h3>
-                  <div className="space-y-3">
-                    {item.achievements.map((achievement, idx) => (
-                      <div key={idx} className="text-sm text-white leading-relaxed">
-                        {achievement}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <h3 className="font-bold text-white drop-shadow-2xl text-8xl achievement-year-text">
-                    {item.year}
-                  </h3>
-                </div>
-              )}
+              <div className="achievement-year-text">
+                {item.year}
+              </div>
             </div>
           ))}
         </div>
-
-        {/* Strzałki nawigacji */}
-        <button
-          onClick={prevSlide}
-          className="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-black/50 hover:bg-black/70 text-white transition-all duration-300 hover:scale-110"
-          aria-label="Poprzedni rok"
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-
-        <button
-          onClick={nextSlide}
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-black/50 hover:bg-black/70 text-white transition-all duration-300 hover:scale-110"
-          aria-label="Następny rok"
-        >
-          <ChevronRight className="w-6 h-6" />
-        </button>
-
-        {/* Przycisk kontroli automatycznego obracania - bezpośrednio pod karuzelą */}
-        <button
-          onClick={toggleAutoRotate}
-          className="absolute top-[calc(100%-80px)] left-1/2 -translate-x-1/2 z-30 w-16 h-16 rounded-full bg-white/20 hover:bg-white/30 text-white transition-all duration-300 hover:scale-110 backdrop-blur-sm border border-white/30 flex items-center justify-center text-2xl"
-          aria-label={isAutoRotating ? "Zatrzymaj obracanie" : "Włącz obracanie"}
-        >
-          {isAutoRotating ? "⏸️" : "▶️"}
-        </button>
 
       </div>
     </>

@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
 import { useMessageNotifications } from '@/hooks/useMessageNotifications'
+import { useEffect, useRef } from 'react'
 
 export function useMessagePolling() {
   const { addNotification } = useMessageNotifications()
   const lastCheckRef = useRef<Date>(new Date())
-  const intervalRef = useRef<NodeJS.Timeout>()
+  const intervalRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   useEffect(() => {
     const checkForNewMessages = async () => {
@@ -14,7 +14,7 @@ export function useMessagePolling() {
         const response = await fetch('/api/messages')
         if (response.ok) {
           const data = await response.json()
-          
+
           // Sprawdź czy są nowe wiadomości od ostatniego sprawdzenia
           const newMessages = data.conversations
             .filter((conv: any) => conv.lastMessage)

@@ -59,7 +59,7 @@ export function PedigreeModal({ champion, isOpen, onClose }: PedigreeModalProps)
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
           className="relative max-w-4xl w-full max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e: React.MouseEvent) => e.stopPropagation()}
         >
           {/* Header */}
           <div className="sticky top-0 bg-gradient-to-r from-slate-800 via-slate-700 to-slate-600 text-white p-6 rounded-t-2xl">

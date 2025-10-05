@@ -156,6 +156,8 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
           <button
             onClick={onCancel}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Zamknij formularz"
+            aria-label="Zamknij formularz"
           >
             <X className="w-5 h-5 text-gray-500" />
           </button>
@@ -225,6 +227,8 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
               value={formData.rating}
               onChange={(e) => handleInputChange('rating', parseInt(e.target.value))}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
+              aria-label="Ocena hodowcy od 1 do 5 gwiazdek"
+              title="Wybierz ocenę hodowcy"
             >
               {[1, 2, 3, 4, 5].map(rating => (
                 <option key={rating} value={rating}>
@@ -262,6 +266,8 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
             accept="image/*"
             onChange={(e) => e.target.files && setImage(e.target.files[0])}
             className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-slate-50 file:text-slate-700 hover:file:bg-slate-100"
+            aria-label="Wybierz zdjęcie gołębia"
+            title="Kliknij aby wybrać zdjęcie gołębia"
           />
         </div>
 
@@ -294,6 +300,8 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
                       type="button"
                       onClick={() => removeAchievement(achievementIndex)}
                       className="text-red-500 hover:text-red-700"
+                      aria-label={`Usuń gołębia ${achievementIndex + 1}`}
+                      title="Usuń gołębia"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -359,6 +367,8 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
                             value={result.place}
                             onChange={(e) => handleResultChange(achievementIndex, resultIndex, 'place', parseInt(e.target.value))}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
+                            aria-label={`Miejsce w zawodach dla wyniku ${resultIndex + 1}`}
+                            title="Wybierz miejsce w zawodach"
                           >
                             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(place => (
                               <option key={place} value={place}>
@@ -374,12 +384,16 @@ export function AddReferenceForm({ onSuccess, onCancel }: AddReferenceFormProps)
                             value={result.date}
                             onChange={(e) => handleResultChange(achievementIndex, resultIndex, 'date', e.target.value)}
                             className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent"
+                            aria-label={`Data zawodów dla wyniku ${resultIndex + 1}`}
+                            title="Wybierz datę zawodów"
                           />
                           {achievement.results.length > 1 && (
                             <button
                               type="button"
                               onClick={() => removeResult(achievementIndex, resultIndex)}
                               className="text-red-500 hover:text-red-700"
+                              aria-label={`Usuń wynik ${resultIndex + 1}`}
+                              title="Usuń wynik"
                             >
                               <X className="w-4 h-4" />
                             </button>

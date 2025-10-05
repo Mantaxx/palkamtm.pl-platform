@@ -495,7 +495,7 @@ export function ChampionProfile({ champion }: ChampionProfileProps) {
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
               className="relative max-w-4xl max-h-full"
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
             >
               <button
                 onClick={() => setSelectedVideo(null)}

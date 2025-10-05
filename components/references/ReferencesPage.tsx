@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 import { Star } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 // References data from database
 
@@ -38,17 +38,17 @@ export function ReferencesPage() {
   const [submitError, setSubmitError] = useState('')
   const [submitSuccess, setSubmitSuccess] = useState(false)
 
-  // TODO: Fetch references from the API
+  // Fetch references from the API
   useEffect(() => {
-    // fetch('/api/references').then(res => res.json()).then(setReferences)
+    fetch('/api/references').then(res => res.json()).then(setReferences)
   }, [])
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
-  }
+  }, [])
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
       setFormData(prev => ({ ...prev, images: [...prev.images, ...files] }));
@@ -56,19 +56,19 @@ export function ReferencesPage() {
       const previews = files.map(file => URL.createObjectURL(file));
       setPreviewImages(prev => [...prev, ...previews]);
     }
-  };
+  }, []);
 
-  const removeImage = (index: number) => {
+  const removeImage = useCallback((index: number) => {
     const newImages = formData.images.filter((_, i) => i !== index);
     const newPreviews = previewImages.filter((_, i) => i !== index);
 
     setFormData(prev => ({ ...prev, images: newImages }));
     setPreviewImages(newPreviews);
-  };
+  }, [formData.images, previewImages]);
 
-  const handleRatingChange = (rating: number) => {
+  const handleRatingChange = useCallback((rating: number) => {
     setFormData(prev => ({ ...prev, rating }))
-  }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -154,7 +154,7 @@ export function ReferencesPage() {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 0.6 }}
-        className="relative z-10 pt-8 pb-20 px-4 sm:px-6 lg:px-8"
+        className="relative z-10 pt-48 pb-20 px-4 sm:px-6 lg:px-8"
       >
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 text-white">
