@@ -5,7 +5,6 @@ import { getServerSession } from 'next-auth'
 import { NextRequest, NextResponse } from 'next/server'
 
 // Force dynamic rendering
-export const dynamic = 'force-dynamic'
 
 // GET - Pobierz spotkania z hodowcami oczekujące na zatwierdzenie
 export async function GET(request: NextRequest) {

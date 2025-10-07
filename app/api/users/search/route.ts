@@ -5,7 +5,6 @@ import { getServerSession } from 'next-auth'
 import { NextRequest, NextResponse } from 'next/server'
 
 // Force dynamic rendering
-export const dynamic = 'force-dynamic'
 
 // GET /api/users/search - Wyszukaj użytkowników
 export async function GET(request: NextRequest) {

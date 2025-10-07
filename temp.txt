@@ -5,16 +5,13 @@ import { getServerSession } from 'next-auth'
 import { NextRequest, NextResponse } from 'next/server'
 
 // GET - Pobierz referencje oczekujące na zatwierdzenie
-export async function GET(request: NextRequest) {
   try {
     // Rate limiting
-    const rateLimitResponse = apiRateLimit(request)
     if (rateLimitResponse) {
       return rateLimitResponse
     }
 
     // Sprawdź autoryzację
-    const session = await getServerSession(authOptions)
     if (!session?.user || session.user.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Brak uprawnień administratora' },
@@ -22,15 +19,9 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const { searchParams } = new URL(request.url)
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '10')
-    const status = searchParams.get('status') || 'pending' // pending, approved, all
 
-    const skip = (page - 1) * limit
 
     // Buduj warunki filtrowania
-    const where: { isApproved?: boolean } = {}
     if (status === 'pending') {
       where.isApproved = false
     } else if (status === 'approved') {
@@ -38,7 +29,6 @@ export async function GET(request: NextRequest) {
     }
     // status === 'all' - bez filtrowania
 
-    const [references, total] = await Promise.all([
       prisma.reference.findMany({
         where,
         orderBy: { createdAt: 'desc' },
@@ -60,7 +50,6 @@ export async function GET(request: NextRequest) {
       prisma.reference.count({ where })
     ])
 
-    const formattedReferences = references.map((ref: any) => ({
       id: ref.id,
       breederName: ref.breederName,
       location: ref.location,
