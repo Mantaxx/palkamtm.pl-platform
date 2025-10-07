@@ -6,7 +6,7 @@ const nextConfig = {
   images: {
     unoptimized: true
   },
-  
+
   // Podstawowa konfiguracja Next.js
   reactStrictMode: true,
 
