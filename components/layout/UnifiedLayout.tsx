@@ -18,7 +18,6 @@ const navItems = [
   { href: '/press', icon: 'fas fa-newspaper', title: 'Prasa', label: 'Prasa' },
   { href: '/about', icon: 'fas fa-info-circle', title: 'O nas', label: 'O Nas' },
   { href: '/contact', icon: 'fas fa-envelope', title: 'Kontakt', label: 'Kontakt' },
-  { href: '/dashboard', icon: 'fas fa-tachometer-alt', title: 'Panel Użytkownika', label: 'Panel Użytkownika' },
 ]
 
 const navContainerVariants = {

@@ -215,16 +215,16 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
     >
       {/* Status profilu */}
       <div className={`mb-6 p-4 rounded-lg border ${isProfileComplete
-        ? 'bg-green-50 border-green-200'
-        : 'bg-yellow-50 border-yellow-200'
+        ? 'bg-green-500/20 border-green-500/30'
+        : 'bg-yellow-500/20 border-yellow-500/30'
         }`}>
         <div className="flex items-center gap-2">
           {isProfileComplete ? (
-            <CheckCircle className="w-5 h-5 text-green-600" />
+            <CheckCircle className="w-5 h-5 text-green-400" />
           ) : (
-            <AlertCircle className="w-5 h-5 text-yellow-600" />
+            <AlertCircle className="w-5 h-5 text-yellow-400" />
           )}
-          <span className={`font-medium ${isProfileComplete ? 'text-green-800' : 'text-yellow-800'
+          <span className={`font-medium ${isProfileComplete ? 'text-green-300' : 'text-yellow-300'
             }`}>
             {isProfileComplete
               ? 'Profil jest w pełni zweryfikowany - masz dostęp do wszystkich funkcji'
@@ -242,8 +242,8 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           className={`mb-6 p-4 rounded-lg ${message.type === 'success'
-            ? 'bg-green-50 border border-green-200 text-green-800'
-            : 'bg-red-50 border border-red-200 text-red-800'
+            ? 'bg-green-500/20 border border-green-500/30 text-green-300'
+            : 'bg-red-500/20 border border-red-500/30 text-red-300'
             }`}
         >
           {message.text}
@@ -252,15 +252,15 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Dane osobowe */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white/5 rounded-lg border border-white/10 p-6">
           <div className="flex items-center gap-2 mb-4">
-            <User className="w-5 h-5 text-gray-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Dane osobowe</h3>
+            <User className="w-5 h-5 text-white/60" />
+            <h3 className="text-lg font-semibold text-white">Dane osobowe</h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="firstName" className="block text-sm font-medium text-white/70 mb-1">
                 Imię *
               </label>
               <input
@@ -269,17 +269,17 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
                 name="firstName"
                 value={formData.firstName}
                 onChange={handleInputChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.firstName ? 'border-red-300' : 'border-gray-300'
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/10 text-white placeholder-white/50 ${errors.firstName ? 'border-red-400' : 'border-white/20'
                   }`}
                 placeholder="Wprowadź imię"
               />
               {errors.firstName && (
-                <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
+                <p className="mt-1 text-sm text-red-400">{errors.firstName}</p>
               )}
             </div>
 
             <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="lastName" className="block text-sm font-medium text-white/70 mb-1">
                 Nazwisko *
               </label>
               <input
@@ -288,18 +288,18 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
                 name="lastName"
                 value={formData.lastName}
                 onChange={handleInputChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.lastName ? 'border-red-300' : 'border-gray-300'
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/10 text-white placeholder-white/50 ${errors.lastName ? 'border-red-400' : 'border-white/20'
                   }`}
                 placeholder="Wprowadź nazwisko"
               />
               {errors.lastName && (
-                <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
+                <p className="mt-1 text-sm text-red-400">{errors.lastName}</p>
               )}
             </div>
           </div>
 
           <div className="mt-4">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-white/70 mb-1">
               Email
             </label>
             <input
@@ -307,22 +307,22 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
               id="email"
               value={user.email}
               disabled
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500"
+              className="w-full px-3 py-2 border border-white/20 rounded-md bg-white/5 text-white/50"
             />
-            <p className="mt-1 text-xs text-gray-500">Email nie może być zmieniony</p>
+            <p className="mt-1 text-xs text-white/50">Email nie może być zmieniony</p>
           </div>
         </div>
 
         {/* Adres */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white/5 rounded-lg border border-white/10 p-6">
           <div className="flex items-center gap-2 mb-4">
-            <MapPin className="w-5 h-5 text-gray-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Adres</h3>
+            <MapPin className="w-5 h-5 text-white/60" />
+            <h3 className="text-lg font-semibold text-white">Adres</h3>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="address" className="block text-sm font-medium text-white/70 mb-1">
                 Ulica i numer *
               </label>
               <input
@@ -331,18 +331,18 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
                 name="address"
                 value={formData.address}
                 onChange={handleInputChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.address ? 'border-red-300' : 'border-gray-300'
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/10 text-white placeholder-white/50 ${errors.address ? 'border-red-400' : 'border-white/20'
                   }`}
                 placeholder="np. ul. Główna 123"
               />
               {errors.address && (
-                <p className="mt-1 text-sm text-red-600">{errors.address}</p>
+                <p className="mt-1 text-sm text-red-400">{errors.address}</p>
               )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="city" className="block text-sm font-medium text-white/70 mb-1">
                   Miasto *
                 </label>
                 <input
@@ -351,17 +351,17 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
                   name="city"
                   value={formData.city}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.city ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/10 text-white placeholder-white/50 ${errors.city ? 'border-red-400' : 'border-white/20'
                     }`}
                   placeholder="np. Warszawa"
                 />
                 {errors.city && (
-                  <p className="mt-1 text-sm text-red-600">{errors.city}</p>
+                  <p className="mt-1 text-sm text-red-400">{errors.city}</p>
                 )}
               </div>
 
               <div>
-                <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="postalCode" className="block text-sm font-medium text-white/70 mb-1">
                   Kod pocztowy *
                 </label>
                 <input
@@ -370,13 +370,13 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
                   name="postalCode"
                   value={formData.postalCode}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.postalCode ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/10 text-white placeholder-white/50 ${errors.postalCode ? 'border-red-400' : 'border-white/20'
                     }`}
                   placeholder="XX-XXX"
                   maxLength={6}
                 />
                 {errors.postalCode && (
-                  <p className="mt-1 text-sm text-red-600">{errors.postalCode}</p>
+                  <p className="mt-1 text-sm text-red-400">{errors.postalCode}</p>
                 )}
               </div>
             </div>
@@ -384,14 +384,14 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
         </div>
 
         {/* Telefon */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white/5 rounded-lg border border-white/10 p-6">
           <div className="flex items-center gap-2 mb-4">
-            <Phone className="w-5 h-5 text-gray-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Numer telefonu</h3>
+            <Phone className="w-5 h-5 text-white/60" />
+            <h3 className="text-lg font-semibold text-white">Numer telefonu</h3>
           </div>
 
           <div>
-            <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="phoneNumber" className="block text-sm font-medium text-white/70 mb-1">
               Numer telefonu *
             </label>
             <input
@@ -400,22 +400,22 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
               name="phoneNumber"
               value={formData.phoneNumber}
               onChange={handleInputChange}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.phoneNumber ? 'border-red-300' : 'border-gray-300'
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white/10 text-white placeholder-white/50 ${errors.phoneNumber ? 'border-red-400' : 'border-white/20'
                 }`}
               placeholder="+48123456789"
             />
             {errors.phoneNumber && (
-              <p className="mt-1 text-sm text-red-600">{errors.phoneNumber}</p>
+              <p className="mt-1 text-sm text-red-400">{errors.phoneNumber}</p>
             )}
 
             <div className="mt-2 flex items-center gap-2">
               {user.isPhoneVerified ? (
-                <span className="inline-flex items-center gap-1 text-sm text-green-600">
+                <span className="inline-flex items-center gap-1 text-sm text-green-400">
                   <CheckCircle className="w-4 h-4" />
                   Numer zweryfikowany
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-sm text-yellow-600">
+                <span className="inline-flex items-center gap-1 text-sm text-yellow-400">
                   <AlertCircle className="w-4 h-4" />
                   Numer wymaga weryfikacji SMS
                 </span>

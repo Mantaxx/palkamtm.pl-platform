@@ -37,28 +37,34 @@ export default function HomePage() {
         <div className="light-floor-fixed"></div>
 
         <div className="pigeon-stage-lighting h-screen overflow-hidden">
-          {/* Tytuł nad gołębiem */}
+          {/* Napis na górze */}
           <motion.div
             initial={{ opacity: 0, y: -30 }}
             animate={{ opacity: isVisible ? 1 : 0 }}
             transition={{ duration: 2, delay: 1 }}
-            style={{ position: 'absolute', top: '25%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 25 }}
+            style={{
+              position: 'absolute',
+              top: '3%',
+              left: '40%',
+              transform: `translate(-50%, -50%) translate(${mousePosition.x * 10}px, ${mousePosition.y * 5}px)`,
+              zIndex: 25
+            }}
             className="text-center"
           >
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-4 drop-shadow-2xl">
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 drop-shadow-2xl hero-title">
               Pałka MTM
             </h1>
-            <h2 className="text-2xl md:text-4xl lg:text-5xl font-semibold text-white/90 drop-shadow-xl">
-              mistrzowie sprintu
+            <h2 className="text-2xl md:text-4xl lg:text-5xl font-semibold drop-shadow-xl hero-subtitle">
+              Mistrzowie Sprintu
             </h2>
           </motion.div>
 
-          {/* Sekcja zdjęcia gołębia - pozycjonowana absolutnie */}
+          {/* Gołąb poniżej napisu */}
           <motion.section
             initial={{ opacity: 0 }}
             animate={{ opacity: isVisible ? 1 : 0 }}
             transition={{ duration: 3, delay: 2 }}
-            style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 20 }}
+            style={{ position: 'absolute', top: '42%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 20 }}
           >
             <div className="flex items-center justify-center">
               <Image

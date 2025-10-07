@@ -105,7 +105,7 @@ export function AddReferencePhotoForm() {
                 ? 'Musisz być zalogowany, aby dodać zdjęcie.'
                 : 'Wymagana jest weryfikacja numeru telefonu.'}
               <Link
-                href={!user ? '/auth/signin' : '/settings/profile'}
+                href={!user ? '/auth/signin' : '/dashboard?tab=profile'}
                 className="font-medium underline text-yellow-300 hover:text-yellow-400 ml-2"
               >
                 {!user ? 'Zaloguj się' : 'Zweryfikuj numer'}

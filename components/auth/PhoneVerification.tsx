@@ -149,23 +149,23 @@ export function PhoneVerification({ user, onVerificationComplete }: PhoneVerific
             <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-white rounded-xl shadow-sm border border-gray-100 p-6"
+                className="bg-white/5 rounded-xl border border-white/10 p-6"
             >
                 <div className="flex items-center space-x-3 mb-4">
-                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                        <CheckCircle className="w-6 h-6 text-green-600" />
+                    <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center">
+                        <CheckCircle className="w-6 h-6 text-green-400" />
                     </div>
                     <div>
-                        <h3 className="font-display font-bold text-xl text-gray-900">
+                        <h3 className="font-display font-bold text-xl text-white">
                             Numer telefonu zweryfikowany
                         </h3>
-                        <p className="text-gray-600">
+                        <p className="text-white/70">
                             {user.phoneNumber} - Możesz teraz licytować i dodawać aukcje
                         </p>
                     </div>
                 </div>
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <p className="text-green-800 text-sm">
+                <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-4">
+                    <p className="text-green-300 text-sm">
                         ✅ Weryfikacja telefonu została zakończona pomyślnie.
                         Masz teraz pełny dostęp do wszystkich funkcji platformy.
                     </p>
@@ -178,56 +178,56 @@ export function PhoneVerification({ user, onVerificationComplete }: PhoneVerific
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-xl shadow-sm border border-gray-100 p-6"
+            className="bg-white/5 rounded-xl border border-white/10 p-6"
         >
             <div className="flex items-center space-x-3 mb-6">
-                <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center">
-                    <Shield className="w-6 h-6 text-slate-600" />
+                <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center">
+                    <Shield className="w-6 h-6 text-white/60" />
                 </div>
                 <div>
-                    <h3 className="font-display font-bold text-xl text-gray-900">
+                    <h3 className="font-display font-bold text-xl text-white">
                         Weryfikacja numeru telefonu
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-white/70">
                         Zweryfikuj swój numer telefonu, aby móc licytować i dodawać aukcje
                     </p>
                 </div>
             </div>
 
             {error && (
-                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2">
-                    <AlertCircle className="w-5 h-5 text-red-600" />
-                    <p className="text-red-800 text-sm">{error}</p>
+                <div className="mb-4 p-4 bg-red-500/20 border border-red-500/30 rounded-lg flex items-center space-x-2">
+                    <AlertCircle className="w-5 h-5 text-red-400" />
+                    <p className="text-red-300 text-sm">{error}</p>
                 </div>
             )}
 
             {success && (
-                <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center space-x-2">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                    <p className="text-green-800 text-sm">{success}</p>
+                <div className="mb-4 p-4 bg-green-500/20 border border-green-500/30 rounded-lg flex items-center space-x-2">
+                    <CheckCircle className="w-5 h-5 text-green-400" />
+                    <p className="text-green-300 text-sm">{success}</p>
                 </div>
             )}
 
             {step === 'phone' && (
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-white/70 mb-2">
                             Numer telefonu *
                         </label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <Phone className="h-5 w-5 text-gray-400" />
+                                <Phone className="h-5 w-5 text-white/40" />
                             </div>
                             <input
                                 type="tel"
                                 value={phoneNumber}
                                 onChange={(e) => setPhoneNumber(e.target.value)}
                                 placeholder="+48 XXX XXX XXX"
-                                className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500"
+                                className="w-full px-4 py-3 pl-10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white/10 text-white placeholder-white/50"
                                 aria-label="Numer telefonu"
                             />
                         </div>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="text-sm text-white/50 mt-1">
                             Format: +48 XXX XXX XXX lub XXX XXX XXX
                         </p>
                     </div>
@@ -235,7 +235,7 @@ export function PhoneVerification({ user, onVerificationComplete }: PhoneVerific
                     <button
                         onClick={() => handleSendSMS()}
                         disabled={isLoading || !phoneNumber}
-                        className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                     >
                         {isLoading ? (
                             <>
@@ -255,7 +255,7 @@ export function PhoneVerification({ user, onVerificationComplete }: PhoneVerific
             {step === 'verify' && (
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-white/70 mb-2">
                             Kod weryfikacyjny *
                         </label>
                         <input
@@ -263,11 +263,11 @@ export function PhoneVerification({ user, onVerificationComplete }: PhoneVerific
                             value={verificationCode}
                             onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                             placeholder="123456"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 text-center text-lg tracking-widest"
+                            className="w-full px-4 py-3 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white/10 text-white placeholder-white/50 text-center text-lg tracking-widest"
                             aria-label="Kod weryfikacyjny"
                             maxLength={6}
                         />
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="text-sm text-white/50 mt-1">
                             Wprowadź 6-cyfrowy kod wysłany na numer {phoneNumber}
                         </p>
                     </div>
@@ -276,7 +276,7 @@ export function PhoneVerification({ user, onVerificationComplete }: PhoneVerific
                         <button
                             onClick={handleVerifyCode}
                             disabled={isLoading || verificationCode.length !== 6}
-                            className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                         >
                             {isLoading ? (
                                 <>
@@ -294,7 +294,7 @@ export function PhoneVerification({ user, onVerificationComplete }: PhoneVerific
                         <button
                             onClick={handleResendCode}
                             disabled={isLoading || isResending || resendSeconds > 0 || !phoneNumber}
-                            className="px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                            className="px-4 py-3 border border-white/20 rounded-lg hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-white"
                         >
                             {isResending ? (
                                 <>
@@ -311,9 +311,9 @@ export function PhoneVerification({ user, onVerificationComplete }: PhoneVerific
                 </div>
             )}
 
-            <div className="mt-6 p-4 bg-slate-50 border border-slate-200 rounded-lg">
-                <h4 className="font-medium text-slate-900 mb-2">Dlaczego weryfikacja telefonu?</h4>
-                <ul className="text-sm text-slate-800 space-y-1">
+            <div className="mt-6 p-4 bg-white/5 border border-white/10 rounded-lg">
+                <h4 className="font-medium text-white mb-2">Dlaczego weryfikacja telefonu?</h4>
+                <ul className="text-sm text-white/70 space-y-1">
                     <li>• Zapewnia bezpieczeństwo transakcji</li>
                     <li>• Zapobiega oszustwom w aukcjach</li>
                     <li>• Umożliwia kontakt w przypadku problemów</li>

@@ -546,25 +546,6 @@ export function AchievementsCarousel({ onNavigationReady }: AchievementsCarousel
             border-radius: 10px;
           }
 
-          .heritage-cell.highlighted {
-            box-shadow: 
-              0px 200px 400px rgba(0, 0, 0, 0.3),
-              0 0 80px 30px rgba(255, 255, 255, 1),
-              0 0 150px 60px rgba(255, 255, 255, 0.9),
-              0 0 200px 80px rgba(255, 255, 255, 0.6);
-            border-width: 4px;
-            border-color: rgba(255, 255, 255, 1);
-            transform: scale(1.5) translateZ(500px);
-            z-index: 1000;
-            transition: all 0.5s ease-out;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            margin-left: -450px;
-            margin-top: -825px;
-            filter: none;
-          }
-
 
 
           .heritage-cell.expanded .achievement-details {
@@ -641,6 +622,7 @@ export function AchievementsCarousel({ onNavigationReady }: AchievementsCarousel
           .heritage-cell .achievement-details {
             display: none;
           }
+
 
           .achievement-year-text {
             font-size: 4rem;

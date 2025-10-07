@@ -407,7 +407,7 @@ export default function CreateAuctionForm({ onSuccess, onCancel, showHeader = tr
             )}
             <div className="mt-3">
               <Link
-                href="/settings/profile"
+                href="/dashboard?tab=profile"
                 className="font-medium underline text-yellow-800 hover:text-yellow-900"
               >
                 Uzupełnij profil

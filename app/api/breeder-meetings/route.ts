@@ -123,9 +123,10 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    const meetings = await prisma.breederMeeting.findMany({
+    // Pobierz spotkania z bazy danych
+    const dbMeetings = await prisma.breederMeeting.findMany({
       where: {
-        isApproved: true // Pokazuj tylko zatwierdzone spotkania
+        isApproved: true
       },
       orderBy: { createdAt: 'desc' },
       select: {
@@ -145,7 +146,98 @@ export async function GET() {
       }
     });
 
-    return NextResponse.json({ meetings });
+    // Statyczne spotkania ze zdjęciami z folderów
+    const staticMeetings = [
+      {
+        id: 'geert-munnik',
+        name: 'Spotkanie z Geert Munnik',
+        location: 'Holandia',
+        date: '2024-01-15',
+        description: 'Spotkanie z hodowcą Geert Munnik w jego hodowli w Holandii',
+        images: [
+          '/meetings with breeders/Geert Munnik/DSC_0031.jpg',
+          '/meetings with breeders/Geert Munnik/DSC_0038.jpg',
+          '/meetings with breeders/Geert Munnik/DSC_0044.jpg',
+          '/meetings with breeders/Geert Munnik/DSC_0399.jpg',
+          '/meetings with breeders/Geert Munnik/DSC_03991.jpg',
+          '/meetings with breeders/Geert Munnik/DSC_0409.jpg'
+        ]
+      },
+      {
+        id: 'jan-oost',
+        name: 'Spotkanie z Jan Oost',
+        location: 'Holandia',
+        date: '2024-02-20',
+        description: 'Wizyta u hodowcy Jana Oosta - dyskusje o hodowli gołębi pocztowych',
+        images: [
+          '/meetings with breeders/Jan Oost/DSC_0002.jpg',
+          '/meetings with breeders/Jan Oost/DSC_0004.jpg',
+          '/meetings with breeders/Jan Oost/DSC_0006.jpg',
+          '/meetings with breeders/Jan Oost/DSC_0011.jpg',
+          '/meetings with breeders/Jan Oost/DSC_0017.jpg',
+          '/meetings with breeders/Jan Oost/DSC_0018.jpg',
+          '/meetings with breeders/Jan Oost/DSC_0422.jpg',
+          '/meetings with breeders/Jan Oost/DSC_0423.jpg',
+          '/meetings with breeders/Jan Oost/DSC_0426.jpg'
+        ]
+      },
+      {
+        id: 'marginus-oostenbrink',
+        name: 'Spotkanie z Marginus Oostenbrink',
+        location: 'Holandia',
+        date: '2024-03-10',
+        description: 'Spotkanie z doświadczonym hodowcą Marginus Oostenbrink',
+        images: [
+          '/meetings with breeders/Marginus Oostenbrink/DSC_0431.jpg',
+          '/meetings with breeders/Marginus Oostenbrink/DSC_0433.jpg',
+          '/meetings with breeders/Marginus Oostenbrink/DSC_0435.jpg'
+        ]
+      },
+      {
+        id: 'theo-lehnen',
+        name: 'Spotkanie z Theo Lehnen',
+        location: 'Niemcy',
+        date: '2024-04-05',
+        description: 'Wizyta u niemieckiego hodowcy Theo Lehnen',
+        images: [
+          '/meetings with breeders/Theo Lehnen/Theo-1.jpg',
+          '/meetings with breeders/Theo Lehnen/Theo-2.jpg',
+          '/meetings with breeders/Theo Lehnen/Theo-3.jpg',
+          '/meetings with breeders/Theo Lehnen/Theo.jpg'
+        ]
+      },
+      {
+        id: 'toni-van-ravenstein',
+        name: 'Spotkanie z Toni van Ravenstein',
+        location: 'Holandia',
+        date: '2024-05-12',
+        description: 'Spotkanie z hodowcą Toni van Ravenstein - wymiana doświadczeń',
+        images: [
+          '/meetings with breeders/Toni van Ravenstein/DSC_0001.jpg',
+          '/meetings with breeders/Toni van Ravenstein/DSC_0003.jpg',
+          '/meetings with breeders/Toni van Ravenstein/DSCF2556.jpg',
+          '/meetings with breeders/Toni van Ravenstein/DSCF2559.jpg',
+          '/meetings with breeders/Toni van Ravenstein/DSCF2578.jpg',
+          '/meetings with breeders/Toni van Ravenstein/TONI-1.jpg',
+          '/meetings with breeders/Toni van Ravenstein/TONI-2.jpg'
+        ]
+      }
+    ];
+
+    // Przekształć spotkania z bazy danych
+    const transformedDbMeetings = dbMeetings.map(meeting => ({
+      id: meeting.id,
+      name: meeting.title,
+      location: meeting.location,
+      date: meeting.date.toISOString().split('T')[0],
+      description: meeting.description || '',
+      images: JSON.parse(meeting.images || '[]')
+    }));
+
+    // Połącz wszystkie spotkania
+    const allMeetings = [...staticMeetings, ...transformedDbMeetings];
+
+    return NextResponse.json(allMeetings);
   } catch (error) {
     console.error('Błąd podczas pobierania spotkań:', error);
     return NextResponse.json(

@@ -151,7 +151,7 @@ export default function AddBreederMeetingForm() {
                     )}
                     <div className="mt-3">
                       <Link
-                        href="/settings/profile"
+                        href="/dashboard?tab=profile"
                         className="font-medium underline text-yellow-300 hover:text-yellow-400"
                       >
                         Uzupełnij profil

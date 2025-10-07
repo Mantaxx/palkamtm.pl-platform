@@ -26,12 +26,34 @@ import {
   Users
 } from 'lucide-react'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 export function UserDashboard() {
   const { user, signOut } = useAuth()
+  const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState('profile')
   const [showChangePassword, setShowChangePassword] = useState(false)
+
+  const tabs = [
+    { id: 'profile', label: 'Profil', icon: User },
+    { id: 'auctions', label: 'Moje aukcje', icon: Gavel },
+    { id: 'messages', label: 'Wiadomości', icon: MessageSquare },
+    { id: 'achievements', label: 'Osiągnięcia', icon: Trophy },
+    { id: 'references', label: 'Referencje', icon: Star },
+    { id: 'meetings', label: 'Spotkania', icon: Users },
+    { id: 'security', label: 'Bezpieczeństwo', icon: Shield },
+    { id: 'notifications', label: 'Powiadomienia', icon: Bell },
+    { id: 'settings', label: 'Ustawienia', icon: Settings }
+  ]
+
+  // Obsługa parametru tab z URL
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab && tabs.some(t => t.id === tab)) {
+      setActiveTab(tab)
+    }
+  }, [searchParams])
 
   if (!user) {
     return (
@@ -50,18 +72,6 @@ export function UserDashboard() {
       </UnifiedLayout>
     )
   }
-
-  const tabs = [
-    { id: 'profile', label: 'Profil', icon: User },
-    { id: 'auctions', label: 'Moje aukcje', icon: Gavel },
-    { id: 'messages', label: 'Wiadomości', icon: MessageSquare },
-    { id: 'achievements', label: 'Osiągnięcia', icon: Trophy },
-    { id: 'references', label: 'Referencje', icon: Star },
-    { id: 'meetings', label: 'Spotkania', icon: Users },
-    { id: 'security', label: 'Bezpieczeństwo', icon: Shield },
-    { id: 'notifications', label: 'Powiadomienia', icon: Bell },
-    { id: 'settings', label: 'Ustawienia', icon: Settings }
-  ]
 
   return (
     <UnifiedLayout>
@@ -199,11 +209,11 @@ export function UserDashboard() {
                   </div>
 
                   <div className="mt-8 flex gap-4">
-                    <Link href="/settings/profile" className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-300">
+                    <Link href="/dashboard?tab=profile" className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-300">
                       <Edit3 className="w-4 h-4" />
                       <span>Edytuj profil</span>
                     </Link>
-                    <Link href="/profile" className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all duration-300">
+                    <Link href="/dashboard?tab=profile" className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all duration-300">
                       <User className="w-4 h-4" />
                       <span>Publiczny profil</span>
                     </Link>
