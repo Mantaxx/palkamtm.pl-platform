@@ -2,16 +2,16 @@
 
 import { SmartImage } from '@/components/ui/SmartImage'
 import { UnifiedCard } from '@/components/ui/UnifiedCard'
+import { useAuth } from '@/contexts/AuthContext'
 import { motion } from 'framer-motion'
 import { Star } from 'lucide-react'
-import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 // References data from database
 
 export function ReferencesPage() {
-  const { data: session } = useSession()
+  const { user } = useAuth()
   const router = useRouter()
   const [references, setReferences] = useState<Array<{
     id: string;
@@ -38,9 +38,21 @@ export function ReferencesPage() {
   const [submitError, setSubmitError] = useState('')
   const [submitSuccess, setSubmitSuccess] = useState(false)
 
-  // TODO: Fetch references from the API
+  // Load references from API
   useEffect(() => {
-    // fetch('/api/references').then(res => res.json()).then(setReferences)
+    const fetchReferences = async () => {
+      try {
+        const response = await fetch('/api/references')
+        if (response.ok) {
+          const data = await response.json()
+          setReferences(data)
+        }
+      } catch (error) {
+        console.error('Błąd podczas ładowania referencji:', error)
+      }
+    }
+
+    fetchReferences()
   }, [])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -74,15 +86,16 @@ export function ReferencesPage() {
     e.preventDefault()
 
     // Sprawdź, czy użytkownik jest zalogowany i ma zweryfikowany telefon
-    if (!session) {
+    if (!user) {
       setSubmitError('Musisz być zalogowany, aby dodać opinię. Zaloguj się i spróbuj ponownie.')
       return
     }
 
-    if (!session.user.isPhoneVerified) {
-      setSubmitError('Musisz mieć zweryfikowany numer telefonu, aby dodać opinię. Zweryfikuj swój numer telefonu w ustawieniach profilu.')
-      return
-    }
+    // Sprawdź czy użytkownik ma zweryfikowany telefon (można dodać tę właściwość do Firebase user)
+    // if (!user.phoneNumber) {
+    //   setSubmitError('Musisz mieć zweryfikowany numer telefonu, aby dodać opinię. Zweryfikuj swój numer telefonu w ustawieniach profilu.')
+    //   return
+    // }
 
     setIsSubmitting(true)
     setSubmitError('')
@@ -157,14 +170,14 @@ export function ReferencesPage() {
         className="relative z-10 pt-8 pb-20 px-4 sm:px-6 lg:px-8"
       >
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 text-white">
+          <h1 className="text-3xl md:text-4xl font-bold mb-6 text-white">
             Opinie o Gołębiach
           </h1>
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1 }}
-            className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto"
+            className="text-lg md:text-xl text-white/90 mb-8 max-w-3xl mx-auto"
           >
             Poznaj osiągnięcia gołębi, które super latają u innych hodowców
           </motion.p>
@@ -196,7 +209,7 @@ export function ReferencesPage() {
             </p>
           </div>
 
-          {session ? (
+          {user ? (
             <>
               {submitError && (
                 <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-lg flex items-center">

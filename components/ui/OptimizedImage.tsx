@@ -71,6 +71,8 @@ export function OptimizedImage({
   const handleError = () => {
     setIsError(true)
     onError?.()
+    // Log the error for debugging
+    console.warn(`Failed to load image: ${src}`)
   }
 
   // Generate optimized image URL

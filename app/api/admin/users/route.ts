@@ -1,12 +1,11 @@
-import { authOptions } from '@/lib/auth'
+import { requireAdminAuth } from '@/lib/admin-auth'
 import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id || session.user.role !== 'ADMIN') {
-        return NextResponse.json({ error: 'Nieautoryzowany dostęp' }, { status: 401 })
+    const authResult = await requireAdminAuth(request)
+    if (authResult instanceof Response) {
+        return authResult
     }
 
     const { searchParams } = new URL(request.url)

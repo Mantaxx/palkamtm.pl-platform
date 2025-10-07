@@ -63,6 +63,8 @@ export function LazyImage({
     const handleError = () => {
         setHasError(true)
         onError?.()
+        // Log the error for debugging
+        console.warn(`Failed to load image: ${src}`)
     }
 
     return (

@@ -1,7 +1,6 @@
-import { authOptions } from '@/lib/auth'
+import { requireFirebaseAuth } from '@/lib/firebase-auth'
 import { prisma } from '@/lib/prisma'
 import { apiRateLimit } from '@/lib/rate-limit'
-import { getServerSession } from 'next-auth'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
@@ -23,18 +22,16 @@ export async function GET(request: NextRequest) {
       return rateLimitResponse
     }
 
-    // Sprawdź autoryzację
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Nieautoryzowany dostęp' },
-        { status: 401 }
-      )
+    // Sprawdź autoryzację Firebase
+    const authResult = await requireFirebaseAuth(request)
+    if (authResult instanceof Response) {
+      return authResult
     }
+    const { decodedToken } = authResult
 
     // Pobierz dane użytkownika
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: decodedToken.uid },
       select: {
         id: true,
         firstName: true,
@@ -45,7 +42,9 @@ export async function GET(request: NextRequest) {
         postalCode: true,
         phoneNumber: true,
         isPhoneVerified: true,
+        isProfileVerified: true,
         isActive: true,
+        role: true,
         createdAt: true
       }
     })
@@ -82,14 +81,12 @@ export async function PATCH(request: NextRequest) {
       return rateLimitResponse
     }
 
-    // Sprawdź autoryzację
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Nieautoryzowany dostęp' },
-        { status: 401 }
-      )
+    // Sprawdź autoryzację Firebase
+    const authResult = await requireFirebaseAuth(request)
+    if (authResult instanceof Response) {
+      return authResult
     }
+    const { decodedToken } = authResult
 
     // Parsuj i waliduj dane
     const body = await request.json()
@@ -97,7 +94,7 @@ export async function PATCH(request: NextRequest) {
 
     // Sprawdź czy użytkownik istnieje
     const existingUser = await prisma.user.findUnique({
-      where: { id: session.user.id }
+      where: { id: decodedToken.uid }
     })
 
     if (!existingUser) {
@@ -109,6 +106,15 @@ export async function PATCH(request: NextRequest) {
 
     // Jeśli numer telefonu się zmienił, resetuj weryfikację
     const phoneChanged = existingUser.phoneNumber !== validatedData.phoneNumber
+
+    // Sprawdź czy profil jest kompletny (wszystkie wymagane pola uzupełnione)
+    const isProfileComplete = validatedData.firstName &&
+      validatedData.lastName &&
+      validatedData.address &&
+      validatedData.city &&
+      validatedData.postalCode &&
+      validatedData.phoneNumber
+
     const updateData: {
       firstName: string
       lastName: string
@@ -119,6 +125,7 @@ export async function PATCH(request: NextRequest) {
       isPhoneVerified?: boolean
       phoneVerificationCode?: null
       phoneVerificationExpires?: null
+      isProfileVerified?: boolean
     } = {
       firstName: validatedData.firstName,
       lastName: validatedData.lastName,
@@ -134,9 +141,17 @@ export async function PATCH(request: NextRequest) {
       updateData.phoneVerificationExpires = null
     }
 
+    // Administratorzy są automatycznie w pełni zweryfikowani
+    if (existingUser.role === 'ADMIN') {
+      updateData.isProfileVerified = true
+      updateData.isPhoneVerified = true
+    } else if (isProfileComplete) {
+      updateData.isProfileVerified = true
+    }
+
     // Aktualizuj profil użytkownika
     const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: decodedToken.uid },
       data: updateData,
       select: {
         id: true,
@@ -148,7 +163,9 @@ export async function PATCH(request: NextRequest) {
         postalCode: true,
         phoneNumber: true,
         isPhoneVerified: true,
+        isProfileVerified: true,
         isActive: true,
+        role: true,
         updatedAt: true
       }
     })
@@ -165,7 +182,7 @@ export async function PATCH(request: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { 
+        {
           error: 'Błędne dane',
           details: error.errors.map(err => ({
             field: err.path.join('.'),

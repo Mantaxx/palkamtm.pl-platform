@@ -1,9 +1,8 @@
-import { authOptions } from '@/lib/auth'
 import { generateSafeFileName, validateDocument, validateImage, validateVideo } from '@/lib/file-validation'
+import { requireFirebaseAuth } from '@/lib/firebase-auth'
 import { requirePhoneVerification } from '@/lib/phone-verification'
 import { apiRateLimit } from '@/lib/rate-limit'
 import { mkdir, writeFile } from 'fs/promises'
-import { getServerSession } from 'next-auth'
 import { NextRequest, NextResponse } from 'next/server'
 import { join } from 'path'
 
@@ -15,17 +14,15 @@ export async function POST(request: NextRequest) {
             return rateLimitResponse
         }
 
-        // Sprawdź autoryzację
-        const session = await getServerSession(authOptions)
-        if (!session?.user?.id) {
-            return NextResponse.json(
-                { error: 'Brak autoryzacji' },
-                { status: 401 }
-            )
+        // Sprawdź autoryzację Firebase
+        const authResult = await requireFirebaseAuth(request)
+        if (authResult instanceof NextResponse) {
+            return authResult
         }
+        const { decodedToken } = authResult
 
         // Sprawdź weryfikację telefonu dla uploadu plików
-        const phoneVerificationError = await requirePhoneVerification()
+        const phoneVerificationError = await requirePhoneVerification(request)
         if (phoneVerificationError) {
             return phoneVerificationError
         }

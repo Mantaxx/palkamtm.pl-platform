@@ -1,5 +1,6 @@
 'use client'
 
+import { useAuth } from '@/contexts/AuthContext';
 import { motion } from 'framer-motion';
 import {
   AlertTriangle,
@@ -110,6 +111,7 @@ interface EditingBid {
 
 
 export default function AdminDashboard() {
+  const { user } = useAuth()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('overview')
   const [stats, setStats] = useState<StatsResponse | null>(null)
@@ -205,15 +207,22 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const fetchAll = async () => {
+      if (!user) return
+
       try {
+        const token = await user.getIdToken()
+        const headers = {
+          'Authorization': `Bearer ${token}`
+        }
+
         const [s, u, t, a, aa, r, m] = await Promise.all([
-          fetch('/api/admin/stats').then(r => r.ok ? r.json() : null),
-          fetch(`/api/admin/users?page=${usersPage}&pageSize=${usersPageSize}${usersRole ? `&role=${usersRole}` : ''}${usersStatus ? `&status=${usersStatus}` : ''}`).then(r => r.ok ? r.json() : null),
-          fetch(`/api/admin/transactions?page=${txsPage}&pageSize=${txsPageSize}${txsStatus ? `&status=${txsStatus}` : ''}`).then(r => r.ok ? r.json() : null),
-          fetch(`/api/admin/auctions/pending?page=${auctionsPage}&limit=${auctionsPageSize}`).then(r => r.ok ? r.json() : null),
-          fetch(`/api/admin/auctions/active?page=${activeAuctionsPage}&limit=${activeAuctionsPageSize}`).then(r => r.ok ? r.json() : null),
-          fetch(`/api/admin/references?page=1&limit=10&status=${referencesStatus}`).then(r => r.ok ? r.json() : null),
-          fetch(`/api/admin/breeder-meetings?page=1&limit=10&status=${meetingsStatus}`).then(r => r.ok ? r.json() : null),
+          fetch('/api/admin/stats', { headers }).then(r => r.ok ? r.json() : null),
+          fetch(`/api/admin/users?page=${usersPage}&pageSize=${usersPageSize}${usersRole ? `&role=${usersRole}` : ''}${usersStatus ? `&status=${usersStatus}` : ''}`, { headers }).then(r => r.ok ? r.json() : null),
+          fetch(`/api/admin/transactions?page=${txsPage}&pageSize=${txsPageSize}${txsStatus ? `&status=${txsStatus}` : ''}`, { headers }).then(r => r.ok ? r.json() : null),
+          fetch(`/api/admin/auctions/pending?page=${auctionsPage}&limit=${auctionsPageSize}`, { headers }).then(r => r.ok ? r.json() : null),
+          fetch(`/api/admin/auctions/active?page=${activeAuctionsPage}&limit=${activeAuctionsPageSize}`, { headers }).then(r => r.ok ? r.json() : null),
+          fetch(`/api/admin/references?page=1&limit=10&status=${referencesStatus}`, { headers }).then(r => r.ok ? r.json() : null),
+          fetch(`/api/admin/breeder-meetings?page=1&limit=10&status=${meetingsStatus}`, { headers }).then(r => r.ok ? r.json() : null),
         ])
         if (s) setStats(s)
         if (u) { setUsers(u.items); setUsersTotal(u.total) }
@@ -225,7 +234,7 @@ export default function AdminDashboard() {
       } catch { }
     }
     fetchAll()
-  }, [usersPage, usersPageSize, usersRole, usersStatus, txsPage, txsPageSize, txsStatus, auctionsPage, auctionsPageSize, activeAuctionsPage, activeAuctionsPageSize, referencesStatus, meetingsStatus])
+  }, [user, usersPage, usersPageSize, usersRole, usersStatus, txsPage, txsPageSize, txsStatus, auctionsPage, auctionsPageSize, activeAuctionsPage, activeAuctionsPageSize, referencesStatus, meetingsStatus])
 
   // Automatyczne odświeżanie list aukcji
   const refreshAuctionLists = useCallback(async (silent = true) => {
@@ -1819,12 +1828,23 @@ export default function AdminDashboard() {
                   <label className="block text-sm font-medium text-white mb-2">
                     Data zakończenia
                   </label>
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars, @typescript-eslint/no-unsafe-assignment */}
+                  {/* stylelint-disable-next-line property-no-vendor-prefix */}
+                  {/* eslint-disable-next-line @typescript-eslint/no-unsafe-member-access */}
                   <input
                     type="datetime-local"
                     value={editingAuctionData.endTime}
                     onChange={(e) => setEditingAuctionData({ ...editingAuctionData, endTime: e.target.value })}
-                    className="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-blue-500"
+                    className="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-blue-500 datetime-input"
                     aria-label="Data zakończenia aukcji"
+                    data-fallback="true"
+                  />
+                  {/* Fallback text input for very old browsers */}
+                  <input
+                    type="text"
+                    placeholder="YYYY-MM-DD HH:MM"
+                    className="w-full bg-gray-700 text-white px-3 py-2 rounded border border-gray-600 focus:border-blue-500 mt-2 datetime-fallback"
+                    aria-label="Data zakończenia aukcji (fallback)"
                   />
                 </div>
 

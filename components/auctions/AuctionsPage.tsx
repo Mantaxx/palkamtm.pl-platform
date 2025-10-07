@@ -4,17 +4,17 @@ import CreateAuctionForm from '@/components/auctions/CreateAuctionForm'
 import { FullscreenImageModal } from '@/components/ui/FullscreenImageModal'
 import { UnifiedButton } from '@/components/ui/UnifiedButton'
 import { UnifiedCard } from '@/components/ui/UnifiedCard'
+import { useAuth } from '@/contexts/AuthContext'
 import { useAppStore, useError, useFilteredAuctions, useLoading } from '@/store/useAppStore'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Calendar, Gavel, Plus, Search } from 'lucide-react'
-import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 export function AuctionsPage() {
-    const { data: session } = useSession()
+    const { user } = useAuth()
     const router = useRouter()
 
     const { setAuctions, setSearchTerm, setLoading, setError, searchTerm } = useAppStore()
@@ -130,21 +130,14 @@ export function AuctionsPage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 flex items-center justify-center relative overflow-hidden">
-                {/* Tło z animowanymi elementami */}
-                <div className="absolute inset-0">
-                    <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
-                    <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl" />
-                </div>
-
+            <div className="min-h-screen flex items-center justify-center">
                 <UnifiedCard
-                    variant="3d"
-                    glow={false}
-                    className="p-12 text-center border-2 border-white/20 backdrop-blur-xl relative z-10 shadow-2xl"
+                    variant="glass"
+                    className="p-8 text-center"
                 >
-                    <div className="w-20 h-20 border-4 border-white/30 border-t-white rounded-full mx-auto animate-spin mb-8" />
-                    <h2 className="text-2xl font-bold text-white mb-2">Ładowanie aukcji...</h2>
-                    <p className="text-gray-300">Przygotowujemy najlepsze oferty dla Ciebie</p>
+                    <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <h2 className="text-xl font-bold text-white mb-2">Ładowanie aukcji...</h2>
+                    <p className="text-white/70">Przygotowujemy najlepsze oferty dla Ciebie</p>
                 </UnifiedCard>
             </div>
         )
@@ -173,17 +166,17 @@ export function AuctionsPage() {
         <>
             <div className="pt-8 pb-20 px-4 sm:px-6 lg:px-8">
                 <div className="w-full mx-auto text-center mb-12">
-                    <h1 className="text-5xl md:text-6xl font-bold mb-6">
+                    <h1 className="text-3xl md:text-4xl font-bold mb-6">
                         Aukcje Gołębi
                     </h1>
-                    <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto">
+                    <p className="text-lg md:text-xl text-white/90 mb-8 max-w-3xl mx-auto">
                         Licytuj ekskluzywne gołębie pocztowe z rodowodami championów
                     </p>
 
                     <div className="mb-8">
                         <button
                             onClick={() => {
-                                if (session) {
+                                if (user) {
                                     setShowCreateForm(true)
                                 } else {
                                     router.push('/auth/signin')
@@ -194,9 +187,9 @@ export function AuctionsPage() {
                             <Plus className="w-10 h-10 mr-4" />
                             Dodaj aukcję
                         </button>
-                        {session && (
+                        {user && (
                             <div className="text-center text-sm text-white/60 mt-2">
-                                Debug: Przycisk widoczny dla użytkownika {session.user.email}
+                                Debug: Przycisk widoczny dla użytkownika {user.email}
                             </div>
                         )}
                     </div>
@@ -252,7 +245,7 @@ export function AuctionsPage() {
                                     {/* Create Auction Button */}
                                     <button
                                         onClick={() => {
-                                            if (session) {
+                                            if (user) {
                                                 setShowCreateForm(true)
                                             } else {
                                                 router.push('/auth/signin')

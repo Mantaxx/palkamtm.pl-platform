@@ -28,7 +28,8 @@ export async function GET(
                         firstName: true,
                         lastName: true,
                         email: true,
-                        phoneNumber: true
+                        phoneNumber: true,
+                        image: true
                     }
                 },
                 pigeon: {
@@ -43,7 +44,8 @@ export async function GET(
                         breeder: true,
                         description: true,
                         pedigree: true,
-                        achievements: true
+                        achievements: true,
+                        gender: true
                     }
                 },
                 assets: {
@@ -88,7 +90,14 @@ export async function GET(
             )
         }
 
-        return NextResponse.json(auction)
+        return NextResponse.json({
+            ...auction,
+            age: 0, // Domyślny wiek
+            location: 'Brak lokalizacji', // Domyślna lokalizacja
+            sex: auction.pigeon?.gender || 'male', // Mapowanie gender -> sex
+            bloodline: auction.pigeon?.bloodline || '', // Mapowanie bloodline
+            category: auction.category // Mapowanie category
+        })
 
     } catch (error) {
         console.error('Błąd podczas pobierania aukcji:', error)
@@ -198,7 +207,8 @@ export async function PUT(
                         firstName: true,
                         lastName: true,
                         email: true,
-                        phoneNumber: true
+                        phoneNumber: true,
+                        image: true
                     }
                 },
                 assets: true

@@ -11,7 +11,7 @@ const featuredChampions = [
     ringNumber: 'PL-xxxx-99-1726',
     bloodline: 'MTM Pałka - Fundament hodowli',
     achievements: ['"Wydał nam naprawdę lotników"', 'Ojciec i dziadek wielu czołowych lotników'],
-    image: '/api/placeholder/300/300',
+    image: '/champions/general-1726.jpg',
     link: '/champions/general-1726',
   },
   {
@@ -20,7 +20,7 @@ const featuredChampions = [
     ringNumber: 'PL-xxxx-xx-xxxx',
     bloodline: 'MTM Pałka - Linia szpak',
     achievements: ['2x 1. nagroda w oddziale', 'Dziadek gołębia 18071'],
-    image: '/api/placeholder/300/300',
+    image: '/champions/zawodowiec.jpg',
     link: '/champions/zawodowiec',
   },
   {
@@ -29,7 +29,7 @@ const featuredChampions = [
     ringNumber: 'PL-xxxx-xx-xxxx',
     bloodline: 'MTM Pałka - Wysokie ceny',
     achievements: ['Wnuki osiągają 1000 zł na aukcjach', 'Niezwykle ceniona linia'],
-    image: '/api/placeholder/300/300',
+    image: '/champions/maly-tom.jpg',
     link: '/champions/maly-tom',
   },
 ]

@@ -1,5 +1,3 @@
-import { ErrorBoundary } from '@/components/ErrorBoundary'
-import { ErrorHandlers } from '@/components/ErrorHandlers'
 import ClientProviders from '@/components/providers/ClientProviders'
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
@@ -141,12 +139,9 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen flex flex-col bg-slate-900 text-white relative bg-cover bg-top bg-no-repeat bg-fixed pigeon-lofts-background">
         {/* Nakładka dla kontrastu */}
-        <div className="absolute inset-0 bg-gray-500/55 z-[-1]" />
+        <div className="absolute inset-0 bg-gray-500/55 -z-10" />
         <ClientProviders>
-          <ErrorBoundary>
-            <ErrorHandlers />
-            {children}
-          </ErrorBoundary>
+          {children}
         </ClientProviders>
       </body>
     </html>

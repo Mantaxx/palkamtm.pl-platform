@@ -1,15 +1,14 @@
 'use client'
 
-import ImageModal from '@/components/ImageModal'
 import { UnifiedLayout } from '@/components/layout/UnifiedLayout'
+import { FullscreenImageModal } from '@/components/ui/FullscreenImageModal'
 import { SmartImage } from '@/components/ui/SmartImage'
 import { Text3D } from '@/components/ui/Text3D'
 import { UnifiedButton } from '@/components/ui/UnifiedButton'
 import { UnifiedCard } from '@/components/ui/UnifiedCard'
-import { getAllBreederMeetings } from '@/utils/getBreederMeetingImages'
+import { useAuth } from '@/contexts/AuthContext'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AlertCircle, Camera, CheckCircle, Upload, X } from 'lucide-react'
-import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
@@ -23,7 +22,7 @@ interface BreederMeeting {
 }
 
 export default function BreederMeetingsPage() {
-    const { data: session, status } = useSession()
+    const { user, loading } = useAuth()
     const router = useRouter()
     const [breederMeetings, setBreederMeetings] = useState<BreederMeeting[]>([])
     const [imagesLoaded, setImagesLoaded] = useState(false)
@@ -41,18 +40,21 @@ export default function BreederMeetingsPage() {
     const [previewImages, setPreviewImages] = useState<string[]>([]);
 
     useEffect(() => {
-        const loadMeetings = async () => {
+        const fetchBreederMeetings = async () => {
             try {
-                const meetings = await getAllBreederMeetings()
-                setBreederMeetings(meetings)
+                const response = await fetch('/api/breeder-meetings')
+                if (response.ok) {
+                    const data = await response.json()
+                    setBreederMeetings(data)
+                }
                 setImagesLoaded(true)
             } catch (error) {
-                console.error('Błąd podczas ładowania spotkań:', error)
+                console.error('Błąd podczas ładowania spotkań z hodowcami:', error)
                 setImagesLoaded(true)
             }
         }
 
-        loadMeetings()
+        fetchBreederMeetings()
     }, [])
 
     const handleImageClick = (meetingId: string, imageIndex: number) => {
@@ -61,7 +63,7 @@ export default function BreederMeetingsPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!session) {
+        if (!user) {
             setErrorMessage("Musisz być zalogowany, aby dodać spotkanie.");
             setSubmitStatus('error');
             return;
@@ -91,8 +93,11 @@ export default function BreederMeetingsPage() {
                 setFormData({ title: '', description: '', location: '', date: '', images: [] });
                 setPreviewImages([]);
                 // Odśwież listę spotkań po dodaniu nowego
-                const meetings = await getAllBreederMeetings();
-                setBreederMeetings(meetings);
+                const updatedResponse = await fetch('/api/breeder-meetings');
+                if (updatedResponse.ok) {
+                    const updatedData = await updatedResponse.json();
+                    setBreederMeetings(updatedData);
+                }
             } else {
                 const errorData = await response.json();
                 setSubmitStatus('error');
@@ -138,7 +143,7 @@ export default function BreederMeetingsPage() {
         return () => window.removeEventListener('keydown', handleEscape)
     }, [selectedImage])
 
-    if (!imagesLoaded || status === 'loading') {
+    if (!imagesLoaded || loading) {
         return (
             <UnifiedLayout>
                 <div className="min-h-screen flex items-center justify-center">
@@ -163,14 +168,14 @@ export default function BreederMeetingsPage() {
                 className="relative z-10 pt-32 pb-20 px-4 sm:px-6 lg:px-8"
             >
                 <div className="max-w-4xl mx-auto text-center">
-                    <h1 className="text-5xl md:text-6xl font-bold mb-6 text-white">
+                    <h1 className="text-3xl md:text-4xl font-bold mb-6 text-white">
                         Spotkania z Hodowcami
                     </h1>
                     <motion.p
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 1 }}
-                        className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto"
+                        className="text-lg md:text-xl text-white/90 mb-8 max-w-3xl mx-auto"
                     >
                         Galeria zdjęć z naszych spotkań z hodowcami gołębi pocztowych
                     </motion.p>
@@ -198,7 +203,7 @@ export default function BreederMeetingsPage() {
                                 </p>
                             </div>
 
-                            {session ? (
+                            {user ? (
                                 <>
                                     <AnimatePresence>
                                         {submitStatus === 'success' && (
@@ -306,7 +311,7 @@ export default function BreederMeetingsPage() {
                         viewport={{ once: true }}
                     >
                         <div className="space-y-12">
-                            {breederMeetings.map((meeting, index) => (
+                            {breederMeetings && Array.isArray(breederMeetings) && breederMeetings.map((meeting, index) => (
                                 <motion.div
                                     key={meeting.id}
                                     initial={{ opacity: 0, y: 50 }}
@@ -366,7 +371,7 @@ export default function BreederMeetingsPage() {
                                 <p className="text-white/80 mb-6">
                                     Jeszcze nie ma zdjęć ze spotkań z hodowcami.
                                 </p>
-                                {session && (
+                                {user && (
                                     <UnifiedButton
                                         variant="primary"
                                         onClick={() => window.location.href = '/breeder-meetings/dodaj-zdjecie'}
@@ -393,25 +398,12 @@ export default function BreederMeetingsPage() {
                     if (!currentImage) return null;
 
                     return (
-                        <ImageModal
-                            image={{
-                                id: `${meeting.id}-${selectedImage.imageIndex}`,
-                                src: currentImage,
-                                alt: `${meeting.name} - zdjęcie ${selectedImage.imageIndex + 1}`
-                            }}
+                        <FullscreenImageModal
+                            isOpen={selectedImage !== null}
                             onClose={handleCloseModal}
-                            onPrevious={selectedImage.imageIndex > 0
-                                ? () => handleImageClick(meeting.id, selectedImage.imageIndex - 1)
-                                : undefined
-                            }
-                            onNext={selectedImage.imageIndex < meeting.images.length - 1
-                                ? () => handleImageClick(meeting.id, selectedImage.imageIndex + 1)
-                                : undefined
-                            }
-                            hasPrevious={selectedImage.imageIndex > 0}
-                            hasNext={selectedImage.imageIndex < meeting.images.length - 1}
+                            images={meeting.images}
                             currentIndex={selectedImage.imageIndex}
-                            totalImages={meeting.images.length}
+                            title={meeting.name}
                         />
                     );
                 })()

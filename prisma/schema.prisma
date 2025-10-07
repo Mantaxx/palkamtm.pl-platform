@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -65,6 +65,9 @@ model User {
   phoneVerificationCode String?
   phoneVerificationExpires DateTime?
   
+  // Profile verification
+  isProfileVerified Boolean @default(false)
+  
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -84,6 +87,13 @@ model User {
   conversationsAsParticipant1 Conversation[] @relation("ConversationParticipant1")
   conversationsAsParticipant2 Conversation[] @relation("ConversationParticipant2")
   sentMessages       UserMessage[] @relation("UserMessageSender")
+
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+  @@index([isPhoneVerified])
+  @@index([isProfileVerified])
+  @@index([createdAt])
 }
 
 model BreederMeeting {
@@ -174,6 +184,17 @@ model Auction {
   transactions Transaction[]
 
   @@index([isApproved])
+  @@index([status])
+  @@index([category])
+  @@index([sellerId])
+  @@index([startTime])
+  @@index([endTime])
+  @@index([currentPrice])
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@index([status, isApproved])
+  @@index([category, status])
+  @@index([endTime, status])
 }
 
 enum AssetType {
@@ -203,6 +224,10 @@ model Bid {
 
   @@index([auctionId])
   @@index([bidderId])
+  @@index([amount])
+  @@index([createdAt])
+  @@index([auctionId, amount])
+  @@index([bidderId, createdAt])
 }
 
 model WatchlistItem {

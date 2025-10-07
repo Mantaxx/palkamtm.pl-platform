@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { ReactNode } from 'react'
+import { memo, ReactNode } from 'react'
 
 interface UnifiedButtonProps {
   children: ReactNode
@@ -19,7 +19,7 @@ interface UnifiedButtonProps {
   intensity?: 'low' | 'medium' | 'high'
 }
 
-export function UnifiedButton({
+export const UnifiedButton = memo(function UnifiedButton({
   children,
   onClick,
   href,
@@ -110,4 +110,4 @@ export function UnifiedButton({
       <span className="relative z-10">{children}</span>
     </motion.button>
   )
-}
+})

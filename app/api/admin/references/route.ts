@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
       prisma.reference.count({ where })
     ])
 
-    const formattedReferences = references.map((ref) => ({
+    const formattedReferences = references.map((ref: any) => ({
       id: ref.id,
       breederName: ref.breederName,
       location: ref.location,

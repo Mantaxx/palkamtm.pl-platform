@@ -2,7 +2,8 @@
 
 ## ✅ Status Ujednolicenia
 
-### Zaktualizowane Komponenty:
+### Zaktualizowane Komponenty
+
 - ✅ **HeroSection** - Pełne efekty 3D i glassmorphism
 - ✅ **BentoGrid** - Karty 3D z animacjami
 - ✅ **PressPage** - Zaktualizowane karty z glassmorphism
@@ -10,14 +11,16 @@
 - ✅ **AboutPageClient** - Nowe tło i przyciski
 - ✅ **ContactPageClient** - Spójne style z resztą
 
-### Nowe Komponenty Ujednolicające:
+### Nowe Komponenty Ujednolicające
+
 - ✅ **UnifiedLayout** - Wspólny layout dla wszystkich stron
 - ✅ **UnifiedCard** - Ujednolicone karty z efektami 3D
 - ✅ **UnifiedButton** - Spójne przyciski w całym projekcie
 
 ## 🎨 Ujednolicona Paleta Kolorów
 
-### Główne Kolory:
+### Główne Kolory
+
 ```css
 /* Niebiesko-cyjanowa paleta */
 --primary-500: #0ea5e9    /* Główny niebieski */
@@ -27,7 +30,8 @@
 --cyan-500: #06b6d4       /* Ciemniejszy cyjan */
 ```
 
-### Tła Stron:
+### Tła Stron
+
 ```css
 /* Wszystkie strony używają tego samego tła */
 background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0891b2 100%);
@@ -35,7 +39,8 @@ background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0891b2 100%);
 bg-gradient-to-br from-slate-900 via-blue-900 to-cyan-900
 ```
 
-### Efekty Szkła:
+### Efekty Szkła
+
 ```css
 .glass-morphism        /* Podstawowy efekt szkła */
 .glass-morphism-strong /* Silniejszy efekt */
@@ -98,7 +103,7 @@ import { UnifiedCard } from '@/components/ui/UnifiedCard'
 
 ## 📋 Checklist Ujednolicenia
 
-### Dla każdego komponentu sprawdź:
+### Dla każdego komponentu sprawdź
 
 - [ ] **Tło strony**: Czy używa `bg-gradient-to-br from-slate-900 via-blue-900 to-cyan-900`?
 - [ ] **Elementy tła**: Czy używa `bg-blue-400/30`, `bg-cyan-400/30` zamiast `bg-slate-*`?
@@ -151,7 +156,8 @@ export function ExamplePage() {
 
 ## ⚠️ Częste Błędy
 
-### ❌ NIE RÓB:
+### ❌ NIE RÓB
+
 ```tsx
 // Stare kolory
 <div className="bg-slate-800">
@@ -163,7 +169,8 @@ export function ExamplePage() {
 <div className="animate-pulse">
 ```
 
-### ✅ RÓB:
+### ✅ RÓB
+
 ```tsx
 // Nowe kolory
 <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-cyan-900">
@@ -186,6 +193,7 @@ export function ExamplePage() {
 ## 📞 Wsparcie
 
 Jeśli masz pytania dotyczące ujednolicania stylów, sprawdź:
+
 1. `docs/3D_COMPONENTS_GUIDE.md` - Szczegóły komponentów 3D
 2. `app/globals.css` - Wszystkie dostępne klasy CSS
 3. Przykłady w `components/ui/` - Gotowe komponenty do użycia

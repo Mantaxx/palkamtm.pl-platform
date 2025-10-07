@@ -6,7 +6,7 @@ export async function GET() {
         const token = generateCSRFToken()
         const response = NextResponse.json({ csrfToken: token })
 
-        setCSRFCookie(response, token)
+        await setCSRFCookie(response, token)
 
         return response
     } catch (error) {

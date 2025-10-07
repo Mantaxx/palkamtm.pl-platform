@@ -113,7 +113,7 @@ export async function POST(
         }
 
         // Utwórz licytację w transakcji
-        const result = await prisma.$transaction(async (tx) => {
+        const result = await prisma.$transaction(async (tx: any) => {
             // Utwórz nową licytację
             const bid = await tx.bid.create({
                 data: {

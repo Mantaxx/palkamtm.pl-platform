@@ -1,6 +1,7 @@
-import { Metadata } from 'next'
+import { AdminRouteGuard } from '@/components/auth/AdminRouteGuard'
 import AdminDashboard from '@/components/dashboard/AdminDashboard'
 import { UnifiedLayout } from '@/components/layout/UnifiedLayout'
+import { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Panel Administratora - Gołębie Pocztowe',
@@ -10,7 +11,9 @@ export const metadata: Metadata = {
 export default function AdminDashboardPage() {
   return (
     <UnifiedLayout>
-      <AdminDashboard />
+      <AdminRouteGuard>
+        <AdminDashboard />
+      </AdminRouteGuard>
     </UnifiedLayout>
   )
 }

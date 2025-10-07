@@ -1,9 +1,9 @@
 'use client'
 
 import { SmartImage } from '@/components/ui/SmartImage'
+import { useAuth } from '@/contexts/AuthContext'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ShieldAlert, Upload, X } from 'lucide-react'
-import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { useState } from 'react'
 import { useDropzone } from 'react-dropzone'
@@ -23,7 +23,7 @@ interface MediaFile {
 }
 
 export function AddReferencePhotoForm() {
-  const { data: session, status } = useSession()
+  const { user, loading } = useAuth()
   const [mediaFile, setMediaFile] = useState<MediaFile | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -61,19 +61,38 @@ export function AddReferencePhotoForm() {
   }
 
   const onSubmit = async (data: AddPhotoFormData) => {
-    if (!session?.user?.isPhoneVerified) return
+    if (!user?.phoneNumber) return
 
     setIsSubmitting(true)
-    console.log('Wysyłanie danych:', { description: data.description, photo: mediaFile?.file.name })
-    // Symulacja wysyłania
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    setIsSubmitting(false)
-    reset()
-    removeMediaFile()
-    // Tutaj można dodać np. powiadomienie o sukcesie
+
+    try {
+      const formData = new FormData()
+      formData.append('description', data.description)
+      if (mediaFile?.file) {
+        formData.append('file', mediaFile.file)
+      }
+
+      const response = await fetch('/api/references/photos', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (response.ok) {
+        reset()
+        removeMediaFile()
+        // Tutaj można dodać powiadomienie o sukcesie
+      } else {
+        throw new Error('Błąd podczas przesyłania zdjęcia')
+      }
+    } catch (error) {
+      console.error('Błąd:', error)
+      // Tutaj można dodać powiadomienie o błędzie
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  if (status === 'unauthenticated' || !session?.user.isPhoneVerified) {
+  if (!user) {
     return (
       <div className="bg-yellow-50/10 border-l-4 border-yellow-400 p-4 rounded-md text-white">
         <div className="flex">
@@ -82,14 +101,14 @@ export function AddReferencePhotoForm() {
           </div>
           <div className="ml-3">
             <p className="text-sm text-yellow-200">
-              {status === 'unauthenticated'
+              {!user
                 ? 'Musisz być zalogowany, aby dodać zdjęcie.'
                 : 'Wymagana jest weryfikacja numeru telefonu.'}
               <Link
-                href={status === 'unauthenticated' ? '/auth/signin' : '/settings/profile'}
+                href={!user ? '/auth/signin' : '/settings/profile'}
                 className="font-medium underline text-yellow-300 hover:text-yellow-400 ml-2"
               >
-                {status === 'unauthenticated' ? 'Zaloguj się' : 'Zweryfikuj numer'}
+                {!user ? 'Zaloguj się' : 'Zweryfikuj numer'}
               </Link>
             </p>
           </div>

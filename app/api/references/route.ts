@@ -1,9 +1,8 @@
 // import { cacheKeys, withCache } from '@/lib/cache'
-import { authOptions } from '@/lib/auth'
+import { requireFirebaseAuth } from '@/lib/firebase-auth'
 import { requirePhoneVerification } from '@/lib/phone-verification'
 import { prisma } from '@/lib/prisma'
 import { apiRateLimit } from '@/lib/rate-limit'
-import { getServerSession } from 'next-auth'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
@@ -79,17 +78,15 @@ export async function POST(request: NextRequest) {
             return rateLimitResponse
         }
 
-        // Sprawdź autoryzację
-        const session = await getServerSession(authOptions)
-        if (!session?.user?.id) {
-            return NextResponse.json(
-                { error: 'Brak autoryzacji' },
-                { status: 401 }
-            )
+        // Sprawdź autoryzację Firebase
+        const authResult = await requireFirebaseAuth(request)
+        if (authResult instanceof NextResponse) {
+            return authResult
         }
+        const { decodedToken } = authResult
 
         // Sprawdź weryfikację telefonu dla dodawania referencji
-        const phoneVerificationError = await requirePhoneVerification()
+        const phoneVerificationError = await requirePhoneVerification(request)
         if (phoneVerificationError) {
             return phoneVerificationError
         }

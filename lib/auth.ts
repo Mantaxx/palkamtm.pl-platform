@@ -1,21 +1,15 @@
-import bcrypt from 'bcryptjs'
-import { NextAuthOptions } from 'next-auth'
+import { auth } from '@/lib/firebase'
+import { signInWithEmailAndPassword } from 'firebase/auth'
+import NextAuth, { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import GoogleProvider from 'next-auth/providers/google'
-import { prisma } from './prisma'
 
 export const authOptions: NextAuthOptions = {
-  debug: process.env.NODE_ENV === 'development',
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
     CredentialsProvider({
       name: 'credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
-        password: { label: 'Hasło', type: 'password' }
+        password: { label: 'Password', type: 'password' }
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -23,37 +17,25 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          // Znajdź użytkownika w bazie danych
-          const user = await prisma.user.findUnique({
-            where: { email: credentials.email }
-          })
+          const userCredential = await signInWithEmailAndPassword(
+            auth,
+            credentials.email,
+            credentials.password
+          )
 
-          if (!user) {
-            return null
-          }
+          const user = userCredential.user
 
-          // Sprawdź czy użytkownik jest aktywny
-          if (!user.isActive) {
-            return null
-          }
-
-          // Sprawdź hasło
-          if (user.password) {
-            const isValidPassword = await bcrypt.compare(credentials.password, user.password)
-            if (!isValidPassword) {
-              return null
-            }
-          } else {
-            // Fallback dla użytkowników bez hasła (OAuth)
-            return null
+          if (!user.emailVerified) {
+            throw new Error('Email nie jest zweryfikowany')
           }
 
           return {
-            id: user.id,
+            id: user.uid,
             email: user.email,
-            name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
-            role: user.role,
-            image: user.image
+            name: user.displayName,
+            image: user.photoURL,
+            role: 'USER', // Poprawna rola zgodna ze schematem
+            emailVerified: user.emailVerified
           }
         } catch (error) {
           console.error('Błąd autoryzacji:', error)
@@ -62,76 +44,53 @@ export const authOptions: NextAuthOptions = {
       }
     })
   ],
-  session: {
-    strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 dni
-  },
   callbacks: {
-    async signIn({ user, account }) {
-      if (account?.provider === 'google') {
-        try {
-          // Sprawdź czy użytkownik już istnieje
-          const existingUser = await prisma.user.findUnique({
-            where: { email: user.email! }
-          })
+    async jwt({ token, user, account }) {
+      // Persist the OAuth access_token and or the user id to the token right after signin
+      if (account) {
+        token.accessToken = account.access_token
+      }
 
-          if (!existingUser) {
-            // Utwórz nowego użytkownika
-            const nameParts = user.name?.split(' ') || []
-            await prisma.user.create({
-              data: {
-                email: user.email!,
-                firstName: nameParts[0] || '',
-                lastName: nameParts.slice(1).join(' ') || '',
-                image: user.image,
-                role: 'USER',
-                isActive: true,
-                emailVerified: new Date()
-              }
-            })
-          }
-          return true
-        } catch (error) {
-          console.error('Błąd podczas tworzenia użytkownika Google:', error)
-          return false
-        }
+      if (user) {
+        token.uid = user.id
+        token.role = user.role || 'USER'
+        token.emailVerified = true
       }
-      return true
-    },
-    async jwt({ token, user }) {
-      // Po zalogowaniu, pobierz świeże dane użytkownika, aby token był aktualny
-      if (user?.email) {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: user.email },
-        });
-        if (dbUser) {
-          token.id = dbUser.id;
-          token.role = dbUser.role;
-          token.isPhoneVerified = dbUser.isPhoneVerified;
-          token.name = `${dbUser.firstName || ''} ${dbUser.lastName || ''}`.trim() || dbUser.email;
-          token.image = dbUser.image;
-          token.email = dbUser.email;
-        }
-      }
-      return token;
+
+      return token
     },
     async session({ session, token }) {
+      // Send properties to the client
       if (token) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as string;
-        session.user.name = token.name as string;
-        session.user.email = token.email as string;
-        session.user.image = token.image as string;
-        session.user.isPhoneVerified = token.isPhoneVerified as boolean;
+        session.user.id = token.uid as string
+        session.user.role = token.role as string
+        session.user.emailVerified = token.emailVerified as boolean
+        session.accessToken = token.accessToken as string
       }
-      return session;
+      return session
     },
-    async redirect({ baseUrl }) {
-      // Zawsze przekieruj do dashboard po zalogowaniu
-      return `${baseUrl}/dashboard`
+    async redirect({ url, baseUrl }) {
+      // Allows relative callback URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`
+      // Allows callback URLs on the same origin
+      else if (new URL(url).origin === baseUrl) return url
+      return baseUrl
     }
   },
   pages: {
     signIn: '/auth/signin',
-  }
+    error: '/auth/error'
+  },
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // 24 hours
+  },
+  jwt: {
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === 'development'
 }
+
+export default NextAuth(authOptions)

@@ -1,7 +1,4 @@
-// Funkcja do automatycznego wykrywania zdjęć w folderze
-// Używa API endpoint do pobierania aktualnych zdjęć z cacheowaniem
-
-// Cache dla obrazów
+// Funkcja do pobierania zdjęć championów z API
 const imageCache = new Map<string, { data: string[], timestamp: number }>()
 const CACHE_DURATION = 5 * 60 * 1000 // 5 minut
 
@@ -63,42 +60,6 @@ export const getImagesFromFolder = async (folderPath: string): Promise<string[]>
 
     } catch (error) {
         console.error('Błąd podczas pobierania zdjęć:', error)
-
-        // Sprawdź cache w przypadku błędu
-        const cached = imageCache.get(folderPath)
-        if (cached) {
-            return cached.data
-        }
-
-        // Fallback do hardkodowanej listy w przypadku błędu
-        const knownImages = [
-            'DRUŻYNA-A-2014-olimp-r1.jpg',
-            'DRUŻYNA-B-2014-olimp-r1.jpg',
-            'DV-02906-11-98t_OLIMP (1).jpg',
-            'DV-02906-11-98t_OLIMP.jpg',
-            'Golebie_gazeta-poprawione2b.jpg',
-            'PL-0446-12-1007t_b.jpg',
-            'PL-0446-12-1016-2014r (1).jpg',
-            'PL-0446-12-1016-2014r.jpg',
-            'PL-0446-12-328_2KK.jpg',
-            'PL-0446-12-336_KK21.jpg',
-            'PL-0446-13-5015.jpg',
-            'PL-0446-13-5048_KK2.jpg',
-            'PL-0446-13-5071_KK-OLIMP.jpg',
-            'PL-11-160651t_b2 (1).jpg',
-            'PL-11-160651t_b2.jpg',
-        ]
-
-        if (folderPath.includes('thunder-storm/gallery')) {
-            const result = knownImages.map(img => `${folderPath}/${img}`)
-            // Zapisz w cache
-            imageCache.set(folderPath, {
-                data: result,
-                timestamp: Date.now()
-            })
-            return result
-        }
-
         return []
     }
 }

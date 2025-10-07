@@ -24,13 +24,14 @@ export default function AchievementsPage() {
     }, [])
 
     return (
-        <UnifiedLayout>
-            <div className="container mx-auto px-4 py-8">
+        <UnifiedLayout showFooter={false}>
+            <div className="container mx-auto px-4 -mt-32">
                 <h1 className="text-4xl font-bold text-white text-center mb-8">
                     Osiągnięcia Hodowli
                 </h1>
+            </div>
+            <div className="container mx-auto px-4 -mt-32">
                 <AchievementsCarousel onNavigationReady={handleNavigationReady} />
-
             </div>
         </UnifiedLayout>
     )

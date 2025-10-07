@@ -1,12 +1,11 @@
-import { authOptions } from '@/lib/auth'
+import { requireAdminAuth } from '@/lib/admin-auth'
 import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function PATCH(request: NextRequest, context: { params: Promise<{ id: string }> }) {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id || session.user.role !== 'ADMIN') {
-        return NextResponse.json({ error: 'Nieautoryzowany dostęp' }, { status: 401 })
+    const authResult = await requireAdminAuth(request)
+    if (authResult instanceof Response) {
+        return authResult
     }
 
     const params = await context.params
@@ -33,15 +32,19 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
 }
 
 export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id || session.user.role !== 'ADMIN') {
-        return NextResponse.json({ error: 'Nieautoryzowany dostęp' }, { status: 401 })
+    const authResult = await requireAdminAuth(request)
+    if (authResult instanceof Response) {
+        return authResult
     }
+
+    const { decodedToken } = authResult
     const params = await context.params
     const id = params?.id as string
-    if (id === session.user.id) {
+
+    if (id === decodedToken.uid) {
         return NextResponse.json({ error: 'Nie można usunąć własnego konta' }, { status: 400 })
     }
+
     try {
         await prisma.user.delete({ where: { id } })
         return NextResponse.json({ success: true })

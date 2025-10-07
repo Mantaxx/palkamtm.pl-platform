@@ -1,9 +1,10 @@
 'use client'
 
 import { LocationAutocomplete } from '@/components/ui/LocationAutocomplete'
+import { useAuth } from '@/contexts/AuthContext'
+import { useProfileVerification } from '@/hooks/useProfileVerification'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { FileText, Image as LucideImage, RotateCcw, Video, X } from 'lucide-react'
-import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -70,7 +71,8 @@ interface CreateAuctionFormProps {
 }
 
 export default function CreateAuctionForm({ onSuccess, onCancel, showHeader = true }: CreateAuctionFormProps) {
-  const { data: session, status } = useSession()
+  const { user, loading } = useAuth()
+  const { canCreateAuctions, isFullyVerified, missingFields, loading: verificationLoading } = useProfileVerification()
   const router = useRouter()
   const [pigeonImages, setPigeonImages] = useState<MediaFile[]>([])
   const [videos, setVideos] = useState<MediaFile[]>([])
@@ -361,15 +363,15 @@ export default function CreateAuctionForm({ onSuccess, onCancel, showHeader = tr
     }
   }
 
-  if (status === 'loading') {
+  if (loading || verificationLoading) {
     return (
       <div className="flex justify-center items-center p-8">
-        <p>Ładowanie sesji...</p>
+        <p>Ładowanie...</p>
       </div>
     )
   }
 
-  if (status === 'unauthenticated' || !session?.user) {
+  if (!user) {
     return (
       <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-md">
         <p className="text-xs text-red-700">
@@ -378,6 +380,41 @@ export default function CreateAuctionForm({ onSuccess, onCancel, showHeader = tr
             Zaloguj się
           </Link>
         </p>
+      </div>
+    )
+  }
+
+  if (!canCreateAuctions) {
+    return (
+      <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md">
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div className="ml-3">
+            <p className="text-sm text-yellow-700">
+              <strong>Weryfikacja profilu wymagana</strong>
+            </p>
+            <p className="text-sm text-yellow-700 mt-1">
+              Aby utworzyć aukcję, musisz uzupełnić wszystkie dane w profilu i zweryfikować numer telefonu.
+            </p>
+            {missingFields.length > 0 && (
+              <p className="text-sm text-yellow-700 mt-1">
+                Brakujące pola: {missingFields.join(', ')}
+              </p>
+            )}
+            <div className="mt-3">
+              <Link
+                href="/settings/profile"
+                className="font-medium underline text-yellow-800 hover:text-yellow-900"
+              >
+                Uzupełnij profil
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }

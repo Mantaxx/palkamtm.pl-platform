@@ -1,8 +1,7 @@
-import { authOptions } from '@/lib/auth'
+import { requireFirebaseAuth } from '@/lib/firebase-auth'
 import { requirePhoneVerification } from '@/lib/phone-verification'
 import { prisma } from '@/lib/prisma'
 import { apiRateLimit } from '@/lib/rate-limit'
-import { getServerSession } from 'next-auth'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
@@ -14,10 +13,11 @@ const createMessageSchema = z.object({
 // GET /api/messages - Pobierz konwersacje użytkownika
 export async function GET(request: NextRequest) {
     try {
-        const session = await getServerSession(authOptions)
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: 'Nieautoryzowany dostęp' }, { status: 401 })
+        const authResult = await requireFirebaseAuth(request)
+        if (authResult instanceof NextResponse) {
+            return authResult
         }
+        const { decodedToken } = authResult
 
         const rateLimitResponse = apiRateLimit(request)
         if (rateLimitResponse) {
@@ -33,8 +33,8 @@ export async function GET(request: NextRequest) {
         const conversations = await prisma.conversation.findMany({
             where: {
                 OR: [
-                    { participant1Id: session.user.id },
-                    { participant2Id: session.user.id }
+                    { participant1Id: decodedToken.uid },
+                    { participant2Id: decodedToken.uid }
                 ]
             },
             include: {
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
 
         // Przekształć dane konwersacji
         const formattedConversations = conversations.map(conv => {
-            const otherParticipant = conv.participant1Id === session.user.id
+            const otherParticipant = conv.participant1Id === decodedToken.uid
                 ? conv.participant2
                 : conv.participant1
 
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
             const unreadCount = await prisma.userMessage.count({
                 where: {
                     conversationId: conv.id,
-                    senderId: { not: session.user.id },
+                    senderId: { not: decodedToken.uid },
                     isRead: false
                 }
             })
@@ -119,8 +119,8 @@ export async function GET(request: NextRequest) {
         const total = await prisma.conversation.count({
             where: {
                 OR: [
-                    { participant1Id: session.user.id },
-                    { participant2Id: session.user.id }
+                    { participant1Id: decodedToken.uid },
+                    { participant2Id: decodedToken.uid }
                 ]
             }
         })
@@ -147,10 +147,11 @@ export async function GET(request: NextRequest) {
 // POST /api/messages - Wyślij nową wiadomość
 export async function POST(request: NextRequest) {
     try {
-        const session = await getServerSession(authOptions)
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: 'Nieautoryzowany dostęp' }, { status: 401 })
+        const authResult = await requireFirebaseAuth(request)
+        if (authResult instanceof NextResponse) {
+            return authResult
         }
+        const { decodedToken } = authResult
 
         const rateLimitResponse = apiRateLimit(request)
         if (rateLimitResponse) {
@@ -158,7 +159,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Sprawdź weryfikację telefonu dla wysyłania wiadomości
-        const phoneVerificationError = await requirePhoneVerification()
+        const phoneVerificationError = await requirePhoneVerification(request)
         if (phoneVerificationError) {
             return phoneVerificationError
         }
@@ -186,7 +187,7 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        if (recipient.id === session.user.id) {
+        if (recipient.id === decodedToken.uid) {
             return NextResponse.json(
                 { error: 'Nie możesz wysłać wiadomości do siebie' },
                 { status: 400 }
@@ -198,12 +199,12 @@ export async function POST(request: NextRequest) {
             where: {
                 OR: [
                     {
-                        participant1Id: session.user.id,
+                        participant1Id: decodedToken.uid,
                         participant2Id: validatedData.recipientId
                     },
                     {
                         participant1Id: validatedData.recipientId,
-                        participant2Id: session.user.id
+                        participant2Id: decodedToken.uid
                     }
                 ]
             }
@@ -212,7 +213,7 @@ export async function POST(request: NextRequest) {
         if (!conversation) {
             conversation = await prisma.conversation.create({
                 data: {
-                    participant1Id: session.user.id,
+                    participant1Id: decodedToken.uid,
                     participant2Id: validatedData.recipientId
                 }
             })
@@ -222,7 +223,7 @@ export async function POST(request: NextRequest) {
         const message = await prisma.userMessage.create({
             data: {
                 conversationId: conversation.id,
-                senderId: session.user.id,
+                senderId: decodedToken.uid,
                 content: validatedData.content
             },
             include: {

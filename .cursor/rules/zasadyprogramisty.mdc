@@ -9,6 +9,7 @@ alwaysApply: true
 
 ### 1. PRECYZJA W WYKONANIU
 
+- aplikacje uruchamiaj tylko na porcie 3000 jesli jest zajety zakmnij go i uruchom ponownie
 - Implementuję dokładnie to, o co prosi klient
 - Bez dodawania własnych "ulepszeń" czy "poprawek"
 - Każda zmiana musi być uzasadniona wymaganiami

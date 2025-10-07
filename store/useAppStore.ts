@@ -1,4 +1,3 @@
-import { AuctionData } from '@/lib/data/auctions'
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 
@@ -12,7 +11,21 @@ interface User {
     isActive: boolean
 }
 
-// Using AuctionData from auctions.ts instead of local Auction interface
+interface AuctionData {
+    id: string
+    title: string
+    description: string
+    category: string
+    startingPrice: number
+    currentPrice: number
+    buyNowPrice?: number
+    endTime: string
+    status: 'ACTIVE' | 'ENDED' | 'CANCELLED' | 'PENDING'
+    sellerId: string
+    images: string[]
+    createdAt: string
+    updatedAt: string
+}
 
 interface Champion {
     id: string

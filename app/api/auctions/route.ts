@@ -1,137 +1,54 @@
-import { authOptions } from '@/lib/auth'
+// import { createApiRoute, createPaginatedResponse, createSuccessResponse } from '@/lib/api-middleware'
+import { AppErrors } from '@/lib/error-handling'
+import { requireFirebaseAuth } from '@/lib/firebase-auth'
+// import { logBusinessEvent, logUserAction } from '@/lib/logger'
+import { auctionQueries, createAuctionFilters, createAuctionSorting, createPagination } from '@/lib/optimized-queries'
 import { requirePhoneVerification } from '@/lib/phone-verification'
 import { prisma } from '@/lib/prisma'
-import { apiRateLimit } from '@/lib/rate-limit'
 import { auctionCreateSchema } from '@/lib/validations/schemas'
-import { AuctionStatus, Prisma } from '@prisma/client'
-import { getServerSession } from 'next-auth'
 import { NextRequest, NextResponse } from 'next/server'
 
 // GET /api/auctions - Pobierz wszystkie aukcje
 export async function GET(request: NextRequest) {
     try {
-        // Rate limiting
-        const rateLimitResponse = apiRateLimit(request)
-        if (rateLimitResponse) {
-            return rateLimitResponse
+        // Pobierz parametry z URL
+        const url = new URL(request.url)
+        const page = parseInt(url.searchParams.get('page') || '1')
+        const limit = parseInt(url.searchParams.get('limit') || '10')
+        const category = url.searchParams.get('category')
+        const status = url.searchParams.get('status')
+        const search = url.searchParams.get('search')
+        const sortBy = url.searchParams.get('sortBy') || 'newest'
+
+        // Walidacja parametrów
+        if (page < 1 || limit < 1 || limit > 100) {
+            throw AppErrors.validation('Nieprawidłowe parametry paginacji')
         }
 
-        const { searchParams } = new URL(request.url)
-        const page = parseInt(searchParams.get('page') || '1')
-        const limit = parseInt(searchParams.get('limit') || '10')
-        const category = searchParams.get('category')
-        const status = searchParams.get('status')
-        const search = searchParams.get('search')
-        const sortBy = searchParams.get('sortBy') || 'newest'
+        // Utwórz filtry i sortowanie
+        const where = createAuctionFilters({
+            category: category || undefined,
+            status: status || undefined,
+            search: search || undefined,
+            isApproved: true
+        })
+        const orderBy = createAuctionSorting(sortBy)
+        const { skip, take } = createPagination(page, limit)
 
-        const skip = (page - 1) * limit
-
-        // Buduj warunki filtrowania
-        const where: Prisma.AuctionWhereInput = {}
-
-        if (category) {
-            where.category = category
-        }
-
-        if (status && Object.values(AuctionStatus).includes(status as AuctionStatus)) {
-            where.status = status as AuctionStatus
-        }
-
-        if (search) {
-            where.OR = [
-                { title: { contains: search } },
-                { description: { contains: search } }
-            ]
-        }
-
-        // Buduj sortowanie
-        let orderBy: Record<string, string> = {}
-        switch (sortBy) {
-            case 'newest':
-                orderBy = { createdAt: 'desc' }
-                break
-            case 'oldest':
-                orderBy = { createdAt: 'asc' }
-                break
-            case 'price-low':
-                orderBy = { currentPrice: 'asc' }
-                break
-            case 'price-high':
-                orderBy = { currentPrice: 'desc' }
-                break
-            case 'ending-soon':
-                orderBy = { endTime: 'asc' }
-                break
-            default:
-                orderBy = { createdAt: 'desc' }
-        }
-
-        // Pobierz aukcje z bazy danych - zoptymalizowane zapytanie
+        // Wykonaj zapytania równolegle
         const [auctions, total] = await Promise.all([
             prisma.auction.findMany({
                 where,
-                select: {
-                    id: true,
-                    title: true,
-                    description: true,
-                    category: true,
-                    startingPrice: true,
-                    currentPrice: true,
-                    buyNowPrice: true,
-                    reservePrice: true,
-                    startTime: true,
-                    endTime: true,
-                    status: true,
-                    createdAt: true,
-                    updatedAt: true,
-                    seller: {
-                        select: {
-                            id: true,
-                            firstName: true,
-                            lastName: true,
-                        }
-                    },
-                    pigeon: {
-                        select: {
-                            id: true,
-                            name: true,
-                            ringNumber: true,
-                        }
-                    },
-                    // Pobierz tylko ID assetów i ich URL - bez niepotrzebnych danych
-                    assets: {
-                        select: {
-                            id: true,
-                            type: true,
-                            url: true,
-                        }
-                    },
-                    // Pobierz tylko najnowszą ofertę - to wystarczy do wyświetlenia listy
-                    bids: {
-                        select: {
-                            id: true,
-                            amount: true,
-                            createdAt: true,
-                        },
-                        orderBy: { createdAt: 'desc' },
-                        take: 1
-                    },
-                    _count: {
-                        select: {
-                            bids: true,
-                            watchlist: true
-                        }
-                    }
-                },
+                ...auctionQueries.withBasicRelations,
                 orderBy,
                 skip,
-                take: limit
+                take,
             }),
             prisma.auction.count({ where })
         ])
 
         return NextResponse.json({
-            auctions,
+            data: auctions,
             pagination: {
                 page,
                 limit,
@@ -152,74 +69,28 @@ export async function GET(request: NextRequest) {
 // POST /api/auctions - Utwórz nową aukcję
 export async function POST(request: NextRequest) {
     try {
-        // Rate limiting
-        const rateLimitResponse = apiRateLimit(request)
-        if (rateLimitResponse) {
-            return rateLimitResponse
+        // Sprawdź autoryzację Firebase
+        const authResult = await requireFirebaseAuth(request)
+        if (authResult instanceof NextResponse) {
+            return authResult
         }
+        const { decodedToken } = authResult
 
-        // Sprawdź autoryzację
-        const session = await getServerSession(authOptions)
-        if (!session?.user?.id) {
-            return NextResponse.json(
-                { error: 'Brak autoryzacji' },
-                { status: 401 }
-            )
-        }
-
-        // Sprawdź weryfikację telefonu dla tworzenia aukcji
-        const phoneVerificationError = await requirePhoneVerification()
+        // Sprawdź weryfikację telefonu
+        const phoneVerificationError = await requirePhoneVerification(request)
         if (phoneVerificationError) {
             return phoneVerificationError
         }
 
+        // Pobierz i waliduj dane
         const body = await request.json()
-
-        console.log('=== TWORZENIE AUKCJI ===')
-        console.log('Session user:', session.user)
-        console.log('Request body:', JSON.stringify(body, null, 2))
-
-        // Sprawdź czy użytkownik istnieje w bazie danych
-        let user = await prisma.user.findUnique({
-            where: { id: session.user.id }
-        })
-
-        if (!user) {
-            // Jeśli użytkownik nie istnieje, utwórz go
-            const nameParts = session.user.name?.split(' ') || []
-            user = await prisma.user.create({
-                data: {
-                    id: session.user.id,
-                    email: session.user.email!,
-                    firstName: nameParts[0] || '',
-                    lastName: nameParts.slice(1).join(' ') || '',
-                    image: session.user.image,
-                    role: 'USER', // Poprawna rola zgodna ze schematem
-                    isActive: true,
-                    emailVerified: new Date()
-                }
-            })
-        } else if (user.role !== 'USER' && user.role !== 'ADMIN') {
-            // Napraw nieprawidłową rolę
-            user = await prisma.user.update({
-                where: { id: session.user.id },
-                data: { role: 'USER' }
-            })
-        }
-
-        // Walidacja danych
         const validatedData = auctionCreateSchema.parse(body)
 
-        // Sprawdź czy data zakończenia jest w przyszłości
-        const endTime = new Date(validatedData.endTime)
-        if (endTime <= new Date()) {
-            return NextResponse.json(
-                { error: 'Data zakończenia musi być w przyszłości' },
-                { status: 400 }
-            )
-        }
+        // Oblicz czas zakończenia
+        const endTime = new Date()
+        endTime.setDate(endTime.getDate() + 7)
 
-        // Utwórz aukcję w bazie danych - zoptymalizowane zapytanie
+        // Utwórz aukcję w bazie danych
         const auction = await prisma.auction.create({
             data: {
                 title: validatedData.title,
@@ -231,8 +102,8 @@ export async function POST(request: NextRequest) {
                 reservePrice: validatedData.reservePrice,
                 startTime: new Date(validatedData.startTime),
                 endTime: endTime,
-                sellerId: session.user.id,
-                status: 'PENDING', // Wymaga zatwierdzenia przez admina
+                sellerId: decodedToken.uid,
+                status: 'PENDING',
                 isApproved: false
             },
             select: {
@@ -243,9 +114,11 @@ export async function POST(request: NextRequest) {
                 startingPrice: true,
                 currentPrice: true,
                 buyNowPrice: true,
-                status: true,
+                reservePrice: true,
                 startTime: true,
                 endTime: true,
+                status: true,
+                isApproved: true,
                 createdAt: true,
                 seller: {
                     select: {
@@ -261,13 +134,13 @@ export async function POST(request: NextRequest) {
         if (validatedData.pigeon) {
             await prisma.pigeon.create({
                 data: {
-                    name: validatedData.title, // Używamy tytułu aukcji jako nazwy gołębia
+                    name: validatedData.title,
                     ringNumber: validatedData.pigeon.ringNumber || `RING-${auction.id}`,
                     bloodline: validatedData.pigeon.bloodline || 'Nieznana',
                     gender: validatedData.pigeon.sex === 'male' ? 'Samiec' : validatedData.pigeon.sex === 'female' ? 'Samica' : 'Nieznana',
-                    birthDate: new Date(), // Domyślna data urodzenia
+                    birthDate: new Date(),
                     color: validatedData.pigeon.featherColor || 'Nieznany',
-                    weight: 0, // Domyślna waga
+                    weight: 0,
                     breeder: 'Nieznany',
                     description: validatedData.description,
                     images: JSON.stringify(validatedData.images || []),
@@ -281,7 +154,7 @@ export async function POST(request: NextRequest) {
             })
         }
 
-        // Utwórz zasoby aukcji (obrazy, wideo, dokumenty)
+        // Utwórz zasoby aukcji
         if (validatedData.images && validatedData.images.length > 0) {
             await prisma.auctionAsset.createMany({
                 data: validatedData.images.map(url => ({
@@ -312,23 +185,31 @@ export async function POST(request: NextRequest) {
             })
         }
 
-        console.log('✅ Aukcja utworzona pomyślnie:', auction.id)
+        // Log successful auction creation
+        // logUserAction(decodedToken.uid, 'auction_created', {
+        //     auctionId: auction.id,
+        //     title: auction.title,
+        //     category: auction.category
+        // })
 
-        return NextResponse.json({
-            message: 'Aukcja została utworzona i oczekuje na zatwierdzenie',
-            auction
-        }, { status: 201 })
+        // logBusinessEvent('auction_created', {
+        //     auctionId: auction.id,
+        //     sellerId: decodedToken.uid,
+        //     category: auction.category,
+        //     startingPrice: auction.startingPrice
+        // })
+
+        return NextResponse.json(
+            {
+                success: true,
+                data: { auction },
+                message: 'Aukcja została utworzona i oczekuje na zatwierdzenie'
+            },
+            { status: 201 }
+        )
 
     } catch (error) {
         console.error('Błąd podczas tworzenia aukcji:', error)
-
-        if (error instanceof Error && error.name === 'ZodError') {
-            return NextResponse.json(
-                { error: 'Nieprawidłowe dane', details: error.message },
-                { status: 400 }
-            )
-        }
-
         return NextResponse.json(
             { error: 'Wystąpił błąd podczas tworzenia aukcji' },
             { status: 500 }

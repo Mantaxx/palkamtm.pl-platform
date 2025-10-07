@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
         return rateLimitResponse
     }
 
-    const phoneVerificationError = await requirePhoneVerification()
+    const phoneVerificationError = await requirePhoneVerification(request)
     if (phoneVerificationError) {
         return phoneVerificationError
     }

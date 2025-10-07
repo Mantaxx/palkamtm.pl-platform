@@ -91,34 +91,6 @@ export const bidCreateSchema = z.object({
   amount: z.number().min(0, 'Kwota licytacji nie może być ujemna'),
 })
 
-// Reference validation schemas
-export const referenceCreateSchema = z.object({
-  breederName: z.string().min(2, 'Nazwa hodowcy musi mieć co najmniej 2 znaki').max(100, 'Nazwa hodowcy może mieć maksymalnie 100 znaków'),
-  location: z.string().min(2, 'Lokalizacja musi mieć co najmniej 2 znaki').max(100, 'Lokalizacja może mieć maksymalnie 100 znaków'),
-  experience: z.string().min(10, 'Doświadczenie musi mieć co najmniej 10 znaków').max(500, 'Doświadczenie może mieć maksymalnie 500 znaków'),
-  testimonial: z.string().min(20, 'Opinia musi mieć co najmniej 20 znaków').max(1000, 'Opinia może mieć maksymalnie 1000 znaków'),
-  rating: z.number().min(1, 'Ocena musi być co najmniej 1').max(5, 'Ocena może być maksymalnie 5'),
-  achievements: z.array(z.object({
-    pigeon: z.string().min(1, 'Nazwa gołębia jest wymagana'),
-    ringNumber: z.string().min(1, 'Numer obrączki jest wymagany'),
-    results: z.array(z.object({
-      competition: z.string().min(1, 'Nazwa konkursu jest wymagana'),
-      place: z.number().min(1, 'Miejsce musi być co najmniej 1'),
-      date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Nieprawidłowy format daty (YYYY-MM-DD)')
-    })).min(1, 'Przynajmniej jeden wynik jest wymagany')
-  })).min(1, 'Przynajmniej jedno osiągnięcie jest wymagane')
-})
-
-// Breeder meeting validation schemas
-export const breederMeetingCreateSchema = z.object({
-  title: z.string().min(5, 'Tytuł musi mieć co najmniej 5 znaków').max(200, 'Tytuł może mieć maksymalnie 200 znaków'),
-  description: z.string().min(10, 'Opis musi mieć co najmniej 10 znaków').max(1000, 'Opis może mieć maksymalnie 1000 znaków').optional(),
-  location: z.string().min(2, 'Lokalizacja musi mieć co najmniej 2 znaki').max(100, 'Lokalizacja może mieć maksymalnie 100 znaków').optional(),
-  meetingDate: z.string().datetime('Nieprawidłowa data spotkania').optional(),
-  breederName: z.string().min(2, 'Nazwa hodowcy musi mieć co najmniej 2 znaki').max(100, 'Nazwa hodowcy może mieć maksymalnie 100 znaków'),
-  images: z.array(z.string()).min(1, 'Przynajmniej jedno zdjęcie jest wymagane'),
-})
-
 // Search validation schemas
 export const searchSchema = z.object({
   query: z.string().min(1, 'Zapytanie wyszukiwania nie może być puste').max(100, 'Zapytanie może mieć maksymalnie 100 znaków'),
@@ -176,12 +148,6 @@ export const schemas = {
   },
   bid: {
     create: bidCreateSchema,
-  },
-  reference: {
-    create: referenceCreateSchema,
-  },
-  breederMeeting: {
-    create: breederMeetingCreateSchema,
   },
   search: searchSchema,
   fileUpload: fileUploadSchema,

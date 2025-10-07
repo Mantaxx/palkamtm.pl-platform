@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
       prisma.breederMeeting.count({ where })
     ])
 
-    const formattedMeetings = meetings.map((meeting) => ({
+    const formattedMeetings = meetings.map((meeting: any) => ({
       id: meeting.id,
       title: meeting.title,
       description: meeting.description,

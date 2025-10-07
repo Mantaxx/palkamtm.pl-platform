@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
 import { motion } from 'framer-motion'
-import { Save, User, MapPin, Phone, AlertCircle, CheckCircle } from 'lucide-react'
+import { AlertCircle, CheckCircle, MapPin, Phone, Save, User } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 interface User {
   id: string
@@ -14,6 +15,7 @@ interface User {
   postalCode: string | null
   phoneNumber: string | null
   isPhoneVerified: boolean
+  isProfileVerified: boolean
   isActive: boolean
 }
 
@@ -22,6 +24,7 @@ interface ProfileFormProps {
 }
 
 export default function ProfileForm({ initialUser }: ProfileFormProps) {
+  const { user: firebaseUser } = useAuth()
   const [user, setUser] = useState<User | null>(initialUser || null)
   const [loading, setLoading] = useState(!initialUser)
   const [saving, setSaving] = useState(false)
@@ -61,8 +64,19 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
   const fetchUserProfile = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/profile')
-      
+
+      if (!firebaseUser) {
+        setMessage({ type: 'error', text: 'Brak autoryzacji' })
+        return
+      }
+
+      const token = await firebaseUser.getIdToken()
+      const response = await fetch('/api/profile', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
       if (response.ok) {
         const data = await response.json()
         setUser(data.user)
@@ -80,7 +94,7 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
-    
+
     // Wyczyść błąd dla tego pola
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }))
@@ -120,7 +134,7 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!validateForm()) {
       return
     }
@@ -129,10 +143,17 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
       setSaving(true)
       setMessage(null)
 
+      if (!firebaseUser) {
+        setMessage({ type: 'error', text: 'Brak autoryzacji' })
+        return
+      }
+
+      const token = await firebaseUser.getIdToken()
       const response = await fetch('/api/profile', {
         method: 'PATCH',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(formData)
       })
@@ -141,9 +162,9 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
 
       if (response.ok) {
         setUser(data.user)
-        setMessage({ 
-          type: 'success', 
-          text: data.phoneVerificationReset 
+        setMessage({
+          type: 'success',
+          text: data.phoneVerificationReset
             ? 'Profil zaktualizowany. Numer telefonu wymaga ponownej weryfikacji.'
             : 'Profil został zaktualizowany pomyślnie'
         })
@@ -184,8 +205,7 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
     )
   }
 
-  const isProfileComplete = user.firstName && user.lastName && user.address && 
-                           user.city && user.postalCode && user.phoneNumber && user.isPhoneVerified
+  const isProfileComplete = user.isProfileVerified && user.isPhoneVerified
 
   return (
     <motion.div
@@ -194,23 +214,23 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
       className="max-w-2xl mx-auto"
     >
       {/* Status profilu */}
-      <div className={`mb-6 p-4 rounded-lg border ${
-        isProfileComplete 
-          ? 'bg-green-50 border-green-200' 
-          : 'bg-yellow-50 border-yellow-200'
-      }`}>
+      <div className={`mb-6 p-4 rounded-lg border ${isProfileComplete
+        ? 'bg-green-50 border-green-200'
+        : 'bg-yellow-50 border-yellow-200'
+        }`}>
         <div className="flex items-center gap-2">
           {isProfileComplete ? (
             <CheckCircle className="w-5 h-5 text-green-600" />
           ) : (
             <AlertCircle className="w-5 h-5 text-yellow-600" />
           )}
-          <span className={`font-medium ${
-            isProfileComplete ? 'text-green-800' : 'text-yellow-800'
-          }`}>
-            {isProfileComplete 
-              ? 'Profil jest kompletny - możesz uczestniczyć w aukcjach'
-              : 'Profil wymaga uzupełnienia - uzupełnij wszystkie dane aby móc licytować'
+          <span className={`font-medium ${isProfileComplete ? 'text-green-800' : 'text-yellow-800'
+            }`}>
+            {isProfileComplete
+              ? 'Profil jest w pełni zweryfikowany - masz dostęp do wszystkich funkcji'
+              : user.isProfileVerified && !user.isPhoneVerified
+                ? 'Profil uzupełniony - zweryfikuj numer telefonu aby uzyskać pełny dostęp'
+                : 'Profil wymaga uzupełnienia - uzupełnij wszystkie dane aby móc licytować'
             }
           </span>
         </div>
@@ -221,11 +241,10 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`mb-6 p-4 rounded-lg ${
-            message.type === 'success' 
-              ? 'bg-green-50 border border-green-200 text-green-800'
-              : 'bg-red-50 border border-red-200 text-red-800'
-          }`}
+          className={`mb-6 p-4 rounded-lg ${message.type === 'success'
+            ? 'bg-green-50 border border-green-200 text-green-800'
+            : 'bg-red-50 border border-red-200 text-red-800'
+            }`}
         >
           {message.text}
         </motion.div>
@@ -238,7 +257,7 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
             <User className="w-5 h-5 text-gray-600" />
             <h3 className="text-lg font-semibold text-gray-900">Dane osobowe</h3>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
@@ -250,9 +269,8 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
                 name="firstName"
                 value={formData.firstName}
                 onChange={handleInputChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.firstName ? 'border-red-300' : 'border-gray-300'
-                }`}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.firstName ? 'border-red-300' : 'border-gray-300'
+                  }`}
                 placeholder="Wprowadź imię"
               />
               {errors.firstName && (
@@ -270,9 +288,8 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
                 name="lastName"
                 value={formData.lastName}
                 onChange={handleInputChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.lastName ? 'border-red-300' : 'border-gray-300'
-                }`}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.lastName ? 'border-red-300' : 'border-gray-300'
+                  }`}
                 placeholder="Wprowadź nazwisko"
               />
               {errors.lastName && (
@@ -302,7 +319,7 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
             <MapPin className="w-5 h-5 text-gray-600" />
             <h3 className="text-lg font-semibold text-gray-900">Adres</h3>
           </div>
-          
+
           <div className="space-y-4">
             <div>
               <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
@@ -314,9 +331,8 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
                 name="address"
                 value={formData.address}
                 onChange={handleInputChange}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.address ? 'border-red-300' : 'border-gray-300'
-                }`}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.address ? 'border-red-300' : 'border-gray-300'
+                  }`}
                 placeholder="np. ul. Główna 123"
               />
               {errors.address && (
@@ -335,9 +351,8 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
                   name="city"
                   value={formData.city}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.city ? 'border-red-300' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.city ? 'border-red-300' : 'border-gray-300'
+                    }`}
                   placeholder="np. Warszawa"
                 />
                 {errors.city && (
@@ -355,9 +370,8 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
                   name="postalCode"
                   value={formData.postalCode}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.postalCode ? 'border-red-300' : 'border-gray-300'
-                  }`}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.postalCode ? 'border-red-300' : 'border-gray-300'
+                    }`}
                   placeholder="XX-XXX"
                   maxLength={6}
                 />
@@ -375,7 +389,7 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
             <Phone className="w-5 h-5 text-gray-600" />
             <h3 className="text-lg font-semibold text-gray-900">Numer telefonu</h3>
           </div>
-          
+
           <div>
             <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
               Numer telefonu *
@@ -386,15 +400,14 @@ export default function ProfileForm({ initialUser }: ProfileFormProps) {
               name="phoneNumber"
               value={formData.phoneNumber}
               onChange={handleInputChange}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.phoneNumber ? 'border-red-300' : 'border-gray-300'
-              }`}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.phoneNumber ? 'border-red-300' : 'border-gray-300'
+                }`}
               placeholder="+48123456789"
             />
             {errors.phoneNumber && (
               <p className="mt-1 text-sm text-red-600">{errors.phoneNumber}</p>
             )}
-            
+
             <div className="mt-2 flex items-center gap-2">
               {user.isPhoneVerified ? (
                 <span className="inline-flex items-center gap-1 text-sm text-green-600">

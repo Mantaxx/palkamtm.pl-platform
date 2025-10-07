@@ -98,7 +98,7 @@ export function PressPage() {
           <Text3D
             variant="gradient"
             intensity="high"
-            className="text-5xl md:text-6xl font-bold mb-6"
+            className="text-3xl md:text-4xl font-bold mb-6"
           >
             Prasa i Media
           </Text3D>
@@ -106,7 +106,7 @@ export function PressPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1 }}
-            className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto"
+            className="text-lg md:text-xl text-white/90 mb-8 max-w-3xl mx-auto"
           >
             Artykuły, wywiady i materiały prasowe o hodowli MTM Pałka
           </motion.p>

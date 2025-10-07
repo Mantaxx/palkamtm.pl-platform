@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ReactNode } from 'react'
+import { memo, ReactNode } from 'react'
 
 interface UnifiedCardProps {
   children: ReactNode
@@ -13,8 +13,8 @@ interface UnifiedCardProps {
   intensity?: 'low' | 'medium' | 'high'
 }
 
-export function UnifiedCard({ 
-  children, 
+export const UnifiedCard = memo(function UnifiedCard({
+  children,
   className = '',
   variant = 'default',
   glow = false,
@@ -42,7 +42,7 @@ export function UnifiedCard({
     <motion.div
       initial={{ opacity: 0, y: 50, scale: 0.9, rotateX: -10 }}
       animate={{ opacity: 1, y: 0, scale: 1, rotateX: 0 }}
-      whileHover={hover ? { 
+      whileHover={hover ? {
         scale: currentIntensity.scale,
         y: currentIntensity.y,
         rotateX: 5,
@@ -63,4 +63,4 @@ export function UnifiedCard({
       {children}
     </motion.div>
   )
-}
+})

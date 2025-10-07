@@ -1,23 +1,37 @@
-import AuthPage from '@/app/auth/page'
+'use client'
+
 import { UserDashboard } from '@/components/dashboard/UserDashboard'
-import { authOptions } from '@/lib/auth'
-import { getServerSession } from 'next-auth'
-import { redirect } from 'next/navigation'
+import { UnifiedLayout } from '@/components/layout/UnifiedLayout'
+import { useAuth } from '@/contexts/AuthContext'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 
-export default async function DashboardPage() {
-  const session = await getServerSession(authOptions)
+export default function DashboardPage() {
+  const { user, loading } = useAuth()
+  const router = useRouter()
 
-  if (!session?.user) {
-    return <AuthPage />
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/auth/signin')
+    }
+  }, [user, loading, router])
+
+  if (loading) {
+    return (
+      <UnifiedLayout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+            <p className="text-white/70">Ładowanie...</p>
+          </div>
+        </div>
+      </UnifiedLayout>
+    )
   }
 
-  // Renderuj odpowiedni dashboard na podstawie roli użytkownika
-  switch (session.user.role) {
-    case 'ADMIN':
-      redirect('/admin/dashboard')
-      break
-    case 'USER':
-    default:
-      return <UserDashboard />
+  if (!user) {
+    return null
   }
+
+  return <UserDashboard />
 }

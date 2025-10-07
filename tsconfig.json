@@ -8,6 +8,9 @@
     ],
     "allowJs": true,
     "skipLibCheck": true,
+    "types": [
+      "css-font-loading-module"
+    ],
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
@@ -17,7 +20,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "incremental": true,
+    "incremental": false,
     "plugins": [
       {
         "name": "next"

@@ -12,18 +12,14 @@ export default function SalesTermsPage() {
                 <div className="max-w-4xl mx-auto">
                     {/* Header */}
                     <div className="text-center mb-12">
-                        <h1 className="text-4xl font-bold text-white mb-4">Warunki Sprzedaży</h1>
+                        <h1 className="text-3xl font-bold text-white mb-4">Warunki Sprzedaży</h1>
                         <p className="text-xl text-white">
                             Warunki Sprzedaży w Serwisie Gołębie Pocztowe
                         </p>
                     </div>
 
                     {/* Sales Terms Content */}
-                    <div className="rounded-lg border-2 border-white p-8" style={{
-                        background: 'rgba(255, 255, 255, 0.1)',
-                        backdropFilter: 'blur(2px)',
-                        boxShadow: '0 8px 32px rgba(255, 255, 255, 0.4), 0 16px 64px rgba(255, 255, 255, 0.2), 0 24px 96px rgba(255, 255, 255, 0.1)'
-                    }}>
+                    <div className="rounded-lg border-2 border-white p-8 bg-white/10 backdrop-blur-sm shadow-[0_8px_32px_rgba(255,255,255,0.4),0_16px_64px_rgba(255,255,255,0.2),0_24px_96px_rgba(255,255,255,0.1)]">
                         <div className="prose prose-lg max-w-none text-white/90">
                             <div className="bg-white bg-opacity-10 border-l-4 border-red-400 p-4 mb-8">
                                 <div className="flex">

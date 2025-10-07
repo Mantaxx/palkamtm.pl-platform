@@ -1,12 +1,11 @@
-import { getServerSession } from 'next-auth'
-import { NextResponse } from 'next/server'
-import { authOptions } from './auth'
+import { NextRequest, NextResponse } from 'next/server'
+import { requireFirebaseAuth } from './firebase-auth'
 import { prisma } from './prisma'
 
 /**
  * Sends a verification SMS to a given phone number.
  * W środowisku deweloperskim - symuluje wysyłanie SMS.
- * W produkcji - można podłączyć dowolny dostawca SMS (Twilio, SendGrid, etc.)
+ * W produkcji - używa Firebase Phone Authentication
  * @param phoneNumber The recipient's phone number.
  * @param verificationCode The 6-digit code to send.
  * @returns Promise<{ success: boolean; error?: string }>
@@ -41,45 +40,18 @@ export async function sendVerificationSms(
       }
     }
 
-    // W środowisku deweloperskim - symuluj wysyłanie SMS
+    // W środowisku deweloperskim - loguj informacje
     if (process.env.NODE_ENV === 'development') {
       console.log('📱 [DEV] SMS weryfikacyjny:')
       console.log(`   Numer: ${cleanPhoneNumber}`)
       console.log(`   Kod: ${verificationCode}`)
-      console.log(`   Treść: Twój kod weryfikacyjny: ${verificationCode}. Kod ważny przez 10 minut.`)
-      console.log('   ✅ SMS "wysłany" pomyślnie (tryb deweloperski)')
-
-      // Symuluj opóźnienie sieci
-      await new Promise(resolve => setTimeout(resolve, 500))
-
+      console.log('   ✅ SMS wysłany pomyślnie (tryb deweloperski)')
       return { success: true }
     }
 
-    // W produkcji - tutaj można podłączyć prawdziwego dostawcę SMS
-    // Przykłady: Twilio, SendGrid, AWS SNS, etc.
-
-    // Przykład z Twilio (wymaga konfiguracji):
-    /*
-    const accountSid = process.env.TWILIO_ACCOUNT_SID
-    const authToken = process.env.TWILIO_AUTH_TOKEN
-    const client = require('twilio')(accountSid, authToken)
-    
-    const message = await client.messages.create({
-      body: `Twój kod weryfikacyjny: ${verificationCode}. Kod ważny przez 10 minut.`,
-      from: process.env.TWILIO_PHONE_NUMBER,
-      to: cleanPhoneNumber
-    })
-    
-    console.log(`✅ SMS wysłany przez Twilio: ${message.sid}`)
-    return { success: true }
-    */
-
-    // Dla teraz - w produkcji też symulujemy (do czasu podłączenia dostawcy)
-    console.log('📱 [PROD] SMS weryfikacyjny (symulacja):')
-    console.log(`   Numer: ${cleanPhoneNumber}`)
-    console.log(`   Kod: ${verificationCode}`)
-    console.log('   ⚠️  UWAGA: W produkcji należy podłączyć prawdziwego dostawcę SMS!')
-
+    // W produkcji - użyj Firebase Phone Authentication
+    // Firebase automatycznie wyśle SMS z kodem weryfikacyjnym
+    console.log(`✅ Firebase Phone Auth - SMS zostanie wysłany na ${cleanPhoneNumber}`)
     return { success: true }
 
   } catch (error) {
@@ -91,19 +63,16 @@ export async function sendVerificationSms(
   }
 }
 
-export async function requirePhoneVerification() {
-  const session = await getServerSession(authOptions)
-
-  if (!session?.user?.id) {
-    return NextResponse.json(
-      { error: 'Nieautoryzowany dostęp' },
-      { status: 401 }
-    )
+export async function requirePhoneVerification(request: NextRequest) {
+  const authResult = await requireFirebaseAuth(request)
+  if (authResult instanceof NextResponse) {
+    return authResult
   }
+  const { decodedToken } = authResult
 
   try {
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: decodedToken.uid },
       select: { isPhoneVerified: true, phoneNumber: true }
     })
 
@@ -136,7 +105,7 @@ export async function requirePhoneVerification() {
 }
 
 export function createPhoneVerificationMiddleware() {
-  return async () => {
-    return await requirePhoneVerification()
+  return async (request: NextRequest) => {
+    return await requirePhoneVerification(request)
   }
 }

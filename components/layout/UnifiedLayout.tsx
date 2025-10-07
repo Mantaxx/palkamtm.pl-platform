@@ -1,7 +1,9 @@
 'use client'
 
+import { UserStatus } from '@/components/auth/UserStatus'
 import { Footer } from '@/components/layout/Footer'
 import { LogoGlow } from '@/components/layout/LogoGlow'
+import { AuthProvider } from '@/contexts/AuthContext'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { ReactNode } from 'react'
@@ -52,46 +54,53 @@ export function UnifiedLayout({
   className = ''
 }: UnifiedLayoutProps) {
   return (
-    <div className={`min-h-screen flex flex-col bg-gray-900/50 ${className}`}>
-      {/* Główna zawartość, która się rozciąga */}
-      <main className="flex-grow relative">
-        {/* Logo w lewym górnym rogu */}
-        <LogoGlow />
+    <AuthProvider>
+      <div className={`min-h-screen flex flex-col bg-gray-900/50 ${className}`}>
+        {/* Główna zawartość, która się rozciąga */}
+        <main className="flex-grow relative">
+          {/* Logo w lewym górnym rogu */}
+          <LogoGlow />
 
-        {/* Navigation Menu */}
-        {showNavigation && (
-          <nav className="absolute top-8 left-80 z-[1001] pointer-events-auto">
-            <motion.div
-              className="flex items-center gap-3"
-              variants={navContainerVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              {navItems.map((item) => (
-                <motion.div key={item.href} variants={navItemVariants}>
-                  <Link
-                    href={item.href}
-                    className="glass-nav-button"
-                    title={item.title}
-                    onClick={() => console.log('Clicked:', item.href)}
-                  >
-                    <i className={`${item.icon} relative z-10 text-3xl`}></i>
-                    <span className="relative z-10 text-sm">{item.label}</span>
-                  </Link>
-                </motion.div>
-              ))}
-            </motion.div>
-          </nav>
-        )}
+          {/* User Status w prawym górnym rogu */}
+          <div className="absolute top-8 right-8 z-[1002]">
+            <UserStatus />
+          </div>
 
-        {/* Main Content */}
-        <div className="relative z-10">
-          {children}
-        </div>
-      </main>
+          {/* Navigation Menu */}
+          {showNavigation && (
+            <nav className="absolute top-8 left-80 z-[1001] pointer-events-auto">
+              <motion.div
+                className="flex items-center gap-3"
+                variants={navContainerVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                {navItems.map((item) => (
+                  <motion.div key={item.href} variants={navItemVariants}>
+                    <Link
+                      href={item.href}
+                      className="glass-nav-button"
+                      title={item.title}
+                      onClick={() => {/* console.log('Clicked:', item.href) */ }}
+                    >
+                      <i className={`${item.icon} relative z-10 text-3xl`}></i>
+                      <span className="relative z-10 text-sm">{item.label}</span>
+                    </Link>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </nav>
+          )}
 
-      {/* Stopka */}
-      {showFooter && <Footer />}
-    </div>
+          {/* Main Content */}
+          <div className="relative z-10">
+            {children}
+          </div>
+        </main>
+
+        {/* Stopka */}
+        {showFooter && <Footer />}
+      </div>
+    </AuthProvider>
   )
 }

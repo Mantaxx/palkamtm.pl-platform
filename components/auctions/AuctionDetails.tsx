@@ -1,6 +1,10 @@
 'use client'
 
 import { FullscreenImageModal } from '@/components/ui/FullscreenImageModal'
+import { UnifiedCard } from '@/components/ui/UnifiedCard'
+import { UnifiedLayout } from '@/components/layout/UnifiedLayout'
+import { useAuth } from '@/contexts/AuthContext'
+import { useProfileVerification } from '@/hooks/useProfileVerification'
 import { useAppStore } from '@/store/useAppStore'
 import { format } from 'date-fns'
 import { pl } from 'date-fns/locale'
@@ -12,7 +16,6 @@ import {
   MapPin,
   Users
 } from 'lucide-react'
-import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 
@@ -95,9 +98,9 @@ const getAuctionById = async (id: string): Promise<Auction | null> => {
       status: auction.status.toLowerCase(),
       category: auction.category,
       bloodline: auction.pigeon?.bloodline || '',
-      age: auction.pigeon?.age || 0,
+      age: 0, // Domyślny wiek
       sex: auction.pigeon?.gender || 'male',
-      location: auction.location || '',
+      location: 'Brak lokalizacji', // Domyślna lokalizacja
       seller: {
         id: auction.seller.id,
         firstName: auction.seller.firstName,
@@ -134,7 +137,8 @@ const getAuctionById = async (id: string): Promise<Auction | null> => {
 
 
 export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
-  const { data: session } = useSession()
+  const { user } = useAuth()
+  const { canBid, isFullyVerified, missingFields } = useProfileVerification()
   const currencyStore = useAppStore()
   const [auction, setAuction] = useState<Auction | null>(null)
   const [bidAmount, setBidAmount] = useState('')
@@ -191,7 +195,7 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
 
         // Sprawdź czy użytkownik wygrał licytację
         const winningBid = auction.bids.find(bid => bid.isWinning)
-        if (winningBid && session?.user?.name === winningBid.bidder.name) {
+        if (winningBid && user?.displayName === winningBid.bidder.name) {
           const successData = {
             type: 'auction_won',
             auctionId: auction.id,
@@ -237,7 +241,7 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [auction?.endTime, auction, session?.user?.name])
+  }, [auction?.endTime, auction, user?.displayName])
 
   if (!auction && error) {
     return (
@@ -255,16 +259,24 @@ export default function AuctionDetails({ auctionId }: AuctionDetailsProps) {
 
   if (!auction) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Ładowanie...</h1>
-          <p className="text-gray-600 mb-6">Pobieranie danych aukcji...</p>
+      <UnifiedLayout>
+        <div className="min-h-screen flex items-center justify-center">
+          <UnifiedCard variant="glass" className="p-8 text-center">
+            <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <h1 className="text-2xl font-bold text-white mb-4">Ładowanie...</h1>
+            <p className="text-white/70 mb-6">Pobieranie danych aukcji...</p>
+          </UnifiedCard>
         </div>
-      </div>
+      </UnifiedLayout>
     )
   }
 
   const handleBid = async () => {
+    if (!canBid) {
+      alert(`Aby licytować, musisz uzupełnić profil i zweryfikować numer telefonu. Brakujące pola: ${missingFields.join(', ')}`)
+      return
+    }
+
     const bidValue = parseFloat(bidAmount)
     if (!bidAmount || bidValue <= auction.currentPrice) {
       alert(`Oferta musi być wyższa od aktualnej ceny ${formatPrice(auction.currentPrice)}`)
