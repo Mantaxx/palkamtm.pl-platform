@@ -493,10 +493,10 @@ export function AchievementsCarousel({ onNavigationReady }: AchievementsCarousel
     }
   }
 
-  // Calculate translateZ value for 3D positioning
-  const cellSize = 400
+  // Calculate translateZ value for 3D positioning - very close for crown shape
+  const cellSize = 600
   const numberOfCells = achievementItems.length
-  const translateZ = Math.round((cellSize / 2) / Math.tan(Math.PI / numberOfCells)) + 2000
+  const translateZ = Math.round((cellSize / 2) / Math.tan(Math.PI / numberOfCells)) + 800
 
   return (
     <>
@@ -536,14 +536,145 @@ export function AchievementsCarousel({ onNavigationReady }: AchievementsCarousel
 
           .heritage-cell {
             position: absolute;
-            width: 600px;
-            height: 1100px;
+            width: 700px;
+            height: 1000px;
             left: 50%;
             top: 50%;
-            margin-left: -300px;
-            margin-top: -550px;
-            border: 2px solid rgba(255, 255, 255, 0.8);
-            border-radius: 10px;
+            margin-left: -350px;
+            margin-top: -500px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            background: 
+              linear-gradient(to bottom,
+                rgba(255, 215, 0, 0.5) 0%,
+                rgba(255, 215, 0, 0.45) 12%,
+                rgba(255, 215, 0, 0.4) 18%,
+                rgba(218, 165, 32, 0.35) 50%, 
+                rgba(184, 134, 11, 0.3) 100%);
+            backdrop-filter: blur(2px);
+            box-shadow: 
+              0 100px 150px rgba(0, 0, 0, 0.1),
+              0 0 20px rgba(255, 215, 0, 0.3);
+            clip-path: polygon(
+              0% 20%,
+              5% 20%,
+              10% 19%,
+              15% 17%,
+              20% 14%,
+              25% 11%,
+              30% 8%,
+              35% 5%,
+              40% 3%,
+              44% 1.5%,
+              47% 0.5%,
+              50% 0%,
+              53% 0.5%,
+              56% 1.5%,
+              60% 3%,
+              65% 5%,
+              70% 8%,
+              75% 11%,
+              80% 14%,
+              85% 17%,
+              90% 19%,
+              95% 20%,
+              100% 20%,
+              100% 100%,
+              0% 100%,
+              0% 20%
+            );
+            position: relative;
+            overflow: hidden;
+            transition: transform 500ms ease-out,
+                        box-shadow 500ms ease-out,
+                        border-color 500ms ease-out,
+                        border-width 500ms ease-out,
+                        clip-path 500ms ease-out;
+          }
+          
+          .heritage-cell::before {
+            content: '';
+            background: rgba(255, 255, 255, 0.4);
+            width: 80%;
+            height: 200%;
+            bottom: -50%;
+            left: -150%;
+            transform: skew(45deg);
+            position: absolute;
+            transition: left 500ms ease-out, bottom 500ms ease-out;
+          }
+          
+          .heritage-cell:hover {
+            transform: translateY(-5%);
+            box-shadow: 
+              0 125px 200px rgba(0, 0, 0, 0.25),
+              0 0 35px 15px rgba(255, 255, 255, 0.95);
+            border-width: 2px;
+            border-color: rgba(255, 255, 255, 0.8);
+            clip-path: polygon(
+              0% 0%,
+              100% 0%,
+              100% 100%,
+              0% 100%
+            );
+          }
+          
+          .heritage-cell:hover::before {
+            left: 150%;
+            bottom: 50%;
+          }
+          
+          .heritage-cell::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 30%;
+            background: 
+              linear-gradient(to bottom,
+                rgba(255, 255, 255, 0.9) 0%,
+                rgba(255, 255, 240, 0.8) 10%,
+                rgba(255, 245, 200, 0.6) 30%,
+                rgba(255, 235, 150, 0.3) 60%,
+                transparent 100%
+              );
+            pointer-events: none;
+            clip-path: inherit;
+          }
+          
+          .heritage-cell::after {
+            content: '';
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: 
+              radial-gradient(circle at 25% 25%,
+                rgba(255, 255, 255, 1) 0%,
+                rgba(255, 255, 255, 1) 5%,
+                rgba(255, 250, 200, 1) 15%,
+                rgba(255, 240, 150, 1) 25%,
+                rgba(255, 230, 100, 1) 35%,
+                rgba(255, 215, 0, 1) 55%,
+                rgba(218, 165, 32, 1) 80%,
+                rgba(184, 134, 11, 1) 100%
+              );
+            border-radius: 50%;
+            pointer-events: none;
+            filter: 
+              drop-shadow(0 12px 25px rgba(255, 215, 0, 1))
+              drop-shadow(0 0 50px rgba(255, 215, 0, 1))
+              drop-shadow(0 0 80px rgba(255, 215, 0, 0.9))
+              drop-shadow(0 0 120px rgba(255, 215, 0, 0.6));
+            box-shadow: 
+              inset -20px -20px 35px rgba(139, 90, 0, 0.7),
+              inset 15px 15px 30px rgba(255, 255, 255, 0.9),
+              0 0 60px rgba(255, 215, 0, 1.5),
+              0 0 100px rgba(255, 215, 0, 1.2),
+              0 0 140px rgba(255, 215, 0, 0.8),
+              0 8px 20px rgba(0, 0, 0, 0.4);
           }
 
 
@@ -624,10 +755,82 @@ export function AchievementsCarousel({ onNavigationReady }: AchievementsCarousel
           }
 
 
+          .diamond-container {
+            position: relative;
+            width: 100%;
+            height: 450px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: visible;
+          }
+          
+          .diamond-svg {
+            width: 400px;
+            height: 400px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: transform 500ms ease-out, filter 500ms ease-out;
+            overflow: hidden;
+          }
+          
+          .diamond-svg::before {
+            content: '';
+            background: rgba(255, 255, 255, 0.5);
+            width: 60%;
+            height: 100%;
+            top: 0%;
+            left: -125%;
+            transform: skew(45deg);
+            position: absolute;
+            transition: left 500ms ease-out;
+            z-index: 100;
+            pointer-events: none;
+          }
+          
+          .heritage-cell:hover .diamond-svg::before {
+            left: 150%;
+          }
+          
+          .heritage-cell:hover .diamond-svg {
+            transform: translate(-50%, -50%) scale(1.15);
+            filter: brightness(1.2) drop-shadow(0 0 40px currentColor);
+          }
+          
+          .diamond-main {
+            transition: all 0.3s ease;
+          }
+          
+          .diamond-facet {
+            mix-blend-mode: overlay;
+            transition: opacity 0.3s ease;
+          }
+          
+          .diamond-shine {
+            mix-blend-mode: screen;
+            animation: diamondShimmer 3s ease-in-out infinite;
+          }
+          
+          @keyframes diamondShimmer {
+            0%, 100% { opacity: 0.6; transform: translateX(0); }
+            50% { opacity: 1; transform: translateX(10px); }
+          }
+          
           .achievement-year-text {
-            font-size: 4rem;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            font-size: 4.5rem;
+            font-weight: 900;
+            color: #ffffff;
+            text-shadow: 
+              0 0 8px rgba(0,0,0,1),
+              0 0 15px rgba(0,0,0,0.9),
+              0 0 25px rgba(255,255,255,0.7),
+              3px 3px 10px rgba(0,0,0,1);
+            position: relative;
+            z-index: 10;
+            letter-spacing: 5px;
+            text-align: center;
           }
 
           .achievement-details {
@@ -698,8 +901,61 @@ export function AchievementsCarousel({ onNavigationReady }: AchievementsCarousel
                   </ul>
                 </div>
               ) : (
-                <div className="achievement-year-text">
-                  {item.year}
+                <div className="diamond-container">
+                  <svg className="diamond-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <linearGradient id={`grad-red-${index}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style={{ stopColor: '#ffffff', stopOpacity: 1 }} />
+                        <stop offset="20%" style={{ stopColor: '#ff6b6b', stopOpacity: 1 }} />
+                        <stop offset="50%" style={{ stopColor: '#dc143c', stopOpacity: 1 }} />
+                        <stop offset="80%" style={{ stopColor: '#8b0000', stopOpacity: 1 }} />
+                        <stop offset="100%" style={{ stopColor: '#4a0000', stopOpacity: 1 }} />
+                      </linearGradient>
+                      <linearGradient id={`grad-green-${index}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style={{ stopColor: '#ffffff', stopOpacity: 1 }} />
+                        <stop offset="20%" style={{ stopColor: '#90ee90', stopOpacity: 1 }} />
+                        <stop offset="50%" style={{ stopColor: '#32cd32', stopOpacity: 1 }} />
+                        <stop offset="80%" style={{ stopColor: '#228b22', stopOpacity: 1 }} />
+                        <stop offset="100%" style={{ stopColor: '#0a4a0a', stopOpacity: 1 }} />
+                      </linearGradient>
+                      <linearGradient id={`grad-white-${index}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style={{ stopColor: '#ffffff', stopOpacity: 1 }} />
+                        <stop offset="30%" style={{ stopColor: '#f0f8ff', stopOpacity: 1 }} />
+                        <stop offset="60%" style={{ stopColor: '#e6f2ff', stopOpacity: 1 }} />
+                        <stop offset="100%" style={{ stopColor: '#b0c4de', stopOpacity: 1 }} />
+                      </linearGradient>
+                      <radialGradient id={`shine-${index}`} cx="30%" cy="30%" r="50%">
+                        <stop offset="0%" style={{ stopColor: '#ffffff', stopOpacity: 0.9 }} />
+                        <stop offset="50%" style={{ stopColor: '#ffffff', stopOpacity: 0.3 }} />
+                        <stop offset="100%" style={{ stopColor: 'transparent', stopOpacity: 0 }} />
+                      </radialGradient>
+                      <filter id={`glow-${index}`}>
+                        <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+                        <feMerge>
+                          <feMergeNode in="coloredBlur" />
+                          <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                      </filter>
+                    </defs>
+
+                    {/* Main diamond shape */}
+                    <polygon
+                      points="100,20 160,80 140,100 120,120 100,140 80,120 60,100 40,80"
+                      fill={`url(#grad-${index % 3 === 0 ? 'red' : index % 3 === 1 ? 'green' : 'white'}-${index})`}
+                      filter={`url(#glow-${index})`}
+                      className="diamond-main"
+                    />
+
+                    {/* Light facets */}
+                    <polygon points="100,20 120,60 100,80 80,60" fill="rgba(255,255,255,0.4)" className="diamond-facet" />
+                    <polygon points="100,80 120,100 100,140 80,100" fill="rgba(0,0,0,0.2)" className="diamond-facet" />
+                    <polygon points="40,80 80,60 100,80 60,100" fill="rgba(255,255,255,0.2)" className="diamond-facet" />
+                    <polygon points="100,80 140,100 160,80 120,60" fill="rgba(255,255,255,0.3)" className="diamond-facet" />
+
+                    {/* Shine overlay */}
+                    <ellipse cx="100" cy="60" rx="40" ry="30" fill={`url(#shine-${index})`} className="diamond-shine" />
+                  </svg>
+                  <div className="achievement-year-text">{item.year}</div>
                 </div>
               )}
             </div>

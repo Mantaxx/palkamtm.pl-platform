@@ -1,11 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Eksport statyczny dla Netlify
-  output: 'export',
-  trailingSlash: true,
-  images: {
-    unoptimized: true
-  },
+  // Podstawowa konfiguracja Next.js
 
   // Podstawowa konfiguracja Next.js
   reactStrictMode: true,
